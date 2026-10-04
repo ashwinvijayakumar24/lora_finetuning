@@ -11,3 +11,8 @@ runs/
 !tests/fixtures/**/*.safetensors
 .env
 .claude/
+
+# Adapter registry: metadata (index.json, evals/) is committed; weights are not.
+registry/adapters/
+registry/.lock
+registry/**/.*.tmp
