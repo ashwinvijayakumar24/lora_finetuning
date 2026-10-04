@@ -6,7 +6,7 @@ model:
   gradient_checkpointing: false
   attn_implementation: sdpa
 lora:
-  impl: auto               # playparse.lora when available, else PEFT
+  impl: playparse          # hand-written playparse.lora; adapters saved in PEFT format (peft = reference)
   r: 16
   alpha: 32
   dropout: 0.05

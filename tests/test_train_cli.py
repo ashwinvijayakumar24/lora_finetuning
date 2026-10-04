@@ -52,7 +52,7 @@ def test_cli_trains_and_resumes(tmp_path, tiny_weights):
     out = tmp_path / "run"
     common = [
         f"model.weights={json.dumps(str(tiny_weights))}", "model.dtype=fp32", "model.attn_implementation=eager",
-        "lora.impl=peft", "lora.r=4", f"data.train={json.dumps(str(tmp_path / 'train.jsonl'))}",
+        "lora.r=4", f"data.train={json.dumps(str(tmp_path / 'train.jsonl'))}",
         f"data.val={json.dumps(str(tmp_path / 'val.jsonl'))}", f"train.output_dir={json.dumps(str(out))}",
         "train.device=cpu", "train.micro_batch_size=2", "train.grad_accum_steps=2", "train.eval_every=2",
         "train.save_every=2", "train.gen_every=4", "gen_eval_examples=2", "gen_max_new_tokens=4",
@@ -63,6 +63,7 @@ def test_cli_trains_and_resumes(tmp_path, tiny_weights):
     result = json.loads((out / "result.json").read_text())
     assert result["step"] == 4
     assert (out / "checkpoints" / "step_0000004" / "adapter" / "adapter_model.safetensors").exists()
+    assert (out / "checkpoints" / "step_0000004" / "adapter" / "adapter_config.json").exists()  # PEFT format
     recs = [json.loads(l) for l in (out / "metrics.jsonl").read_text().splitlines()]
     assert any(r["event"] == "val_callback" and "val_exact_match" in r for r in recs)
 
