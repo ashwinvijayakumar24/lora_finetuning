@@ -138,6 +138,13 @@ def make_pool(cfg, args, n_slots, max_rank, kernel, n_adapters, rank, seed0=ADAP
 # --------------------------------------------------------------------------
 
 def arm_kernel(cfg, weights, args) -> list[dict]:
+    """Per (batch, rank, distinct adapters): base, v1 and v2, measured in interleaved rounds.
+
+    Each round times base, then every kernel, back to back; the reported number is
+    the MINIMUM over rounds of the per-round mean. On a shared machine contention
+    only ever adds time, so the minimum is the best available estimate of the
+    uncontended cost, and timing base inside every round keeps drift off the ratio.
+    """
     install_multi_lora_linear()
     keys = [engine_weight_name(i, m) for i in range(cfg["num_hidden_layers"]) for m in SUPPORTED_MODULES]
     rows = []
@@ -154,19 +161,14 @@ def arm_kernel(cfg, weights, args) -> list[dict]:
                     w = ws[k]
                     multi_lora_linear(xs[(w.base if isinstance(w, PooledLoRALinear) else w).shape[1]], w)
 
-        def bench(ws, sel):
-            for _ in range(args.warmup):
-                run(ws, sel)
+        def timed(ws, sel, iters):
             sync(args.device)
             t = time.perf_counter()
-            for _ in range(args.iters):
+            for _ in range(iters):
                 run(ws, sel)
             sync(args.device)
-            return (time.perf_counter() - t) / args.iters * 1e3
+            return (time.perf_counter() - t) / iters * 1e3
 
-        base_ms = bench(weights, None)
-        rows.append({"batch": batch, "arm": "base", "ms": base_ms})
-        print(f"  kernel batch={batch:<3} base                      {base_ms:8.3f} ms")
         for r in args.ranks:
             for n in sorted({min(n, batch) for n in args.kernel_distinct}):
                 pool = make_pool(cfg, args, n_slots=n, max_rank=r, kernel="v1", n_adapters=n, rank=r)
@@ -178,13 +180,30 @@ def arm_kernel(cfg, weights, args) -> list[dict]:
                                        row_slots=torch.tensor(seq_slots, device=args.device),
                                        plan=build_plan(seq_slots, [1] * batch, args.device))
                 ws = {k: PooledLoRALinear(k, weights[k], pool) for k in keys}
-                for kernel in args.kernels:
+                for kernel in args.kernels:          # warm every path once
                     pool.kernel = kernel
-                    ms = bench(ws, sel)
-                    rows.append({"batch": batch, "arm": f"{kernel}_r{r}_n{n}", "kernel": kernel, "rank": r,
-                                 "distinct_adapters": n, "ms": ms, "overhead_pct": 100 * (ms - base_ms) / base_ms})
-                    print(f"  kernel batch={batch:<3} {kernel} r={r:<3} distinct={n:<3}   {ms:8.3f} ms  "
-                          f"(+{100 * (ms - base_ms) / base_ms:.0f}%)")
+                    for _ in range(args.warmup):
+                        run(ws, sel)
+                for _ in range(args.warmup):
+                    run(weights, None)
+                per_iter = max(1, args.iters // args.rounds)
+                samples = {"base": [], **{k: [] for k in args.kernels}}
+                for _ in range(args.rounds):
+                    samples["base"].append(timed(weights, None, per_iter))
+                    for kernel in args.kernels:
+                        pool.kernel = kernel
+                        samples[kernel].append(timed(ws, sel, per_iter))
+                base_ms = min(samples["base"])
+                rows.append({"batch": batch, "rank": r, "distinct_adapters": n, "arm": "base",
+                             "ms_min": base_ms, "ms_median": statistics.median(samples["base"])})
+                msg = f"  kernel batch={batch:<3} r={r:<3} distinct={n:<3} base {base_ms:7.2f} ms"
+                for kernel in args.kernels:
+                    ms = min(samples[kernel])
+                    rows.append({"batch": batch, "rank": r, "distinct_adapters": n, "arm": kernel,
+                                 "kernel": kernel, "ms_min": ms, "ms_median": statistics.median(samples[kernel]),
+                                 "overhead_pct": 100 * (ms - base_ms) / base_ms})
+                    msg += f" | {kernel} {ms:7.2f} ms ({100 * (ms - base_ms) / base_ms:+.0f}%)"
+                print(msg)
                 del pool, ws
                 gc.collect()
     return rows
@@ -203,47 +222,54 @@ def make_scheduler(cfg, weights, pool, args, max_batch, num_blocks):
 
 
 def arm_decode32(cfg, weights, args) -> list[dict]:
-    """Time decode steps with `batch` sequences all in decode, under several adapter mixes."""
+    """Decode steps with 32 sequences all decoding, under several adapter mixes, interleaved.
+
+    Every arm gets its own scheduler (own pool, own KV), all built up front and
+    prefilled; then each round steps every arm once, in turn. Slow drift on a
+    shared machine therefore lands on all arms alike. Reported: median and
+    minimum step time over the rounds, overhead vs base from the medians.
+    """
     batch, prompt_len, steps = 32, 32, args.decode_steps
     num_blocks = batch * ((prompt_len + steps + args.warmup + 8) // BLOCK + 2)
-    mixes = [("base", None, 0)] + [(f"shared_r{r}", "shared", r) for r in args.ranks] + \
-            [(f"distinct32_r16", "distinct", 16)]
-    rows = []
-    base_ms = {}
+    arms = [("base", "-", None, 0)]
     for kernel in args.kernels:
-        for label, mode, r in mixes:
-            if mode is None and kernel != args.kernels[0]:
-                continue
-            n_ad = 0 if mode is None else (1 if mode == "shared" else batch)
-            pool = make_pool(cfg, args, n_slots=max(1, n_ad), max_rank=max(r, 1), kernel=kernel,
-                             n_adapters=n_ad, rank=max(r, 1))
-            sched = make_scheduler(cfg, weights, pool, args, max_batch=batch, num_blocks=num_blocks)
-            for i in range(batch):
-                aid = None if mode is None else f"tenant-{(0 if mode == 'shared' else i):03d}"
-                sched.add_request(AdapterRequest(
-                    request_id=f"d{i}", prompt_ids=[(7 * i + j) % 1000 + 10 for j in range(prompt_len)],
-                    max_tokens=10_000, adapter_id=aid, ignore_eos=True))
-            while any(not r_.prefill_done for r_ in sched.running) or sched.waiting:
-                sched.step()
-            for _ in range(args.warmup):
-                sched.step()
-            times = []
-            for _ in range(steps):
-                t = time.perf_counter()
-                st = sched.step()
-                times.append(time.perf_counter() - t)
-                assert st.n_decode == batch, f"expected {batch} decodes, got {st.n_decode}"
-            ms = 1e3 * statistics.median(times)
-            if mode is None:
-                base_ms = {"ms": ms}
-            row = {"arm": label, "kernel": kernel if mode else "-", "rank": r, "batch": batch,
-                   "ms_per_step_p50": ms, "tok_s": batch / (ms / 1e3),
-                   "overhead_pct": None if mode is None else 100 * (ms - base_ms["ms"]) / base_ms["ms"]}
-            rows.append(row)
-            print(f"  decode32 {label:<16} {row['kernel']:<3} {ms:8.2f} ms/step  {row['tok_s']:8.1f} tok/s"
-                  + ("" if mode is None else f"  (+{row['overhead_pct']:.1f}%)"))
-            del sched, pool
-            gc.collect()
+        arms += [(f"shared_r{r}", kernel, "shared", r) for r in args.ranks]
+        arms += [("distinct32_r16", kernel, "distinct", 16)]
+    scheds = []
+    for label, kernel, mode, r in arms:
+        n_ad = 0 if mode is None else (1 if mode == "shared" else batch)
+        pool = make_pool(cfg, args, n_slots=max(1, n_ad), max_rank=max(r, 1),
+                         kernel=kernel if mode else "v2", n_adapters=n_ad, rank=max(r, 1))
+        sched = make_scheduler(cfg, weights, pool, args, max_batch=batch, num_blocks=num_blocks)
+        for i in range(batch):
+            aid = None if mode is None else f"tenant-{(0 if mode == 'shared' else i):03d}"
+            sched.add_request(AdapterRequest(
+                request_id=f"d{i}", prompt_ids=[(7 * i + j) % 1000 + 10 for j in range(prompt_len)],
+                max_tokens=10_000, adapter_id=aid, ignore_eos=True))
+        while any(not r_.prefill_done for r_ in sched.running) or sched.waiting:
+            sched.step()
+        for _ in range(args.warmup):
+            sched.step()
+        scheds.append(sched)
+    times = [[] for _ in arms]
+    for _ in range(steps):
+        for i, sched in enumerate(scheds):
+            t = time.perf_counter()
+            st = sched.step()
+            times[i].append(time.perf_counter() - t)
+            assert st.n_decode == batch, f"expected {batch} decodes, got {st.n_decode}"
+    base_ms = 1e3 * statistics.median(times[0])
+    rows = []
+    for (label, kernel, mode, r), ts in zip(arms, times):
+        ms = 1e3 * statistics.median(ts)
+        row = {"arm": label, "kernel": kernel, "rank": r, "batch": batch,
+               "ms_per_step_p50": ms, "ms_per_step_min": 1e3 * min(ts), "tok_s": batch / (ms / 1e3),
+               "overhead_pct": None if mode is None else 100 * (ms - base_ms) / base_ms}
+        rows.append(row)
+        print(f"  decode32 {label:<16} {kernel:<3} p50 {ms:8.2f} ms/step  min {row['ms_per_step_min']:8.2f}"
+              f"  {row['tok_s']:7.1f} tok/s" + ("" if mode is None else f"  ({row['overhead_pct']:+.1f}%)"))
+    del scheds
+    gc.collect()
     return rows
 
 
@@ -419,6 +445,58 @@ def arm_capacity(cfg, weights, args) -> dict:
 
 # --------------------------------------------------------------------------
 
+def render_markdown(result: dict) -> str:
+    """Markdown tables for every arm present in a result file (``--render``)."""
+    out = [f"label: {result['metadata']['label']}, device: {result['metadata']['device']}, "
+           f"layers: {result['model_config']['num_hidden_layers']}"]
+    arms = result["arms"]
+    if "kernel" in arms:
+        out += ["", "### kernel (adapted projections of one forward pass, min over rounds)", "",
+                "| batch | rank | distinct | base ms | v1 ms (overhead) | v2 ms (overhead) |",
+                "|---|---|---|---|---|---|"]
+        rows = arms["kernel"]
+        keys = sorted({(r["batch"], r["rank"], r["distinct_adapters"]) for r in rows})
+        for b, rk, n in keys:
+            cell = {r["arm"]: r for r in rows if (r["batch"], r["rank"], r["distinct_adapters"]) == (b, rk, n)}
+            def fmt(k):
+                r = cell.get(k)
+                return "-" if r is None else f"{r['ms_min']:.2f} ({r['overhead_pct']:+.0f}%)"
+            out.append(f"| {b} | {rk} | {n} | {cell['base']['ms_min']:.2f} | {fmt('v1')} | {fmt('v2')} |")
+    if "decode32" in arms:
+        out += ["", "### decode32 (32 sequences decoding, interleaved rounds)", "",
+                "| arm | kernel | ms/step p50 | ms/step min | tok/s | overhead vs base (p50) |", "|---|---|---|---|---|---|"]
+        for r in arms["decode32"]:
+            ov = "-" if r["overhead_pct"] is None else f"{r['overhead_pct']:+.1f}%"
+            out.append(f"| {r['arm']} | {r['kernel']} | {r['ms_per_step_p50']:.1f} | {r['ms_per_step_min']:.1f} "
+                       f"| {r['tok_s']:.0f} | {ov} |")
+    if "goodput" in arms:
+        g = arms["goodput"]
+        out += ["", f"### goodput (SLO TTFT <= {g['slo']['ttft_ms']:.0f} ms, TPOT <= {g['slo']['tpot_ms']:.1f} ms; "
+                f"offered {g['offered_rps']:.2f} req/s = load factor x base capacity {g['capacity_rps']:.2f})", "",
+                "| N | popularity | kernel | goodput req/s | attainment | TTFT p50 / p99 ms | pool hit rate | loads | saturation tok/s |",
+                "|---|---|---|---|---|---|---|---|---|"]
+        for c in g["cells"]:
+            sat = c.get("saturation", {}).get("tok_s")
+            out.append(f"| {c['n_adapters']} | {c['popularity']} | {c['kernel']} | {c['goodput_rps']:.2f} | "
+                       f"{c['slo_attainment']:.0%} | {c['ttft_ms_p50'] or 0:.0f} / {c['ttft_ms_p99'] or 0:.0f} | "
+                       f"{c['pool']['hit_rate']:.0%} | {c['pool']['loads']} | "
+                       f"{'-' if sat is None else f'{sat:.1f}'} |")
+    if "capacity" in arms:
+        c = arms["capacity"]
+        ranks = sorted(int(r) for r in c["adapter_slot_bytes_full_1b"])
+        out += ["", f"### capacity (full 16-layer 1B, {c['target_gpu_gb']:.0f} GB x {c['usable_fraction']} usable)", "",
+                f"base copy {c['base_bytes_full_1b'] / 2**30:.2f} GiB; adapter slot "
+                + ", ".join(f"r={r}: {c['adapter_slot_bytes_full_1b'][r if r in c['adapter_slot_bytes_full_1b'] else str(r)] / 2**20:.1f} MiB"
+                            for r in ranks)
+                + f"; KV {c['kv_bytes_per_token_full_1b'] / 2**10:.0f} KiB/token", "",
+                "| KV tokens per tenant | merged copies | " + " | ".join(f"pool, r={r}" for r in ranks) + " |",
+                "|---" * (2 + len(ranks)) + "|"]
+        for row in c["table"]:
+            out.append(f"| {row['kv_tokens_per_tenant']} | {row['merged_copies']} | "
+                       + " | ".join(str(row[f'pool_all_resident_r{r}']) for r in ranks) + " |")
+    return "\n".join(out)
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--device", default="mps" if torch.backends.mps.is_available() else "cpu")
@@ -430,6 +508,7 @@ def main(argv=None) -> int:
     ap.add_argument("--batches", default="1,32")
     ap.add_argument("--kernel-distinct", default="1,4,16,32")
     ap.add_argument("--iters", type=int, default=30)
+    ap.add_argument("--rounds", type=int, default=5, help="kernel arm: interleaved timing rounds")
     ap.add_argument("--warmup", type=int, default=5)
     ap.add_argument("--decode-steps", type=int, default=20)
     ap.add_argument("--ns", default="1,4,16,64,256")
@@ -453,10 +532,14 @@ def main(argv=None) -> int:
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--quick", action="store_true", help="laptop-sized settings for every arm")
     ap.add_argument("--out", default=str(REPO / "results" / "p5b"))
+    ap.add_argument("--render", metavar="RESULT_JSON", help="print markdown tables for a result file and exit")
     args = ap.parse_args(argv)
+    if args.render:
+        print(render_markdown(json.loads(Path(args.render).read_text())))
+        return 0
 
     if args.quick:
-        args.iters, args.warmup, args.decode_steps = 10, 3, 8
+        args.iters, args.warmup, args.decode_steps = 15, 3, 12
         args.n_requests, args.prompt_mean, args.output_mean = 48, 48, 16
         args.n_slots, args.kv_blocks, args.max_batch = 8, 512, 16
         args.load_factor, args.saturation = 0.5, True
@@ -494,7 +577,8 @@ def main(argv=None) -> int:
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     path = out / f"bench_{args.device.split(':')[0]}_{args.model}_L{cfg['num_hidden_layers']}_{stamp}.json"
     path.write_text(json.dumps(result, indent=1, default=str))
-    print(f"\nwrote {path}")
+    print(f"\nwrote {path}\n")
+    print(render_markdown(result))
     return 0
 
 
