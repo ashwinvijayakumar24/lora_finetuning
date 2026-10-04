@@ -27,7 +27,8 @@ sys.path.insert(0, str(REPO))
 import torch  # noqa: E402
 
 from playparse.paths import WEIGHTS  # noqa: E402
-from playparse.train.build import LoRASpec, ModelSpec, apply_lora, exact_match_callback, load_base_model  # noqa: E402
+from playparse.train.build import LoRASpec, ModelSpec, apply_lora, load_base_model  # noqa: E402
+from playparse.train.val_eval import harness_val_callback  # noqa: E402
 from playparse.train.collate import encode_records, pad_token_id  # noqa: E402
 from playparse.train.loop import TrainConfig, release_cached_memory, resolve_device, train  # noqa: E402
 from playparse.train.synthetic import synth_records  # noqa: E402
@@ -85,7 +86,7 @@ def run_smoke(steps: int = 40, n_train: int = 64, n_val: int = 16, micro: int = 
     n_trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
     n_total = sum(p.numel() for p in model.parameters())
 
-    cb = exact_match_callback(tok, val_recs[:gen_n], max_new_tokens=96, batch_size=16, autocast=autocast) if gen else None
+    cb = harness_val_callback(tok, val_recs[:gen_n], max_new_tokens=96, batch_size=16, autocast=autocast) if gen else None
     before = {}
     if cb is not None:
         t = time.perf_counter()

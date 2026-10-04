@@ -64,7 +64,12 @@ class RunSpec:
     lora: LoRASpec = field(default_factory=LoRASpec)
     data: DataSpec = field(default_factory=DataSpec)
     train: TrainConfig = field(default_factory=TrainConfig)
-    gen_eval_examples: int = 0  # >0: exact-match eval on this many val records at gen_every
+    # Generation eval at train.gen_every (playparse.train.val_eval.harness_val_callback):
+    # greedy-decode a fixed, seeded, bucket-stratified val subset and log exact match
+    # overall and per bucket. 0 disables it.
+    gen_eval_examples: int = 0
+    gen_eval_seed: int = 0
+    gen_eval_strategy: str = "balanced"  # balanced | proportional (see stratified_subset)
     gen_max_new_tokens: int = 160
 
     @classmethod
@@ -200,36 +205,6 @@ def read_jsonl(path: str | os.PathLike, limit: int | None = None) -> list[dict]:
     return out
 
 
-def exact_match_callback(tokenizer: Any, records: list[dict], max_new_tokens: int = 160, batch_size: int = 16,
-                         autocast: str = "auto") -> Callable[[nn.Module, int], dict]:
-    """A val_callback that greedy-decodes records and scores exact match and parse rate.
-
-    A placeholder until the P1 eval harness owns this; it uses the same schema
-    contract (PlayLabel.from_json + matches).
-    """
-    from playparse.ffscore.schema import PlayLabel, SchemaError
-    from playparse.train.generate import generate_for_records
-
-    golds = [PlayLabel.from_json(r["label"]) for r in records]
-
-    def cb(model: nn.Module, step: int) -> dict:
-        texts = generate_for_records(model, tokenizer, records, max_new_tokens=max_new_tokens,
-                                     batch_size=batch_size, autocast=autocast)
-        parsed = em = 0
-        for t, g in zip(texts, golds):
-            try:
-                p = PlayLabel.from_json(t)
-            except SchemaError:
-                continue
-            parsed += 1
-            em += int(p.matches(g))
-        n = max(1, len(records))
-        return {"val_exact_match": em / n, "val_parse_rate": parsed / n, "val_gen_n": len(records),
-                "val_gen_sample": texts[0] if texts else ""}
-
-    return cb
-
-
 def describe_device(device: torch.device) -> dict:
     import platform
 
@@ -244,6 +219,5 @@ def describe_device(device: torch.device) -> dict:
 
 __all__ = [
     "ModelSpec", "LoRASpec", "DataSpec", "RunSpec", "load_base_model", "apply_lora", "playparse_adapter_io",
-    "read_jsonl",
-    "exact_match_callback", "resolve_device", "describe_device", "model_dtype",
+    "read_jsonl", "resolve_device", "describe_device", "model_dtype",
 ]

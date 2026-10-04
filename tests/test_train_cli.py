@@ -65,7 +65,9 @@ def test_cli_trains_and_resumes(tmp_path, tiny_weights):
     assert (out / "checkpoints" / "step_0000004" / "adapter" / "adapter_model.safetensors").exists()
     assert (out / "checkpoints" / "step_0000004" / "adapter" / "adapter_config.json").exists()  # PEFT format
     recs = [json.loads(l) for l in (out / "metrics.jsonl").read_text().splitlines()]
-    assert any(r["event"] == "val_callback" and "val_exact_match" in r for r in recs)
+    assert any(r["event"] == "val_callback" and "val_exact_match" in r and "val_exact_match_natural" in r
+               and any(k.startswith("val_exact_match/") for k in r) for r in recs)
+    assert (out / "val_predictions" / "step_0000004.jsonl").exists()
 
     # Resume from the saved spec and extend the run to 6 steps.
     assert script.main(["--config", str(out / "run_spec.json"), "--resume", "latest",

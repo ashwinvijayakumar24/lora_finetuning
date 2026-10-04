@@ -36,10 +36,12 @@ train:
   save_every: 500
   keep_last_checkpoints: 2
   save_best: true
-  early_stop_metric: val_exact_match
+  early_stop_metric: val_exact_match   # on the bucket-balanced gen subset; or val_exact_match_natural, val_exact_match/<bucket>
   early_stop_mode: max
   early_stop_patience: 4
   device: auto
   autocast: auto
-gen_eval_examples: 500
+gen_eval_examples: 500     # bucket-stratified val subset decoded at every gen_every
+gen_eval_seed: 0
+gen_eval_strategy: balanced
 gen_max_new_tokens: 160

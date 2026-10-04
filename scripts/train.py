@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections import Counter
 import subprocess
 import sys
 import time
@@ -26,12 +27,12 @@ from playparse.train.build import (  # noqa: E402
     RunSpec,
     apply_lora,
     describe_device,
-    exact_match_callback,
     load_base_model,
     read_jsonl,
 )
 from playparse.train.collate import encode_records, pad_token_id  # noqa: E402
 from playparse.train.loop import resolve_device, seed_everything, train  # noqa: E402
+from playparse.train.val_eval import harness_val_callback, stratified_subset  # noqa: E402
 
 
 def apply_overrides(d: dict, sets: list[str]) -> dict:
@@ -114,8 +115,12 @@ def main(argv: list[str] | None = None) -> int:
 
     cb = None
     if spec.gen_eval_examples and val_recs:
-        cb = exact_match_callback(tok, val_recs[: spec.gen_eval_examples], spec.gen_max_new_tokens,
-                                  batch_size=spec.train.eval_batch_size or 16, autocast=spec.train.autocast)
+        gen_recs = stratified_subset(val_recs, spec.gen_eval_examples, spec.gen_eval_seed, spec.gen_eval_strategy)
+        cb = harness_val_callback(tok, gen_recs, population=val_recs, max_new_tokens=spec.gen_max_new_tokens,
+                                  batch_size=spec.train.eval_batch_size or 16, autocast=spec.train.autocast,
+                                  predictions_dir=out / "val_predictions")
+        print(f"generation eval: {len(gen_recs)} val plays every {spec.train.gen_every} steps, "
+              f"buckets {dict(sorted(Counter(r['bucket'] for r in gen_recs).items()))}", flush=True)
 
     res = train(model, train_ex, val_ex or None, spec.train, pad_id=pad_token_id(tok), save_fn=save_fn,
                 load_fn=load_fn, val_callback=cb, resume_from=args.resume, log_to_stdout=True)
