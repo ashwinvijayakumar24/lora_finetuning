@@ -26,6 +26,7 @@ include = ["playparse*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]
 markers = [
     "slow: loads the real 1B model or the full dataset (deselect with -m 'not slow')",
     "gpu: needs a CUDA GPU",
