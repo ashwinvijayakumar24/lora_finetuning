@@ -1,6 +1,6 @@
 # The shared system prompt says reversed plays are "nullified"; the labels do not
 
-**Phase:** P1 · **Severity:** contract mismatch (open; needs an owner decision) ·
+**Phase:** P1 · **Severity:** contract mismatch (**resolved** 2026-10-04 by the orchestrator: the prompt was changed to match the labels, since the labels follow official stats) ·
 **Files:** `playparse/prompt.py` (not edited; it is a shared contract),
 `playparse/data/ground_truth.py` rule 10.
 
@@ -58,3 +58,13 @@ Load 2024 with `load_pbp_season(2024)` and filter
 `replay_or_challenge_result == 'reversed'`; 204 of the 207 land in the
 `challenge` bucket (the other three are a lateral and a two-point try, which
 take precedence).
+
+
+## Resolution
+
+`SYSTEM_PROMPT` now says: a penalty `No Play` → nullified; a replay reversal → credit
+the final ruling (the text after `REVERSED`) with `nullified: false`; omit
+zero-value credits. The labels were not changed, because they agree with official
+stats. Guarded by `tests/test_schema.py::test_prompt_matches_labeling_rules`.
+This landed before any R1–R4 baseline was run, so no published number used the old
+wording.

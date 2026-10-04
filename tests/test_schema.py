@@ -58,3 +58,13 @@ def test_prompt_contains_play():
     msgs = build_messages("PHI", "(3:12) 1-J.Hurts pass short right to 11-A.Brown for 14 yards")
     assert msgs[0]["role"] == "system" and msgs[1]["role"] == "user"
     assert "posteam: PHI" in msgs[1]["content"] and "A.Brown" in msgs[1]["content"]
+
+
+def test_prompt_matches_labeling_rules():
+    # Labels follow the final ruling on reversals (official stats), so the prompt
+    # must not tell the model that reversed plays are nullified.
+    from playparse.prompt import SYSTEM_PROMPT
+
+    assert "REVERSED" in SYSTEM_PROMPT and "keep nullified false" in SYSTEM_PROMPT
+    assert "or reversed" not in SYSTEM_PROMPT
+    assert "value would be 0" in SYSTEM_PROMPT

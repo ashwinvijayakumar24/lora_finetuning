@@ -15,7 +15,10 @@ SYSTEM_PROMPT = (
     f"Allowed stats: {', '.join(STAT_VOCAB)}. "
     "Use player names exactly as abbreviated in the play (e.g. A.Brown). "
     "Sacks give no rushing yards. Scrambles are runs. Penalty yards are ignored. "
-    "If the play is wiped out (No Play, or reversed), set nullified to true and credits to []."
+    "Omit credits whose value would be 0. "
+    "If a penalty wipes the play out (No Play), set nullified to true and credits to []. "
+    "If a replay review REVERSED the ruling, credit the final ruling (the text after "
+    "REVERSED) and keep nullified false."
 )
 
 
