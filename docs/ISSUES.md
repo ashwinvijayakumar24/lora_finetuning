@@ -20,3 +20,18 @@ that now guards it.
 ## P6 — registry and eval gate
 
 - Percent-scale metrics (91 instead of 0.91) would make the 1-point bucket tolerance 100× too loose. Fixed: the loader rejects rates above 1. [P6-percent-scale-eval-artifact](issues/P6-percent-scale-eval-artifact.md)
+
+## P1 — data and ground truth
+
+Fixed:
+- Two-point tries followed by a dead-ball foul were labeled nullified (found by the cross-check, 42 cells). [p1-two-point-dead-ball-penalty](issues/p1-two-point-dead-ball-penalty.md)
+- A player who fumbled twice on one play was not charged the lost fumble (cross-check). [p1-same-player-fumbles-twice](issues/p1-same-player-fumbles-twice.md)
+- "D. Thomas" was credited where the text says "D.Thomas" (name-in-desc check). [p1-name-spacing](issues/p1-name-spacing.md)
+- The cross-check's own name normalization broke "A.St. Brown" (regression in the cross-check). [p1-crosscheck-name-normalization](issues/p1-crosscheck-name-normalization.md)
+- About 20,000 timeouts were in the dataset as nullified plays (found by the audit). [p1-timeouts-filed-as-no-play](issues/p1-timeouts-filed-as-no-play.md)
+- Declined fouls have `penalty == 0`, which mis-bucketed them (bucket tests). [p1-declined-penalty-flag](issues/p1-declined-penalty-flag.md)
+- The system prompt said reversed plays are nullified, but labels follow the final ruling. Resolved by changing the prompt before any baseline ran. [p1-prompt-reversal-wording](issues/p1-prompt-reversal-wording.md)
+
+Documented, labels unchanged:
+- Official yards differ from the text's "for N yards" on 32–42% of fumble plays and 13–17% of penalty_stands plays. Labels follow official rules; this is genuine task difficulty. [p1-official-yards-vs-text](issues/p1-official-yards-vs-text.md)
+- nflverse's fantasy formula omits some lost fumbles that its official totals include. [p1-uncategorized-fumbles](issues/p1-uncategorized-fumbles.md)
