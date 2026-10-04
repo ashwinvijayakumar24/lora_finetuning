@@ -15,9 +15,8 @@ not       multiple fumbles, fumbles out of the end zone, fumble-recovery
           advances, handoffs/pitches after a bobbled snap, multi-word surnames
           ("H.Krieger Coble"), lateral yardage conventions.
 
-Conventions match the ground truth (see `docs/phases/P1-eval.md`): zero-yard gains
-still emit a yardage credit (a completion for no gain is pass_yds 0, rec 1,
-rec_yds 0), sacks and incompletions give no credits, and a successful two-point try
+Conventions match the ground truth (see `docs/phases/P1-data.md`): zero-value
+credits are dropped (a completion for no gain is just rec 1), sacks and incompletions give no credits, and a successful two-point try
 gives only `two_pt` credits.
 """
 from __future__ import annotations
@@ -147,6 +146,11 @@ def _fumble(rest: str, carrier: str | None, posteam: str | None) -> tuple[bool, 
 
 
 def parse_desc(desc: str, posteam: str | None = None) -> PlayLabel:
+    label = _parse_desc(desc, posteam)
+    return PlayLabel(label.nullified, tuple(c for c in label.credits if c.value != 0))
+
+
+def _parse_desc(desc: str, posteam: str | None = None) -> PlayLabel:
     text = desc or ""
 
     # Replay reversal: the text after REVERSED is the play that counts.

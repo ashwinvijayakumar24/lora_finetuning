@@ -35,3 +35,13 @@ Fixed:
 Documented, labels unchanged:
 - Official yards differ from the text's "for N yards" on 32–42% of fumble plays and 13–17% of penalty_stands plays. Labels follow official rules; this is genuine task difficulty. [p1-official-yards-vs-text](issues/p1-official-yards-vs-text.md)
 - nflverse's fantasy formula omits some lost fumbles that its official totals include. [p1-uncategorized-fumbles](issues/p1-uncategorized-fumbles.md)
+
+## P1 — eval harness and baselines
+
+- The Llama chat template stamps today's date into every prompt, so prompts changed daily. Fixed: the date is pinned; training must use the same renderer. [p1-eval-chat-template-date](issues/p1-eval-chat-template-date.md)
+- The checkpoint's generation config samples (temperature 0.6) by default. Fixed: greedy decoding requested explicitly. [p1-eval-generation-config-sampling](issues/p1-eval-generation-config-sampling.md)
+- Official yards differ from the text's stated gain after downfield fouls and backward fumbles; the regex computes them from field positions. [p1-eval-official-yards-vs-stated-gain](issues/p1-eval-official-yards-vs-stated-gain.md)
+- A double-escaped `\b` made one regex rule silently never fire. [p1-eval-spot-foul-regex-escape](issues/p1-eval-spot-foul-regex-escape.md)
+- Ground-truth convention questions raised before real labels existed (zero-yard credits, botched snaps, two-point penalties, lateral yards). The zero-yard one turned out to be worth 3.8 points of R0 exact match; resolved by following the ground truth. [p1-eval-gt-convention-questions](issues/p1-eval-gt-convention-questions.md)
+- Scripts run by file path imported the main checkout's code instead of the worktree's. [p1-eval-editable-install-shadows-worktree](issues/p1-eval-editable-install-shadows-worktree.md)
+- R1 greedy outputs differ between batch 16 and batch 1 (padding changes fp16 numerics). Batch size is now part of the config hash. [p1-eval-batch-size-changes-greedy-outputs](issues/p1-eval-batch-size-changes-greedy-outputs.md)

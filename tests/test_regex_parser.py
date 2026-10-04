@@ -20,7 +20,7 @@ CASES = [
         "completion for no gain keeps zero-yard credits",
         "NE",
         "(1:10) 10-M.Jones pass short right to 16-J.Meyers to NE 32 for no gain (30-M.Carter II).",
-        PlayLabel(False, (C("M.Jones", "pass_yds", 0), C("J.Meyers", "rec", 1), C("J.Meyers", "rec_yds", 0))),
+        PlayLabel(False, (C("J.Meyers", "rec", 1),)),
     ),
     ("incomplete", "DAL", "(5:16) (No Huddle) 4-D.Prescott pass incomplete short middle to 88-C.Lamb.", PlayLabel(False, ())),
     (
@@ -97,7 +97,7 @@ CASES = [
         "aborted snap is a zero-yard run",
         "BAL",
         "(13:43) 5-J.Flacco FUMBLES (Aborted) at BUF 44, and recovers at 50. 5-J.Flacco to 50 for no gain (95-K.Williams).",
-        PlayLabel(False, (C("J.Flacco", "rush_yds", 0),)),
+        PlayLabel(False, ()),
     ),
     (
         "bobbled snap then a pass: the pass counts",
