@@ -200,6 +200,19 @@ def test_cli_r0(tmp_path, capsys):
     assert "OVERALL" in capsys.readouterr().out
 
 
+def test_hf_config_includes_batch_size():
+    """Batch size changes fp16 greedy outputs, so it must be part of the config hash."""
+    from playparse.eval.baselines.hf_predictor import HFPredictor
+
+    p = object.__new__(HFPredictor)  # skip __init__: no model load
+    p.weights, p.examples_id, p.max_new_tokens = "/w/llama", None, 256
+    p.dtype, p.device, p.system = "float16", "mps", SYSTEM_PROMPT
+    p.batch_size = 8
+    c8 = p.config()
+    p.batch_size = 16
+    assert c8["batch_size"] == 8 and p.config() != c8
+
+
 def test_cli_r4_requires_model(tmp_path):
     from playparse.eval.run import main
 

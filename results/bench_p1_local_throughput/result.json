@@ -1,0 +1,46 @@
+{
+  "hardware": {
+    "platform": "macOS-15.6.1-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "python": "3.13.7",
+    "cpu_count": 10,
+    "slurm_job_id": null,
+    "cpu": "Apple M4",
+    "ram_gb": 16.0,
+    "torch": "2.12.0",
+    "accelerator": "mps"
+  },
+  "runs": [
+    {
+      "rung": "r1",
+      "batch_size": 16,
+      "n": 16,
+      "wall_s": 79.0849715420045,
+      "plays_per_sec": 0.20379195110254167,
+      "p50_batch_latency_s": 78.51144224999007,
+      "mean_input_tokens": 231.5,
+      "mean_output_tokens": 130.5,
+      "hit_max_new_tokens": 2.0,
+      "valid_rate": 0.625,
+      "exact_match": 0.0625,
+      "device": "mps",
+      "dtype": "float16"
+    },
+    {
+      "rung": "r1",
+      "batch_size": 1,
+      "n": 16,
+      "wall_s": 205.4580405409797,
+      "plays_per_sec": 0.07816336308504758,
+      "p50_batch_latency_s": 8.168354021036066,
+      "mean_input_tokens": 231.5,
+      "mean_output_tokens": 126.8125,
+      "hit_max_new_tokens": 2.0,
+      "valid_rate": 0.5625,
+      "exact_match": 0.0625,
+      "device": "mps",
+      "dtype": "float16"
+    }
+  ],
+  "note": "Run stopped during R2 batch 16 (did not finish); hardware block copied from the r2.json run on the same machine the same day. Machine was under heavy memory contention (15-19 GB swap)."
+}

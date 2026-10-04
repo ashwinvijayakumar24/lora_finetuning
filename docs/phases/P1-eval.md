@@ -314,6 +314,7 @@ MPS.
 - `docs/issues/p1-eval-spot-foul-regex-escape.md`: a dead regex failed silently.
 - `docs/issues/p1-eval-gt-convention-questions.md`: conventions to reconcile with the builder.
 - `docs/issues/p1-eval-editable-install-shadows-worktree.md`: stale-code risk in scripts.
+- `docs/issues/p1-eval-batch-size-changes-greedy-outputs.md`: fp16 greedy outputs differ by batch size, so batch size is now in the config hash.
 
 A smaller one: the bootstrap determinism test first compared results with `==`, and
 NaN never equals NaN. It now compares JSON serializations.

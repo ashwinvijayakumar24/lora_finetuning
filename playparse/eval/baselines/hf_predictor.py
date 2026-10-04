@@ -137,6 +137,10 @@ class HFPredictor:
             "examples": self.examples_id,
             "max_new_tokens": self.max_new_tokens,
             "decoding": "greedy",
+            # Batched fp16 greedy decoding is not bit-identical across batch sizes
+            # (padding changes the kernels' reduction order), so batch size is part of
+            # the config. See docs/issues/p1-eval-batch-size-changes-greedy-outputs.md.
+            "batch_size": self.batch_size,
             "dtype": self.dtype,
             "device": self.device,
             "chat_date_string": CHAT_DATE_STRING,
