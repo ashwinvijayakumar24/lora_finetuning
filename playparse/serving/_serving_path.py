@@ -2,8 +2,9 @@
 
 P5b extends the owner's serving layer from the outside, exactly as P5a extends
 the engine: nothing is pip-installed and nothing in the sibling repo is edited.
-The serving layer's repository root is appended to ``sys.path`` so that
-``import serving.scheduler.scheduler`` resolves to the owner's checkout.
+Its two importable packages, ``serving`` and ``bench``, are registered by file
+location so that ``import serving.scheduler.scheduler`` resolves to the owner's
+checkout (see :func:`ensure_serving_importable` for why not ``sys.path``).
 
 Resolution order mirrors ``_engine_path``:
 
@@ -20,8 +21,7 @@ sibling ``llm_inference_engine``. If both ended up imported under the name
 ``linear()`` replacement that unmerged LoRA depends on would patch one while the
 model ran the other: the adapter would silently not apply.
 
-So the serving root is APPENDED (it never shadows anything already importable)
-and the engine is resolved once, through ``ensure_engine_importable``. Whichever
+So the engine is resolved once, through ``ensure_engine_importable``. Whichever
 copy is imported first is used by everything, and :func:`check_engine` asserts
 it has the batched seam (``engine.attention_backend`` and
 ``LlamaModelGPU.forward_varlen``) that the serving layer needs. The vendored copy
@@ -30,6 +30,7 @@ are identical apart from the sibling's ``engine/bench`` directory.
 """
 from __future__ import annotations
 
+import importlib.util
 import os
 import sys
 from pathlib import Path
@@ -78,15 +79,41 @@ def check_engine() -> Path:
     return Path(sys.modules["engine"].__file__).resolve().parent.parent
 
 
+def _register_package(name: str, root: Path) -> None:
+    """Import ``root/name`` as top-level package ``name`` without touching ``sys.path``."""
+    if name in sys.modules:
+        return
+    pkg_dir = root / name
+    spec = importlib.util.spec_from_file_location(
+        name, pkg_dir / "__init__.py", submodule_search_locations=[str(pkg_dir)]
+    )
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    try:
+        spec.loader.exec_module(module)
+    except BaseException:
+        del sys.modules[name]
+        raise
+
+
 def ensure_serving_importable() -> Path:
-    """Make ``import serving`` and ``import bench`` resolve to the serving layer. Idempotent."""
+    """Make ``import serving`` and ``import bench`` resolve to the serving layer. Idempotent.
+
+    Only those two packages are registered. Putting the serving layer's root on
+    ``sys.path`` would also expose its ``tests`` and ``scripts`` packages, which
+    are regular packages and would therefore shadow this repository's
+    ``tests``/``scripts`` directories (namespace packages) for any later import
+    (docs/issues/p5b-serving-root-shadows-tests.md).
+    """
     ensure_engine_importable()
     check_engine()
     if "serving" in sys.modules:
         mod_file = getattr(sys.modules["serving"], "__file__", None)
         if mod_file:
-            return Path(mod_file).resolve().parent.parent
+            root = Path(mod_file).resolve().parent.parent
+            _register_package("bench", root)
+            return root
     root = serving_dir()
-    if str(root) not in sys.path:
-        sys.path.append(str(root))
+    _register_package("serving", root)
+    _register_package("bench", root)
     return root
