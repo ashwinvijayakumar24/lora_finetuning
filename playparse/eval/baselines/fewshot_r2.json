@@ -1,0 +1,46 @@
+{
+  "description": "R2 fixed few-shot examples. Eight real plays from the 2020 season (train split), chosen to cover the common shapes and the buckets with distinctive outputs. Labels are canonical PlayLabel JSON, hand-checked against the text. Order is fixed; changing anything here changes the R2 config hash.",
+  "source": "nflverse pbp_2020.parquet",
+  "examples": [
+    {
+      "game_id": "2020_17_ATL_TB", "play_id": 637, "bucket": "normal", "posteam": "TB",
+      "desc": "(2:50) (Shotgun) 12-T.Brady pass short left to 13-M.Evans to TB 46 for 14 yards (20-K.Sheffield; 22-K.Neal).",
+      "label": "{\"nullified\":false,\"credits\":[{\"player\":\"T.Brady\",\"stat\":\"pass_yds\",\"value\":14},{\"player\":\"M.Evans\",\"stat\":\"rec\",\"value\":1},{\"player\":\"M.Evans\",\"stat\":\"rec_yds\",\"value\":14}]}"
+    },
+    {
+      "game_id": "2020_16_IND_PIT", "play_id": 3671, "bucket": "normal", "posteam": "IND",
+      "desc": "(6:55) 21-N.Hines right guard to IND 47 for 10 yards (51-A.Williamson; 39-M.Fitzpatrick).",
+      "label": "{\"nullified\":false,\"credits\":[{\"player\":\"N.Hines\",\"stat\":\"rush_yds\",\"value\":10}]}"
+    },
+    {
+      "game_id": "2020_09_CHI_TEN", "play_id": 294, "bucket": "normal", "posteam": "TEN",
+      "desc": "(11:10) 17-R.Tannehill pass incomplete short left to 86-A.Firkser.",
+      "label": "{\"nullified\":false,\"credits\":[]}"
+    },
+    {
+      "game_id": "2020_10_JAX_GB", "play_id": 3338, "bucket": "td", "posteam": "GB",
+      "desc": "(9:11) 12-A.Rodgers pass short left to 17-D.Adams for 6 yards, TOUCHDOWN.",
+      "label": "{\"nullified\":false,\"credits\":[{\"player\":\"A.Rodgers\",\"stat\":\"pass_yds\",\"value\":6},{\"player\":\"A.Rodgers\",\"stat\":\"pass_td\",\"value\":1},{\"player\":\"D.Adams\",\"stat\":\"rec\",\"value\":1},{\"player\":\"D.Adams\",\"stat\":\"rec_yds\",\"value\":6},{\"player\":\"D.Adams\",\"stat\":\"rec_td\",\"value\":1}]}"
+    },
+    {
+      "game_id": "2020_01_PIT_NYG", "play_id": 1171, "bucket": "interception", "posteam": "NYG",
+      "desc": "(12:40) 8-D.Jones pass short right intended for 88-E.Engram INTERCEPTED by 90-T.Watt at NYG 36. 90-T.Watt to NYG 36 for no gain (75-C.Fleming).",
+      "label": "{\"nullified\":false,\"credits\":[{\"player\":\"D.Jones\",\"stat\":\"int\",\"value\":1}]}"
+    },
+    {
+      "game_id": "2020_03_LV_NE", "play_id": 648, "bucket": "fumble", "posteam": "LV",
+      "desc": "(3:20) (Shotgun) 28-J.Jacobs left tackle to NE 13 for -1 yards (90-S.Calhoun). FUMBLES (90-S.Calhoun), RECOVERED by NE-27-J.Jackson at NE 13.",
+      "label": "{\"nullified\":false,\"credits\":[{\"player\":\"J.Jacobs\",\"stat\":\"rush_yds\",\"value\":-1},{\"player\":\"J.Jacobs\",\"stat\":\"fumble_lost\",\"value\":1}]}"
+    },
+    {
+      "game_id": "2020_07_SF_NE", "play_id": 1059, "bucket": "penalty_nullified", "posteam": "SF",
+      "desc": "(10:18) 19-D.Samuel left end pushed ob at NE 11 for 9 yards (31-J.Jones). PENALTY on SF-71-T.Williams, Offensive Holding, 10 yards, enforced at NE 20 - No Play.",
+      "label": "{\"nullified\":true,\"credits\":[]}"
+    },
+    {
+      "game_id": "2020_07_DET_ATL", "play_id": 4076, "bucket": "two_point", "posteam": "ATL",
+      "desc": "(Pass formation) TWO-POINT CONVERSION ATTEMPT. 2-M.Ryan pass to 18-C.Ridley is complete. ATTEMPT SUCCEEDS.",
+      "label": "{\"nullified\":false,\"credits\":[{\"player\":\"C.Ridley\",\"stat\":\"two_pt\",\"value\":1},{\"player\":\"M.Ryan\",\"stat\":\"two_pt\",\"value\":1}]}"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "hardware": {
+    "platform": "macOS-15.6.1-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "python": "3.13.7",
+    "cpu_count": 10,
+    "slurm_job_id": null,
+    "cpu": "Apple M4",
+    "ram_gb": 16.0,
+    "torch": "2.12.0",
+    "accelerator": "mps"
+  },
+  "runs": [
+    {
+      "rung": "r2",
+      "batch_size": 4,
+      "n": 16,
+      "wall_s": 450.52142262499547,
+      "plays_per_sec": 0.03559591416015299,
+      "p50_batch_latency_s": 125.04694197952631,
+      "mean_input_tokens": 1000.5,
+      "mean_output_tokens": 77.625,
+      "hit_max_new_tokens": 0.0,
+      "valid_rate": 1.0,
+      "exact_match": 0.1875,
+      "device": "mps",
+      "dtype": "float16"
+    },
+    {
+      "rung": "r2",
+      "batch_size": 1,
+      "n": 16,
+      "wall_s": 759.2335359579884,
+      "plays_per_sec": 0.021088173059755407,
+      "p50_batch_latency_s": 13.420079020492267,
+      "mean_input_tokens": 1000.5,
+      "mean_output_tokens": 77.625,
+      "hit_max_new_tokens": 0.0,
+      "valid_rate": 1.0,
+      "exact_match": 0.1875,
+      "device": "mps",
+      "dtype": "float16"
+    }
+  ],
+  "note": "Machine under heavy memory contention (15-19 GB swap) from concurrent jobs."
+}
