@@ -37,7 +37,7 @@ def git_info() -> dict[str, object]:
     def run(*args: str) -> str:
         return subprocess.run(["git", *args], cwd=REPO_ROOT, capture_output=True, text=True).stdout.strip()
 
-    return {"sha": run("rev-parse", "HEAD"), "dirty": bool(run("status", "--porcelain"))}
+    return {"sha": run("rev-parse", "HEAD"), "dirty": bool(run("status", "--porcelain", "--untracked-files=no"))}
 
 
 def verify_counts(cfg: dict, rows: list[dict]) -> None:
@@ -67,7 +67,7 @@ def _mps_sample(samples: dict[str, dict[str, float]], label: str) -> None:
     }
 
 
-def measure_lora_mps(r: int, batch: int, seq: int, steps: int = 2) -> dict[str, object]:
+def measure_lora_mps(r: int, batch: int, seq: int, dropout: float = 0.05, steps: int = 2) -> dict[str, object]:
     """Peak memory of LoRA training steps on the real model (bf16 base, fp32 adapters).
 
     MPS has no max_memory_allocated(). We sample after each phase instead.
@@ -84,7 +84,7 @@ def measure_lora_mps(r: int, batch: int, seq: int, steps: int = 2) -> dict[str, 
     model = AutoModelForCausalLM.from_pretrained(WEIGHTS, dtype=torch.bfloat16).to("mps")
     model.config.use_cache = False
     _mps_sample(samples, "weights_loaded")
-    inject_lora(model, LoRAConfig(r=r, alpha=2 * r, dropout=0.05))
+    inject_lora(model, LoRAConfig(r=r, alpha=2 * r, dropout=dropout))
     model.train()
     params = trainable_parameters(model)
     opt = torch.optim.AdamW(params, lr=1e-4)
@@ -106,6 +106,7 @@ def measure_lora_mps(r: int, batch: int, seq: int, steps: int = 2) -> dict[str, 
         "method": "lora",
         "targets": "all-linear",
         "r": r,
+        "dropout": dropout,
         "batch": batch,
         "seq": seq,
         "trainable": sum(p.numel() for p in params),
@@ -113,6 +114,10 @@ def measure_lora_mps(r: int, batch: int, seq: int, steps: int = 2) -> dict[str, 
         "samples": samples,
         "peak_current_gib": max(s["current_gib"] for s in samples.values()),
         "peak_driver_gib": max(s["driver_gib"] for s in samples.values()),
+        # Live tensors after the last forward minus the steady state before it
+        # (weights + adapter + AdamW state): the activations autograd saved.
+        "forward_activations_gib": samples[f"step{steps - 1}_after_forward"]["current_gib"]
+        - samples[f"step{steps - 2}_after_optimizer"]["current_gib"],
         "step_seconds": step_times,
         "recommended_max_gib": torch.mps.recommended_max_memory() / GiB,
     }
@@ -159,9 +164,10 @@ def write_markdown(path: Path, payload: dict) -> None:
                 lines.append(f"- {mres['method']} r={mres.get('r')}: not measured ({mres['error']})")
                 continue
             lines.append(
-                f"- LoRA {mres['targets']} r={mres['r']}, batch {mres['batch']} x seq {mres['seq']}: "
+                f"- LoRA {mres['targets']} r={mres['r']}, dropout {mres['dropout']}, batch {mres['batch']} x seq {mres['seq']}: "
                 f"peak live tensors {mres['peak_current_gib']:.2f} GiB, "
                 f"peak driver allocation {mres['peak_driver_gib']:.2f} GiB, "
+                f"saved activations {mres['forward_activations_gib']:.2f} GiB, "
                 f"step time {mres['step_seconds'][-1]:.2f} s (after warm-up)."
             )
     lines.append("")
@@ -204,7 +210,8 @@ def main() -> None:
         if not torch.backends.mps.is_available():
             measured.append({"method": "lora", "r": 16, "error": "MPS not available"})
         else:
-            measured.append(measure_lora_mps(16, args.batch, args.seq))
+            for p in (0.05, 0.0):
+                measured.append(measure_lora_mps(16, args.batch, args.seq, dropout=p))
         full_total = rows[0]["memory_bytes"]["total"]
         measured.append({
             "method": "full",
