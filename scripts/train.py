@@ -95,14 +95,21 @@ def main(argv: list[str] | None = None) -> int:
     val_recs = read_jsonl(spec.data.val, spec.data.limit_val) if spec.data.val else []
     train_ex, train_rep = encode_records(train_recs, tok, spec.data.max_len, spec.data.mask_prompt,
                                          spec.data.on_overlength)
-    val_ex, val_rep = encode_records(val_recs, tok, spec.data.max_len, spec.data.mask_prompt,
-                                     spec.data.on_overlength) if val_recs else ([], None)
+    val_loss_recs = val_recs
+    if spec.data.val_loss_examples and val_recs:
+        val_loss_recs = stratified_subset(val_recs, spec.data.val_loss_examples, spec.gen_eval_seed, "proportional")
+    val_ex, val_rep = encode_records(val_loss_recs, tok, spec.data.max_len, spec.data.mask_prompt,
+                                     spec.data.on_overlength) if val_loss_recs else ([], None)
     print(f"encoded {train_rep.n_kept}/{train_rep.n_records} train (max {train_rep.max_tokens}, "
           f"mean {train_rep.mean_tokens:.0f} tokens, {len(train_rep.over_length)} over length) "
           f"and {len(val_ex)} val in {time.time() - t0:.1f}s", flush=True)
 
+    gen_recs = (stratified_subset(val_recs, spec.gen_eval_examples, spec.gen_eval_seed, spec.gen_eval_strategy)
+                if spec.gen_eval_examples and val_recs else [])
     meta = {"spec": spec.to_dict(), "git_sha": git_sha(), "argv": sys.argv, **describe_device(device),
-            "train_report": vars(train_rep), "val_report": vars(val_rep) if val_rep else None}
+            "train_report": vars(train_rep), "val_report": vars(val_rep) if val_rep else None,
+            "val_loss_keys": [f"{r.get('game_id')}#{r.get('play_id')}" for r in val_loss_recs],
+            "gen_eval_keys": [f"{r.get('game_id')}#{r.get('play_id')}" for r in gen_recs]}
     (out / "run_spec.json").write_text(json.dumps(spec.to_dict(), indent=2))
     (out / "run_meta.json").write_text(json.dumps(meta, indent=2, default=str))
     if args.dry_run:
@@ -114,8 +121,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"LoRA impl={impl}, trainable params={n_train:,}", flush=True)
 
     cb = None
-    if spec.gen_eval_examples and val_recs:
-        gen_recs = stratified_subset(val_recs, spec.gen_eval_examples, spec.gen_eval_seed, spec.gen_eval_strategy)
+    if gen_recs:
         cb = harness_val_callback(tok, gen_recs, population=val_recs, max_new_tokens=spec.gen_max_new_tokens,
                                   batch_size=spec.train.eval_batch_size or 16, autocast=spec.train.autocast,
                                   predictions_dir=out / "val_predictions")

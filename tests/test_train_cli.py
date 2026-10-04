@@ -56,6 +56,7 @@ def test_cli_trains_and_resumes(tmp_path, tiny_weights):
         f"data.val={json.dumps(str(tmp_path / 'val.jsonl'))}", f"train.output_dir={json.dumps(str(out))}",
         "train.device=cpu", "train.micro_batch_size=2", "train.grad_accum_steps=2", "train.eval_every=2",
         "train.save_every=2", "train.gen_every=4", "gen_eval_examples=2", "gen_max_new_tokens=4",
+        "data.val_loss_examples=3",
     ]
     script = _load_script()
     assert script.main(["--config", str(REPO / "configs" / "train_default.yaml"), "--set", *common,
@@ -68,6 +69,8 @@ def test_cli_trains_and_resumes(tmp_path, tiny_weights):
     assert any(r["event"] == "val_callback" and "val_exact_match" in r and "val_exact_match_natural" in r
                and any(k.startswith("val_exact_match/") for k in r) for r in recs)
     assert (out / "val_predictions" / "step_0000004.jsonl").exists()
+    meta = json.loads((out / "run_meta.json").read_text())
+    assert len(meta["val_loss_keys"]) == 3 and len(meta["gen_eval_keys"]) == 2
 
     # Resume from the saved spec and extend the run to 6 steps.
     assert script.main(["--config", str(out / "run_spec.json"), "--resume", "latest",

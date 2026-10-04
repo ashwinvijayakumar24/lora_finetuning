@@ -53,7 +53,10 @@ class DataSpec:
     mask_prompt: bool = True
     on_overlength: str = "raise"  # raise | drop
     limit_train: int | None = None
-    limit_val: int | None = None
+    limit_val: int | None = None  # first N val records (file order)
+    # >0: val loss on a seeded, bucket-proportional sample of this many val records
+    # (seed = gen_eval_seed) instead of the head of the file, which is a few games.
+    val_loss_examples: int = 0
 
 
 @dataclass
