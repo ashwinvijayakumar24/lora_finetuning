@@ -1,0 +1,19 @@
+Metadata-Version: 2.4
+Name: playparse
+Version: 0.0.1
+Summary: Fine-tuning and serving a fantasy-football play parser on Llama 3.2 1B
+Requires-Python: >=3.11
+Requires-Dist: numpy>=1.26
+Requires-Dist: pandas>=2.0
+Requires-Dist: pyarrow>=14
+Requires-Dist: torch>=2.2
+Requires-Dist: transformers>=4.45
+Requires-Dist: safetensors>=0.4
+Provides-Extra: dev
+Requires-Dist: pytest>=8.0; extra == "dev"
+Requires-Dist: pytest-timeout>=2.3; extra == "dev"
+Requires-Dist: peft>=0.13; extra == "dev"
+Provides-Extra: gpu
+Requires-Dist: bitsandbytes>=0.43; extra == "gpu"
+Provides-Extra: teacher
+Requires-Dist: anthropic>=0.39; extra == "teacher"

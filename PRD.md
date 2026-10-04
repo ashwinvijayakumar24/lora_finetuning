@@ -107,8 +107,10 @@ rec_td, fumble_lost, two_pt`.
 - Sacks produce no rushing yards. Scrambles count as runs.
 - `nullified: true` means the play was wiped out by a penalty or replay, so
   `credits` is empty.
-- Credits are listed in canonical order (passer, then receiver, then rusher; and
-  within a player, in vocabulary order). A fixed order makes exact match well defined.
+- Training targets list credits in canonical order: sorted by stat (vocabulary
+  order), then player name. Exact match itself is order-insensitive: two labels match
+  when they have the same `nullified` flag and the same multiset of credits. The
+  contract lives in `playparse/ffscore/schema.py`.
 
 ### Scorer
 
@@ -415,21 +417,26 @@ can run in parallel with P3–P4.
 
 ```
 llm_finetuning/
-├── PRD.md, LEARNING_MAP.md, README.md
-├── data/          load_pbp.py · ground_truth.py · buckets.py · splits.py · audit/
-├── ffscore/       schema.py · scorer.py · scoring_configs/
-├── lora/          lora_linear.py · inject.py · qlora.py · io.py (PEFT-format save/load)
-├── train/         collate.py · loop.py · configs/
-├── distill/       teacher.py · reject.py
-├── eval/          harness.py · metrics.py · bootstrap.py · baselines/{regex_parser.py, prompts/, retrieval.py}
-├── registry/      registry.py · gate.py
-├── scripts/       slurm/ (PACE job scripts)
-├── results/       committed artifacts behind every number
+├── PRD.md · LEARNING_MAP.md · README.md
+├── docs/            phases/ · benchmarks/ · BENCHMARKS.md · ISSUES.md · BLOCKERS.md
+├── playparse/
+│   ├── paths.py · prompt.py          (shared contracts)
+│   ├── ffscore/     schema.py · scorer.py · scoring configs
+│   ├── data/        load_pbp.py · ground_truth.py · buckets.py · splits.py · build_dataset.py
+│   ├── lora/        lora_linear.py · inject.py · io.py (PEFT-format save/load) · qlora.py
+│   ├── train/       collate.py · loop.py · configs
+│   ├── eval/        harness.py · metrics.py · bootstrap.py · baselines (regex, prompts, retrieval)
+│   ├── distill/     teacher.py · reject.py
+│   ├── registry/    registry.py · gate.py
+│   └── serving/     engine LoRA (merged/unmerged) and multi-LoRA extensions
+├── scripts/         fetch_data.sh · slurm/
+├── results/         committed artifacts behind every number
 └── tests/
 ```
 
-The serving changes land in the sibling repos (`llm_inference_engine/engine/lora.py`
-and `llm_serving_layer/serving/…`), each with its own tests and version tag.
+LoRA serving code lives in `playparse/serving/` and *extends* `llm_inference_engine`
+and `llm_serving_layer` through their existing backend seams, rather than editing
+those repos. That keeps every change for this project in one repository.
 
 ## 13. Compute and cost
 

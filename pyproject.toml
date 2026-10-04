@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "playparse"
+version = "0.0.1"
+description = "Fine-tuning and serving a fantasy-football play parser on Llama 3.2 1B"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.26",
+    "pandas>=2.0",
+    "pyarrow>=14",
+    "torch>=2.2",
+    "transformers>=4.45",
+    "safetensors>=0.4",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pytest-timeout>=2.3", "peft>=0.13"]
+gpu = ["bitsandbytes>=0.43"]
+teacher = ["anthropic>=0.39"]
+
+[tool.setuptools.packages.find]
+include = ["playparse*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "slow: loads the real 1B model or the full dataset (deselect with -m 'not slow')",
+    "gpu: needs a CUDA GPU",
+    "network: needs network access",
+]
+addopts = "-m 'not slow and not gpu'"
