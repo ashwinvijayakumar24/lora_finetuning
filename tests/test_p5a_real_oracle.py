@@ -1,6 +1,6 @@
 """P5a oracle on the real Llama 3.2 1B Instruct: engine + adapter vs HF + PEFT.
 
-Slow (loads the 1B model three times). Run with ``pytest -m slow tests/test_p5a_real_oracle.py -s``.
+Slow (loads the 1B model twice: HF fp32, then the engine fp16). Run with ``pytest -m slow tests/test_p5a_real_oracle.py -s``.
 
 Memory budget on a 16 GB laptop decides the structure. HF fp32 is ~5 GB, and
 a second fp32 copy for the engine would double that (the first attempt did, and

@@ -1,0 +1,88 @@
+{
+  "meta": {
+    "host": "ashwins-mac.local",
+    "platform": "macOS-15.6.1-arm64-arm-64bit-Mach-O",
+    "torch": "2.12.0",
+    "git_sha": "c92f9b947b3f3b8a29d85c9ad4eae6cf03a2bda0",
+    "adapter": {
+      "r": 8,
+      "lora_alpha": 16,
+      "b_std": 0.01,
+      "seed": 0,
+      "targets": "q,k,v,o,gate,up,down"
+    },
+    "prompt": "Parse this play: J.Hurts pass short right to A.Brown for 14 yards (C.Gardner-Johnson).",
+    "n_layers": 16,
+    "label": "local, Apple M4; fp32 rows are the authoritative oracle"
+  },
+  "results": {
+    "cpu_fp32": {
+      "base_vs_hf_max_abs": 0.0002661642137979925,
+      "unmerged_vs_peft_max_abs": 0.00020899561846565717,
+      "merged_vs_peft_max_abs": 0.0002180161238420908,
+      "merged_vs_unmerged_max_abs": 4.905774618624292e-05,
+      "greedy_tokens": 16,
+      "greedy_peft": [
+        1271,
+        4820,
+        420,
+        1514,
+        11,
+        358,
+        3358,
+        1464,
+        433,
+        1523,
+        1139,
+        1202,
+        6956,
+        1473,
+        16,
+        13
+      ]
+    },
+    "mps_fp16": {
+      "merged_vs_unmerged_max_abs": 0.1875,
+      "merged_greedy": [
+        1271,
+        4820,
+        420,
+        1514,
+        11,
+        358,
+        3358,
+        1464,
+        433,
+        1523,
+        1139,
+        1202,
+        6956,
+        1473,
+        16,
+        13
+      ],
+      "unmerged_greedy": [
+        1271,
+        4820,
+        420,
+        1514,
+        11,
+        358,
+        3358,
+        1464,
+        433,
+        1523,
+        1139,
+        1202,
+        6956,
+        1473,
+        16,
+        13
+      ],
+      "merged_vs_peft_max_abs": 0.12171459197998047,
+      "unmerged_vs_peft_max_abs": 0.08839522302150726,
+      "base_vs_hf_max_abs": 0.08611631393432617,
+      "greedy_agreement_with_fp32_peft": "16/16"
+    }
+  }
+}
