@@ -10,9 +10,9 @@ For a projection with base weight ``W`` (``(out, in)``) and adapter ``(A, B, s)`
 
 The low-rank path costs ``2 * tokens * r * (in + out)`` FLOPs against the base
 matmul's ``2 * tokens * in * out``. For Llama 3.2 1B's q_proj (2048 x 2048) at
-r = 16 that is 1.6% more arithmetic, but it is two extra small matmuls (two more
-kernel launches) per projection, 7 projections x 16 layers = 224 extra launches
-per token. At batch 1 on a GPU, decode is launch- and bandwidth-bound, so the
+r = 16 that is 1.6% more arithmetic, but it is two extra small matmuls and an
+add (three more kernel launches) per projection: 7 projections x 16 layers x 3
+= 336 extra launches per token. At batch 1 on a GPU, decode is launch- and bandwidth-bound, so the
 launches are what claim L3 measures. ``s`` is folded into ``B`` when the adapter
 is registered so the hot path does no extra elementwise multiply.
 

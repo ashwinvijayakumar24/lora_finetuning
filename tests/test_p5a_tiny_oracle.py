@@ -170,6 +170,29 @@ def test_per_row_selection_through_forward_all(tiny):
     assert np.array_equal(model.forward_all(PROMPT, adapter=none_rows), model.forward_all(PROMPT, adapter=None))
 
 
+def test_generator_consumed_outside_block_falls_back_to_base(tiny):
+    """Documents the pitfall generate_with_adapter exists for (docs/issues/p5a-generator-context.md)."""
+    model = LoRAModelGPU(tiny["t_weights"], tiny["cfg"], device="cpu")
+    model.load_adapter(tiny["adapters"]["all"])
+    kw = dict(max_tokens=8, max_seq=64)
+    with model.use_adapter(None):
+        base_tokens = list(generate(model, PROMPT, greedy, **kw))
+    with model.use_adapter("all"):
+        adapter_tokens = list(generate(model, PROMPT, greedy, **kw))
+        lazy = generate(model, PROMPT, greedy, **kw)            # created inside ...
+        safe = generate_with_adapter(model, PROMPT, greedy, "all", **kw)
+    assert adapter_tokens != base_tokens
+    assert list(lazy) == base_tokens                             # ... consumed outside: base model
+    assert list(safe) == adapter_tokens
+
+
+def test_tiny_checkpoint_config_is_engine_readable(tiny):
+    """transformers 5 drops rope_theta/rope_scaling from config.json; the engine needs them."""
+    cfg = tiny["cfg"]
+    assert cfg["rope_theta"] == 500000.0
+    assert cfg["rope_scaling"]["rope_type"] == "llama3"
+
+
 def test_unknown_adapter_name_rejected(tiny):
     from playparse.serving.adapter import AdapterError
 
