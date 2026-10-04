@@ -1,0 +1,355 @@
+{
+  "metadata": {
+    "date": "2026-10-04T20:42:32+00:00",
+    "git": {
+      "sha": "efe88fe005d20922c48604a61d04cbea3ec53c85",
+      "dirty": false
+    },
+    "torch": "2.12.0",
+    "transformers": "5.10.1",
+    "config_source": "/Applications/Ashwin/Programming/personal projects/custom_llm/llm_inference_engine/weights",
+    "config": {
+      "hidden_size": 2048,
+      "intermediate_size": 8192,
+      "num_hidden_layers": 16,
+      "num_attention_heads": 32,
+      "num_key_value_heads": 8,
+      "head_dim": 64,
+      "vocab_size": 128256,
+      "tie_word_embeddings": true
+    },
+    "total_params": 1235814400,
+    "assumptions": {
+      "full": "mixed-precision AdamW: bf16 weights+grads, fp32 master, fp32 m and v",
+      "lora": "frozen bf16 base; fp32 adapter weights, grads, m and v; no master copy",
+      "excluded": "activations, temporary buffers, allocator fragmentation"
+    }
+  },
+  "rows": [
+    {
+      "method": "full",
+      "targets": "-",
+      "r": null,
+      "trainable": 1235814400,
+      "trainable_pct": 100.0,
+      "memory_bytes": {
+        "weights": 2471628800,
+        "grads": 2471628800,
+        "master": 4943257600,
+        "adam_m": 4943257600,
+        "adam_v": 4943257600,
+        "total": 19773030400
+      },
+      "verified_count": 1235814400
+    },
+    {
+      "method": "lora",
+      "targets": "qv",
+      "r": 4,
+      "trainable": 425984,
+      "trainable_pct": 0.034469900981895014,
+      "memory_bytes": {
+        "weights": 2473332736,
+        "grads": 1703936,
+        "master": 0,
+        "adam_m": 1703936,
+        "adam_v": 1703936,
+        "total": 2478444544
+      },
+      "verified_count": 425984
+    },
+    {
+      "method": "lora",
+      "targets": "qv",
+      "r": 8,
+      "trainable": 851968,
+      "trainable_pct": 0.06893980196379003,
+      "memory_bytes": {
+        "weights": 2475036672,
+        "grads": 3407872,
+        "master": 0,
+        "adam_m": 3407872,
+        "adam_v": 3407872,
+        "total": 2485260288
+      },
+      "verified_count": 851968
+    },
+    {
+      "method": "lora",
+      "targets": "qv",
+      "r": 16,
+      "trainable": 1703936,
+      "trainable_pct": 0.13787960392758006,
+      "memory_bytes": {
+        "weights": 2478444544,
+        "grads": 6815744,
+        "master": 0,
+        "adam_m": 6815744,
+        "adam_v": 6815744,
+        "total": 2498891776
+      },
+      "verified_count": 1703936
+    },
+    {
+      "method": "lora",
+      "targets": "qv",
+      "r": 64,
+      "trainable": 6815744,
+      "trainable_pct": 0.5515184157103202,
+      "memory_bytes": {
+        "weights": 2498891776,
+        "grads": 27262976,
+        "master": 0,
+        "adam_m": 27262976,
+        "adam_v": 27262976,
+        "total": 2580680704
+      },
+      "verified_count": 6815744
+    },
+    {
+      "method": "lora",
+      "targets": "qkvo",
+      "r": 4,
+      "trainable": 851968,
+      "trainable_pct": 0.06893980196379003,
+      "memory_bytes": {
+        "weights": 2475036672,
+        "grads": 3407872,
+        "master": 0,
+        "adam_m": 3407872,
+        "adam_v": 3407872,
+        "total": 2485260288
+      },
+      "verified_count": 851968
+    },
+    {
+      "method": "lora",
+      "targets": "qkvo",
+      "r": 8,
+      "trainable": 1703936,
+      "trainable_pct": 0.13787960392758006,
+      "memory_bytes": {
+        "weights": 2478444544,
+        "grads": 6815744,
+        "master": 0,
+        "adam_m": 6815744,
+        "adam_v": 6815744,
+        "total": 2498891776
+      },
+      "verified_count": 1703936
+    },
+    {
+      "method": "lora",
+      "targets": "qkvo",
+      "r": 16,
+      "trainable": 3407872,
+      "trainable_pct": 0.2757592078551601,
+      "memory_bytes": {
+        "weights": 2485260288,
+        "grads": 13631488,
+        "master": 0,
+        "adam_m": 13631488,
+        "adam_v": 13631488,
+        "total": 2526154752
+      },
+      "verified_count": 3407872
+    },
+    {
+      "method": "lora",
+      "targets": "qkvo",
+      "r": 64,
+      "trainable": 13631488,
+      "trainable_pct": 1.1030368314206405,
+      "memory_bytes": {
+        "weights": 2526154752,
+        "grads": 54525952,
+        "master": 0,
+        "adam_m": 54525952,
+        "adam_v": 54525952,
+        "total": 2689732608
+      },
+      "verified_count": 13631488
+    },
+    {
+      "method": "lora",
+      "targets": "all-linear",
+      "r": 4,
+      "trainable": 2818048,
+      "trainable_pct": 0.22803165264945935,
+      "memory_bytes": {
+        "weights": 2482900992,
+        "grads": 11272192,
+        "master": 0,
+        "adam_m": 11272192,
+        "adam_v": 11272192,
+        "total": 2516717568
+      },
+      "verified_count": 2818048
+    },
+    {
+      "method": "lora",
+      "targets": "all-linear",
+      "r": 8,
+      "trainable": 5636096,
+      "trainable_pct": 0.4560633052989187,
+      "memory_bytes": {
+        "weights": 2494173184,
+        "grads": 22544384,
+        "master": 0,
+        "adam_m": 22544384,
+        "adam_v": 22544384,
+        "total": 2561806336
+      },
+      "verified_count": 5636096
+    },
+    {
+      "method": "lora",
+      "targets": "all-linear",
+      "r": 16,
+      "trainable": 11272192,
+      "trainable_pct": 0.9121266105978374,
+      "memory_bytes": {
+        "weights": 2516717568,
+        "grads": 45088768,
+        "master": 0,
+        "adam_m": 45088768,
+        "adam_v": 45088768,
+        "total": 2651983872
+      },
+      "verified_count": 11272192
+    },
+    {
+      "method": "lora",
+      "targets": "all-linear",
+      "r": 64,
+      "trainable": 45088768,
+      "trainable_pct": 3.6485064423913496,
+      "memory_bytes": {
+        "weights": 2651983872,
+        "grads": 180355072,
+        "master": 0,
+        "adam_m": 180355072,
+        "adam_v": 180355072,
+        "total": 3193049088
+      },
+      "verified_count": 45088768
+    }
+  ],
+  "measured": [
+    {
+      "method": "lora",
+      "targets": "all-linear",
+      "r": 16,
+      "dropout": 0.05,
+      "batch": 1,
+      "seq": 256,
+      "trainable": 11272192,
+      "losses": [
+        12.781761169433594,
+        12.526426315307617
+      ],
+      "samples": {
+        "start": {
+          "current_gib": 0.0,
+          "driver_gib": 0.0004425048828125
+        },
+        "weights_loaded": {
+          "current_gib": 2.301884174346924,
+          "driver_gib": 3.0082550048828125
+        },
+        "step0_after_forward": {
+          "current_gib": 4.052624702453613,
+          "driver_gib": 5.010589599609375
+        },
+        "step0_after_backward": {
+          "current_gib": 2.4716556072235107,
+          "driver_gib": 5.1649017333984375
+        },
+        "step0_after_optimizer": {
+          "current_gib": 2.4313724040985107,
+          "driver_gib": 5.2508392333984375
+        },
+        "step1_after_forward": {
+          "current_gib": 4.094130277633667,
+          "driver_gib": 5.2508392333984375
+        },
+        "step1_after_backward": {
+          "current_gib": 2.5551228523254395,
+          "driver_gib": 5.2508392333984375
+        },
+        "step1_after_optimizer": {
+          "current_gib": 2.4313740730285645,
+          "driver_gib": 5.2508392333984375
+        }
+      },
+      "peak_current_gib": 4.094130277633667,
+      "peak_driver_gib": 5.2508392333984375,
+      "forward_activations_gib": 1.6627578735351562,
+      "step_seconds": [
+        0.9968179580173455,
+        0.6520938340108842
+      ],
+      "recommended_max_gib": 10.666671752929688
+    },
+    {
+      "method": "lora",
+      "targets": "all-linear",
+      "r": 16,
+      "dropout": 0.0,
+      "batch": 1,
+      "seq": 256,
+      "trainable": 11272192,
+      "losses": [
+        12.781761169433594,
+        12.517218589782715
+      ],
+      "samples": {
+        "start": {
+          "current_gib": 0.0,
+          "driver_gib": 0.1649017333984375
+        },
+        "weights_loaded": {
+          "current_gib": 2.301884174346924,
+          "driver_gib": 3.1727142333984375
+        },
+        "step0_after_forward": {
+          "current_gib": 3.6580934524536133,
+          "driver_gib": 4.6043548583984375
+        },
+        "step0_after_backward": {
+          "current_gib": 2.4716556072235107,
+          "driver_gib": 4.7586517333984375
+        },
+        "step0_after_optimizer": {
+          "current_gib": 2.4313724040985107,
+          "driver_gib": 4.8445892333984375
+        },
+        "step1_after_forward": {
+          "current_gib": 3.723036527633667,
+          "driver_gib": 4.8445892333984375
+        },
+        "step1_after_backward": {
+          "current_gib": 2.5551228523254395,
+          "driver_gib": 4.8445892333984375
+        },
+        "step1_after_optimizer": {
+          "current_gib": 2.4313740730285645,
+          "driver_gib": 4.8445892333984375
+        }
+      },
+      "peak_current_gib": 3.723036527633667,
+      "peak_driver_gib": 4.8445892333984375,
+      "forward_activations_gib": 1.2916641235351562,
+      "step_seconds": [
+        0.6664505419903435,
+        0.6266817080322653
+      ],
+      "recommended_max_gib": 10.666671752929688
+    },
+    {
+      "method": "full",
+      "r": null,
+      "error": "weights+grads+AdamW state alone need 18.4 GiB, above the 16 GiB of unified memory and MPS's recommended working set"
+    }
+  ]
+}
