@@ -60,10 +60,21 @@ each credited name literally appears in `desc` and reports the rate.
     *not* nullified: the play happened, it just produced no credits.
 11. **Same player, same yardage stat twice** (e.g. a receiver who also takes a
     lateral back) is merged into one credit with the summed value.
+12. **Name spelling follows `desc`.** If nflverse's name has a space after the
+    initial ("D. Thomas") but `desc` prints "D.Thomas", the `desc` spelling is used.
+    When `desc` itself spells one player two ways in a game ("Di.Johnson" and
+    "Dio.Johnson"), each play keeps its own spelling; that is what the text says.
+
+Yardage follows the official stat rules, which sometimes differ from the "for N
+yards" phrase in `desc`: after an offensive foul enforced from a spot downfield the
+gain is only credited to the spot of the foul, and when a fumble goes backward the
+gain is measured to the recovery spot. The cross-check confirms these labels match
+the official totals; build_dataset measures how often the text disagrees.
 """
 from __future__ import annotations
 
 import math
+import re
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Any
@@ -111,9 +122,33 @@ def _name(row: Mapping[str, Any], col: str) -> str | None:
     return str(v)
 
 
+_INITIAL_SPACE = re.compile(r"^([A-Za-z]+)\.\s+")
+
+
+def normalize_name(name: str) -> str:
+    """Collapse "D. Thomas" to "D.Thomas", the form `desc` prints."""
+    return _INITIAL_SPACE.sub(r"\1.", name, count=1)
+
+
+def desc_name(name: str, desc: str) -> str:
+    """The credited name, in the spelling that appears in `desc` when possible.
+
+    nflverse occasionally stores an abbreviated name with a space after the initial
+    ("D. Thomas", Denver 2017) while `desc` prints "88-D.Thomas". The label must use
+    the name as written in the play. See docs/issues/p1-name-spacing.md.
+    """
+    if name in desc:
+        return name
+    alt = normalize_name(name)
+    if alt != name and alt in desc:
+        return alt
+    return name
+
+
 class _Builder:
     def __init__(self, row: Mapping[str, Any]):
         self.row = row
+        self.desc = str(row.get("desc") or "")
         self.items: list[tuple[str, str, int, str | None]] = []  # player, stat, value, id
         self.dropped: list[str] = []
 
@@ -126,6 +161,7 @@ class _Builder:
         if player is None:
             self.dropped.append(f"{stat}:{name_col} missing")
             return
+        player = desc_name(player, self.desc)
         pid = _name(self.row, id_col) if id_col else None
         self.items.append((player, stat, value, pid))
 

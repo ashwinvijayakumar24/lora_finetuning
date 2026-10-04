@@ -1,0 +1,3392 @@
+{
+ "method": "Game-level cross-check: summed per-play ground truth vs official weekly stats.\n\nFor every season, the per-play labels are summed into (game, team, player) totals\nand compared, stat by stat, with nflverse's official weekly player stats\n(`stats_player_week_<season>.parquet`). Those official numbers are built from the\nNFL's own per-play stat records, not from the play-by-play columns the builder\nreads, so they are an independent check.\n\nMatching method: players are joined on ``(game_id, team, abbreviated name)``, where\nthe label side uses the credited `desc`-style name and its team is the play's\n`posteam` (every v1 stat belongs to the offense), and the official side uses\n``player_name`` (with \"D. Thomas\" collapsed to \"D.Thomas\", as the builder does) and\n``team``. This is the same information a label carries, so it\ntests the labels as the model will see them. Official rows whose v1 stats are all\nzero (defenders, kickers) are ignored. A GSIS-id join is computed alongside as a\ndiagnostic, to separate name-matching problems from stat problems.",
+ "scopes": {
+  "dataset": {
+   "extra_play_types": [],
+   "per_season": {
+    "2015": {
+     "season": 2015,
+     "plays": 38638,
+     "player_games": 4923,
+     "matched": 4896,
+     "gt_only": 6,
+     "official_only": 21,
+     "unmatched_rate": 0.005484460694698354,
+     "per_stat": {
+      "pass_yds": {
+       "player_games_nonzero": 599,
+       "agree": 599,
+       "agreement_rate": 1.0,
+       "gt_total": 138002,
+       "official_total": 138002,
+       "abs_diff_total": 0
+      },
+      "pass_td": {
+       "player_games_nonzero": 454,
+       "agree": 454,
+       "agreement_rate": 1.0,
+       "gt_total": 867,
+       "official_total": 867,
+       "abs_diff_total": 0
+      },
+      "int": {
+       "player_games_nonzero": 308,
+       "agree": 308,
+       "agreement_rate": 1.0,
+       "gt_total": 458,
+       "official_total": 458,
+       "abs_diff_total": 0
+      },
+      "rush_yds": {
+       "player_games_nonzero": 2053,
+       "agree": 1800,
+       "agreement_rate": 0.8767657087189479,
+       "gt_total": 58422,
+       "official_total": 57944,
+       "abs_diff_total": 478
+      },
+      "rush_td": {
+       "player_games_nonzero": 331,
+       "agree": 331,
+       "agreement_rate": 1.0,
+       "gt_total": 383,
+       "official_total": 383,
+       "abs_diff_total": 0
+      },
+      "rec": {
+       "player_games_nonzero": 3840,
+       "agree": 3840,
+       "agreement_rate": 1.0,
+       "gt_total": 11997,
+       "official_total": 11997,
+       "abs_diff_total": 0
+      },
+      "rec_yds": {
+       "player_games_nonzero": 3814,
+       "agree": 3807,
+       "agreement_rate": 0.9981646565285789,
+       "gt_total": 138059,
+       "official_total": 138002,
+       "abs_diff_total": 57
+      },
+      "rec_td": {
+       "player_games_nonzero": 753,
+       "agree": 753,
+       "agreement_rate": 1.0,
+       "gt_total": 867,
+       "official_total": 867,
+       "abs_diff_total": 0
+      },
+      "fumble_lost": {
+       "player_games_nonzero": 261,
+       "agree": 252,
+       "agreement_rate": 0.9655172413793104,
+       "gt_total": 280,
+       "official_total": 271,
+       "abs_diff_total": 9,
+       "agree_incl_uncategorized_fumbles": 261,
+       "agreement_rate_incl_uncategorized_fumbles": 1.0
+      },
+      "two_pt": {
+       "player_games_nonzero": 86,
+       "agree": 86,
+       "agreement_rate": 1.0,
+       "gt_total": 89,
+       "official_total": 89,
+       "abs_diff_total": 0
+      }
+     },
+     "player_games_all_stats_agree": 0.9453585212268941,
+     "ppr_mae_vs_official_v1": 0.014523664432256847,
+     "ppr_mae_vs_official_raw": 0.03280520008125136,
+     "ppr_max_abs_err_v1": 2.0,
+     "ppr_exact_rate_v1": 0.9453585212268941,
+     "scorer_reproduces_official": 1.0
+    },
+    "2016": {
+     "season": 2016,
+     "plays": 38314,
+     "player_games": 4916,
+     "matched": 4904,
+     "gt_only": 1,
+     "official_only": 11,
+     "unmatched_rate": 0.0024410089503661514,
+     "per_stat": {
+      "pass_yds": {
+       "player_games_nonzero": 602,
+       "agree": 602,
+       "agreement_rate": 1.0,
+       "gt_total": 136996,
+       "official_total": 136996,
+       "abs_diff_total": 0
+      },
+      "pass_td": {
+       "player_games_nonzero": 440,
+       "agree": 440,
+       "agreement_rate": 1.0,
+       "gt_total": 827,
+       "official_total": 827,
+       "abs_diff_total": 0
+      },
+      "int": {
+       "player_games_nonzero": 298,
+       "agree": 298,
+       "agreement_rate": 1.0,
+       "gt_total": 436,
+       "official_total": 436,
+       "abs_diff_total": 0
+      },
+      "rush_yds": {
+       "player_games_nonzero": 2032,
+       "agree": 1801,
+       "agreement_rate": 0.8863188976377953,
+       "gt_total": 58374,
+       "official_total": 57931,
+       "abs_diff_total": 443
+      },
+      "rush_td": {
+       "player_games_nonzero": 383,
+       "agree": 383,
+       "agreement_rate": 1.0,
+       "gt_total": 462,
+       "official_total": 462,
+       "abs_diff_total": 0
+      },
+      "rec": {
+       "player_games_nonzero": 3854,
+       "agree": 3854,
+       "agreement_rate": 1.0,
+       "gt_total": 12042,
+       "official_total": 12042,
+       "abs_diff_total": 0
+      },
+      "rec_yds": {
+       "player_games_nonzero": 3834,
+       "agree": 3831,
+       "agreement_rate": 0.9992175273865415,
+       "gt_total": 137008,
+       "official_total": 136996,
+       "abs_diff_total": 22
+      },
+      "rec_td": {
+       "player_games_nonzero": 753,
+       "agree": 753,
+       "agreement_rate": 1.0,
+       "gt_total": 827,
+       "official_total": 827,
+       "abs_diff_total": 0
+      },
+      "fumble_lost": {
+       "player_games_nonzero": 242,
+       "agree": 239,
+       "agreement_rate": 0.987603305785124,
+       "gt_total": 251,
+       "official_total": 248,
+       "abs_diff_total": 3,
+       "agree_incl_uncategorized_fumbles": 242,
+       "agreement_rate_incl_uncategorized_fumbles": 1.0
+      },
+      "two_pt": {
+       "player_games_nonzero": 93,
+       "agree": 93,
+       "agreement_rate": 1.0,
+       "gt_total": 94,
+       "official_total": 94,
+       "abs_diff_total": 0
+      }
+     },
+     "player_games_all_stats_agree": 0.9517900732302685,
+     "ppr_mae_vs_official_v1": 0.010679414157852021,
+     "ppr_mae_vs_official_raw": 0.02776647681041508,
+     "ppr_max_abs_err_v1": 2.0,
+     "ppr_exact_rate_v1": 0.9517900732302685,
+     "scorer_reproduces_official": 1.0
+    },
+    "2017": {
+     "season": 2017,
+     "plays": 37920,
+     "player_games": 4911,
+     "matched": 4890,
+     "gt_only": 3,
+     "official_only": 18,
+     "unmatched_rate": 0.004276114844227245,
+     "per_stat": {
+      "pass_yds": {
+       "player_games_nonzero": 597,
+       "agree": 597,
+       "agreement_rate": 1.0,
+       "gt_total": 129030,
+       "official_total": 129030,
+       "abs_diff_total": 0
+      },
+      "pass_td": {
+       "player_games_nonzero": 435,
+       "agree": 435,
+       "agreement_rate": 1.0,
+       "gt_total": 782,
+       "official_total": 782,
+       "abs_diff_total": 0
+      },
+      "int": {
+       "player_games_nonzero": 298,
+       "agree": 298,
+       "agreement_rate": 1.0,
+       "gt_total": 441,
+       "official_total": 441,
+       "abs_diff_total": 0
+      },
+      "rush_yds": {
+       "player_games_nonzero": 2077,
+       "agree": 1840,
+       "agreement_rate": 0.8858931150698123,
+       "gt_total": 58956,
+       "official_total": 58489,
+       "abs_diff_total": 467
+      },
+      "rush_td": {
+       "player_games_nonzero": 348,
+       "agree": 348,
+       "agreement_rate": 1.0,
+       "gt_total": 400,
+       "official_total": 400,
+       "abs_diff_total": 0
+      },
+      "rec": {
+       "player_games_nonzero": 3852,
+       "agree": 3850,
+       "agreement_rate": 0.9994807892004154,
+       "gt_total": 11386,
+       "official_total": 11386,
+       "abs_diff_total": 4
+      },
+      "rec_yds": {
+       "player_games_nonzero": 3829,
+       "agree": 3822,
+       "agreement_rate": 0.9981718464351006,
+       "gt_total": 129009,
+       "official_total": 129030,
+       "abs_diff_total": 59
+      },
+      "rec_td": {
+       "player_games_nonzero": 703,
+       "agree": 703,
+       "agreement_rate": 1.0,
+       "gt_total": 782,
+       "official_total": 782,
+       "abs_diff_total": 0
+      },
+      "fumble_lost": {
+       "player_games_nonzero": 228,
+       "agree": 220,
+       "agreement_rate": 0.9649122807017544,
+       "gt_total": 245,
+       "official_total": 237,
+       "abs_diff_total": 8,
+       "agree_incl_uncategorized_fumbles": 228,
+       "agreement_rate_incl_uncategorized_fumbles": 1.0
+      },
+      "two_pt": {
+       "player_games_nonzero": 61,
+       "agree": 61,
+       "agreement_rate": 1.0,
+       "gt_total": 62,
+       "official_total": 62,
+       "abs_diff_total": 0
+      }
+     },
+     "player_games_all_stats_agree": 0.9486866218692731,
+     "ppr_mae_vs_official_v1": 0.014783139890042853,
+     "ppr_mae_vs_official_raw": 0.029444105070250543,
+     "ppr_max_abs_err_v1": 3.2,
+     "ppr_exact_rate_v1": 0.9486866218692731,
+     "scorer_reproduces_official": 1.0
+    },
+    "2018": {
+     "season": 2018,
+     "plays": 37884,
+     "player_games": 4898,
+     "matched": 4873,
+     "gt_only": 5,
+     "official_only": 20,
+     "unmatched_rate": 0.005104124132298897,
+     "per_stat": {
+      "pass_yds": {
+       "player_games_nonzero": 615,
+       "agree": 615,
+       "agreement_rate": 1.0,
+       "gt_total": 135877,
+       "official_total": 135877,
+       "abs_diff_total": 0
+      },
+      "pass_td": {
+       "player_games_nonzero": 449,
+       "agree": 449,
+       "agreement_rate": 1.0,
+       "gt_total": 873,
+       "official_total": 873,
+       "abs_diff_total": 0
+      },
+      "int": {
+       "player_games_nonzero": 294,
+       "agree": 294,
+       "agreement_rate": 1.0,
+       "gt_total": 435,
+       "official_total": 435,
+       "abs_diff_total": 0
+      },
+      "rush_yds": {
+       "player_games_nonzero": 2132,
+       "agree": 1898,
+       "agreement_rate": 0.8902439024390244,
+       "gt_total": 61360,
+       "official_total": 60930,
+       "abs_diff_total": 430
+      },
+      "rush_td": {
+       "player_games_nonzero": 385,
+       "agree": 385,
+       "agreement_rate": 1.0,
+       "gt_total": 466,
+       "official_total": 466,
+       "abs_diff_total": 0
+      },
+      "rec": {
+       "player_games_nonzero": 3844,
+       "agree": 3842,
+       "agreement_rate": 0.9994797086368367,
+       "gt_total": 11960,
+       "official_total": 11960,
+       "abs_diff_total": 2
+      },
+      "rec_yds": {
+       "player_games_nonzero": 3821,
+       "agree": 3814,
+       "agreement_rate": 0.9981680188432348,
+       "gt_total": 135892,
+       "official_total": 135877,
+       "abs_diff_total": 47
+      },
+      "rec_td": {
+       "player_games_nonzero": 778,
+       "agree": 778,
+       "agreement_rate": 1.0,
+       "gt_total": 873,
+       "official_total": 873,
+       "abs_diff_total": 0
+      },
+      "fumble_lost": {
+       "player_games_nonzero": 239,
+       "agree": 233,
+       "agreement_rate": 0.9748953974895398,
+       "gt_total": 253,
+       "official_total": 247,
+       "abs_diff_total": 6,
+       "agree_incl_uncategorized_fumbles": 239,
+       "agreement_rate_incl_uncategorized_fumbles": 1.0
+      },
+      "two_pt": {
+       "player_games_nonzero": 114,
+       "agree": 114,
+       "agreement_rate": 1.0,
+       "gt_total": 120,
+       "official_total": 120,
+       "abs_diff_total": 0
+      }
+     },
+     "player_games_all_stats_agree": 0.9495712535728869,
+     "ppr_mae_vs_official_v1": 0.012596978358513772,
+     "ppr_mae_vs_official_raw": 0.01994691710902418,
+     "ppr_max_abs_err_v1": 2.1,
+     "ppr_exact_rate_v1": 0.9495712535728869,
+     "scorer_reproduces_official": 1.0
+    },
+    "2019": {
+     "season": 2019,
+     "plays": 38111,
+     "player_games": 4886,
+     "matched": 4860,
+     "gt_only": 4,
+     "official_only": 22,
+     "unmatched_rate": 0.005321326238231682,
+     "per_stat": {
+      "pass_yds": {
+       "player_games_nonzero": 613,
+       "agree": 613,
+       "agreement_rate": 1.0,
+       "gt_total": 134152,
+       "official_total": 134152,
+       "abs_diff_total": 0
+      },
+      "pass_td": {
+       "player_games_nonzero": 434,
+       "agree": 434,
+       "agreement_rate": 1.0,
+       "gt_total": 829,
+       "official_total": 829,
+       "abs_diff_total": 0
+      },
+      "int": {
+       "player_games_nonzero": 286,
+       "agree": 286,
+       "agreement_rate": 1.0,
+       "gt_total": 423,
+       "official_total": 423,
+       "abs_diff_total": 0
+      },
+      "rush_yds": {
+       "player_games_nonzero": 2087,
+       "agree": 1844,
+       "agreement_rate": 0.883564925730714,
+       "gt_total": 61140,
+       "official_total": 60689,
+       "abs_diff_total": 451
+      },
+      "rush_td": {
+       "player_games_nonzero": 391,
+       "agree": 391,
+       "agreement_rate": 1.0,
+       "gt_total": 475,
+       "official_total": 475,
+       "abs_diff_total": 0
+      },
+      "rec": {
+       "player_games_nonzero": 3837,
+       "agree": 3835,
+       "agreement_rate": 0.999478759447485,
+       "gt_total": 11778,
+       "official_total": 11778,
+       "abs_diff_total": 4
+      },
+      "rec_yds": {
+       "player_games_nonzero": 3802,
+       "agree": 3800,
+       "agreement_rate": 0.9994739610731194,
+       "gt_total": 134152,
+       "official_total": 134152,
+       "abs_diff_total": 44
+      },
+      "rec_td": {
+       "player_games_nonzero": 720,
+       "agree": 720,
+       "agreement_rate": 1.0,
+       "gt_total": 829,
+       "official_total": 829,
+       "abs_diff_total": 0
+      },
+      "fumble_lost": {
+       "player_games_nonzero": 252,
+       "agree": 243,
+       "agreement_rate": 0.9642857142857143,
+       "gt_total": 272,
+       "official_total": 263,
+       "abs_diff_total": 9,
+       "agree_incl_uncategorized_fumbles": 251,
+       "agreement_rate_incl_uncategorized_fumbles": 0.996031746031746
+      },
+      "two_pt": {
+       "player_games_nonzero": 92,
+       "agree": 92,
+       "agreement_rate": 1.0,
+       "gt_total": 95,
+       "official_total": 95,
+       "abs_diff_total": 0
+      }
+     },
+     "player_games_all_stats_agree": 0.948014735980352,
+     "ppr_mae_vs_official_v1": 0.014633647155137238,
+     "ppr_mae_vs_official_raw": 0.02322963569381918,
+     "ppr_max_abs_err_v1": 4.200000000000001,
+     "ppr_exact_rate_v1": 0.948014735980352,
+     "scorer_reproduces_official": 1.0
+    },
+    "2020": {
+     "season": 2020,
+     "plays": 38502,
+     "player_games": 5089,
+     "matched": 5068,
+     "gt_only": 5,
+     "official_only": 16,
+     "unmatched_rate": 0.0041265474552957355,
+     "per_stat": {
+      "pass_yds": {
+       "player_games_nonzero": 639,
+       "agree": 639,
+       "agreement_rate": 1.0,
+       "gt_total": 137271,
+       "official_total": 137271,
+       "abs_diff_total": 0
+      },
+      "pass_td": {
+       "player_games_nonzero": 458,
+       "agree": 458,
+       "agreement_rate": 1.0,
+       "gt_total": 916,
+       "official_total": 916,
+       "abs_diff_total": 0
+      },
+      "int": {
+       "player_games_nonzero": 299,
+       "agree": 299,
+       "agreement_rate": 1.0,
+       "gt_total": 416,
+       "official_total": 416,
+       "abs_diff_total": 0
+      },
+      "rush_yds": {
+       "player_games_nonzero": 2212,
+       "agree": 1974,
+       "agreement_rate": 0.8924050632911392,
+       "gt_total": 64336,
+       "official_total": 63862,
+       "abs_diff_total": 474
+      },
+      "rush_td": {
+       "player_games_nonzero": 456,
+       "agree": 456,
+       "agreement_rate": 1.0,
+       "gt_total": 554,
+       "official_total": 554,
+       "abs_diff_total": 0
+      },
+      "rec": {
+       "player_games_nonzero": 3984,
+       "agree": 3984,
+       "agreement_rate": 1.0,
+       "gt_total": 12362,
+       "official_total": 12362,
+       "abs_diff_total": 0
+      },
+      "rec_yds": {
+       "player_games_nonzero": 3958,
+       "agree": 3956,
+       "agreement_rate": 0.9994946942900454,
+       "gt_total": 137257,
+       "official_total": 137271,
+       "abs_diff_total": 14
+      },
+      "rec_td": {
+       "player_games_nonzero": 814,
+       "agree": 814,
+       "agreement_rate": 1.0,
+       "gt_total": 916,
+       "official_total": 916,
+       "abs_diff_total": 0
+      },
+      "fumble_lost": {
+       "player_games_nonzero": 235,
+       "agree": 230,
+       "agreement_rate": 0.9787234042553191,
+       "gt_total": 248,
+       "official_total": 243,
+       "abs_diff_total": 5,
+       "agree_incl_uncategorized_fumbles": 234,
+       "agreement_rate_incl_uncategorized_fumbles": 0.9957446808510638
+      },
+      "two_pt": {
+       "player_games_nonzero": 108,
+       "agree": 108,
+       "agreement_rate": 1.0,
+       "gt_total": 112,
+       "official_total": 112,
+       "abs_diff_total": 0
+      }
+     },
+     "player_games_all_stats_agree": 0.951856946354883,
+     "ppr_mae_vs_official_v1": 0.011554332874828164,
+     "ppr_mae_vs_official_raw": 0.023344468461387408,
+     "ppr_max_abs_err_v1": 2.0,
+     "ppr_exact_rate_v1": 0.951856946354883,
+     "scorer_reproduces_official": 1.0
+    },
+    "2021": {
+     "season": 2021,
+     "plays": 40483,
+     "player_games": 5291,
+     "matched": 5264,
+     "gt_only": 4,
+     "official_only": 23,
+     "unmatched_rate": 0.005103005103005103,
+     "per_stat": {
+      "pass_yds": {
+       "player_games_nonzero": 668,
+       "agree": 668,
+       "agreement_rate": 1.0,
+       "gt_total": 139837,
+       "official_total": 139837,
+       "abs_diff_total": 0
+      },
+      "pass_td": {
+       "player_games_nonzero": 473,
+       "agree": 473,
+       "agreement_rate": 1.0,
+       "gt_total": 889,
+       "official_total": 889,
+       "abs_diff_total": 0
+      },
+      "int": {
+       "player_games_nonzero": 317,
+       "agree": 317,
+       "agreement_rate": 1.0,
+       "gt_total": 463,
+       "official_total": 463,
+       "abs_diff_total": 0
+      },
+      "rush_yds": {
+       "player_games_nonzero": 2317,
+       "agree": 2079,
+       "agreement_rate": 0.8972809667673716,
+       "gt_total": 65682,
+       "official_total": 65243,
+       "abs_diff_total": 439
+      },
+      "rush_td": {
+       "player_games_nonzero": 442,
+       "agree": 442,
+       "agreement_rate": 1.0,
+       "gt_total": 524,
+       "official_total": 524,
+       "abs_diff_total": 0
+      },
+      "rec": {
+       "player_games_nonzero": 4129,
+       "agree": 4129,
+       "agreement_rate": 1.0,
+       "gt_total": 12741,
+       "official_total": 12741,
+       "abs_diff_total": 0
+      },
+      "rec_yds": {
+       "player_games_nonzero": 4095,
+       "agree": 4092,
+       "agreement_rate": 0.9992673992673993,
+       "gt_total": 139820,
+       "official_total": 139837,
+       "abs_diff_total": 21
+      },
+      "rec_td": {
+       "player_games_nonzero": 779,
+       "agree": 779,
+       "agreement_rate": 1.0,
+       "gt_total": 889,
+       "official_total": 889,
+       "abs_diff_total": 0
+      },
+      "fumble_lost": {
+       "player_games_nonzero": 233,
+       "agree": 228,
+       "agreement_rate": 0.9785407725321889,
+       "gt_total": 245,
+       "official_total": 240,
+       "abs_diff_total": 5,
+       "agree_incl_uncategorized_fumbles": 233,
+       "agreement_rate_incl_uncategorized_fumbles": 1.0
+      },
+      "two_pt": {
+       "player_games_nonzero": 130,
+       "agree": 130,
+       "agreement_rate": 1.0,
+       "gt_total": 133,
+       "official_total": 133,
+       "abs_diff_total": 0
+      }
+     },
+     "player_games_all_stats_agree": 0.9535059535059535,
+     "ppr_mae_vs_official_v1": 0.010584010584010681,
+     "ppr_mae_vs_official_raw": 0.018522018522018617,
+     "ppr_max_abs_err_v1": 2.0,
+     "ppr_exact_rate_v1": 0.9535059535059535,
+     "scorer_reproduces_official": 1.0
+    },
+    "2022": {
+     "season": 2022,
+     "plays": 39993,
+     "player_games": 5210,
+     "matched": 5200,
+     "gt_only": 0,
+     "official_only": 10,
+     "unmatched_rate": 0.0019193857965451055,
+     "per_stat": {
+      "pass_yds": {
+       "player_games_nonzero": 660,
+       "agree": 660,
+       "agreement_rate": 1.0,
+       "gt_total": 133367,
+       "official_total": 133367,
+       "abs_diff_total": 0
+      },
+      "pass_td": {
+       "player_games_nonzero": 456,
+       "agree": 456,
+       "agreement_rate": 1.0,
+       "gt_total": 793,
+       "official_total": 793,
+       "abs_diff_total": 0
+      },
+      "int": {
+       "player_games_nonzero": 306,
+       "agree": 306,
+       "agreement_rate": 1.0,
+       "gt_total": 436,
+       "official_total": 436,
+       "abs_diff_total": 0
+      },
+      "rush_yds": {
+       "player_games_nonzero": 2318,
+       "agree": 2060,
+       "agreement_rate": 0.8886971527178602,
+       "gt_total": 69285,
+       "official_total": 68815,
+       "abs_diff_total": 470
+      },
+      "rush_td": {
+       "player_games_nonzero": 441,
+       "agree": 441,
+       "agreement_rate": 1.0,
+       "gt_total": 516,
+       "official_total": 516,
+       "abs_diff_total": 0
+      },
+      "rec": {
+       "player_games_nonzero": 4044,
+       "agree": 4044,
+       "agreement_rate": 1.0,
+       "gt_total": 12199,
+       "official_total": 12199,
+       "abs_diff_total": 0
+      },
+      "rec_yds": {
+       "player_games_nonzero": 4013,
+       "agree": 4010,
+       "agreement_rate": 0.9992524296037877,
+       "gt_total": 133386,
+       "official_total": 133366,
+       "abs_diff_total": 20
+      },
+      "rec_td": {
+       "player_games_nonzero": 694,
+       "agree": 694,
+       "agreement_rate": 1.0,
+       "gt_total": 793,
+       "official_total": 793,
+       "abs_diff_total": 0
+      },
+      "fumble_lost": {
+       "player_games_nonzero": 250,
+       "agree": 244,
+       "agreement_rate": 0.976,
+       "gt_total": 261,
+       "official_total": 257,
+       "abs_diff_total": 6,
+       "agree_incl_uncategorized_fumbles": 249,
+       "agreement_rate_incl_uncategorized_fumbles": 0.996
+      },
+      "two_pt": {
+       "player_games_nonzero": 103,
+       "agree": 103,
+       "agreement_rate": 1.0,
+       "gt_total": 105,
+       "official_total": 105,
+       "abs_diff_total": 0
+      }
+     },
+     "player_games_all_stats_agree": 0.9487523992322456,
+     "ppr_mae_vs_official_v1": 0.011708253358925258,
+     "ppr_mae_vs_official_raw": 0.016314779270633514,
+     "ppr_max_abs_err_v1": 2.0,
+     "ppr_exact_rate_v1": 0.9487523992322456,
+     "scorer_reproduces_official": 1.0
+    },
+    "2023": {
+     "season": 2023,
+     "plays": 40155,
+     "player_games": 5267,
+     "matched": 5246,
+     "gt_only": 0,
+     "official_only": 21,
+     "unmatched_rate": 0.003987089424719955,
+     "per_stat": {
+      "pass_yds": {
+       "player_games_nonzero": 674,
+       "agree": 674,
+       "agreement_rate": 1.0,
+       "gt_total": 135425,
+       "official_total": 135425,
+       "abs_diff_total": 0
+      },
+      "pass_td": {
+       "player_games_nonzero": 464,
+       "agree": 464,
+       "agreement_rate": 1.0,
+       "gt_total": 799,
+       "official_total": 799,
+       "abs_diff_total": 0
+      },
+      "int": {
+       "player_games_nonzero": 314,
+       "agree": 314,
+       "agreement_rate": 1.0,
+       "gt_total": 443,
+       "official_total": 443,
+       "abs_diff_total": 0
+      },
+      "rush_yds": {
+       "player_games_nonzero": 2314,
+       "agree": 2046,
+       "agreement_rate": 0.8841832324978393,
+       "gt_total": 64800,
+       "official_total": 64293,
+       "abs_diff_total": 507
+      },
+      "rush_td": {
+       "player_games_nonzero": 419,
+       "agree": 419,
+       "agreement_rate": 1.0,
+       "gt_total": 496,
+       "official_total": 496,
+       "abs_diff_total": 0
+      },
+      "rec": {
+       "player_games_nonzero": 4138,
+       "agree": 4138,
+       "agreement_rate": 1.0,
+       "gt_total": 12427,
+       "official_total": 12427,
+       "abs_diff_total": 0
+      },
+      "rec_yds": {
+       "player_games_nonzero": 4105,
+       "agree": 4103,
+       "agreement_rate": 0.9995127892813642,
+       "gt_total": 135430,
+       "official_total": 135425,
+       "abs_diff_total": 5
+      },
+      "rec_td": {
+       "player_games_nonzero": 719,
+       "agree": 719,
+       "agreement_rate": 1.0,
+       "gt_total": 799,
+       "official_total": 799,
+       "abs_diff_total": 0
+      },
+      "fumble_lost": {
+       "player_games_nonzero": 254,
+       "agree": 251,
+       "agreement_rate": 0.9881889763779528,
+       "gt_total": 275,
+       "official_total": 272,
+       "abs_diff_total": 3,
+       "agree_incl_uncategorized_fumbles": 254,
+       "agreement_rate_incl_uncategorized_fumbles": 1.0
+      },
+      "two_pt": {
+       "player_games_nonzero": 112,
+       "agree": 112,
+       "agreement_rate": 1.0,
+       "gt_total": 115,
+       "official_total": 115,
+       "abs_diff_total": 0
+      }
+     },
+     "player_games_all_stats_agree": 0.9481678374786406,
+     "ppr_mae_vs_official_v1": 0.010860072147332532,
+     "ppr_mae_vs_official_raw": 0.016555914182646753,
+     "ppr_max_abs_err_v1": 2.0,
+     "ppr_exact_rate_v1": 0.9481678374786406,
+     "scorer_reproduces_official": 1.0
+    },
+    "2024": {
+     "season": 2024,
+     "plays": 39986,
+     "player_games": 5212,
+     "matched": 5184,
+     "gt_only": 3,
+     "official_only": 25,
+     "unmatched_rate": 0.005372217958557176,
+     "per_stat": {
+      "pass_yds": {
+       "player_games_nonzero": 668,
+       "agree": 668,
+       "agreement_rate": 1.0,
+       "gt_total": 133048,
+       "official_total": 133048,
+       "abs_diff_total": 0
+      },
+      "pass_td": {
+       "player_games_nonzero": 459,
+       "agree": 459,
+       "agreement_rate": 1.0,
+       "gt_total": 845,
+       "official_total": 845,
+       "abs_diff_total": 0
+      },
+      "int": {
+       "player_games_nonzero": 281,
+       "agree": 281,
+       "agreement_rate": 1.0,
+       "gt_total": 405,
+       "official_total": 405,
+       "abs_diff_total": 0
+      },
+      "rush_yds": {
+       "player_games_nonzero": 2306,
+       "agree": 2043,
+       "agreement_rate": 0.885949696444059,
+       "gt_total": 69224,
+       "official_total": 68759,
+       "abs_diff_total": 535
+      },
+      "rush_td": {
+       "player_games_nonzero": 449,
+       "agree": 449,
+       "agreement_rate": 1.0,
+       "gt_total": 545,
+       "official_total": 545,
+       "abs_diff_total": 0
+      },
+      "rec": {
+       "player_games_nonzero": 4016,
+       "agree": 4014,
+       "agreement_rate": 0.9995019920318725,
+       "gt_total": 12136,
+       "official_total": 12136,
+       "abs_diff_total": 8
+      },
+      "rec_yds": {
+       "player_games_nonzero": 3980,
+       "agree": 3970,
+       "agreement_rate": 0.9974874371859297,
+       "gt_total": 133034,
+       "official_total": 133048,
+       "abs_diff_total": 134
+      },
+      "rec_td": {
+       "player_games_nonzero": 754,
+       "agree": 754,
+       "agreement_rate": 1.0,
+       "gt_total": 845,
+       "official_total": 845,
+       "abs_diff_total": 0
+      },
+      "fumble_lost": {
+       "player_games_nonzero": 242,
+       "agree": 239,
+       "agreement_rate": 0.987603305785124,
+       "gt_total": 248,
+       "official_total": 245,
+       "abs_diff_total": 3,
+       "agree_incl_uncategorized_fumbles": 242,
+       "agreement_rate_incl_uncategorized_fumbles": 1.0
+      },
+      "two_pt": {
+       "player_games_nonzero": 100,
+       "agree": 100,
+       "agreement_rate": 1.0,
+       "gt_total": 102,
+       "official_total": 102,
+       "abs_diff_total": 0
+      }
+     },
+     "player_games_all_stats_agree": 0.9470452801227935,
+     "ppr_mae_vs_official_v1": 0.015521872601688516,
+     "ppr_mae_vs_official_raw": 0.020126630851880378,
+     "ppr_max_abs_err_v1": 8.200000000000003,
+     "ppr_exact_rate_v1": 0.9470452801227935,
+     "scorer_reproduces_official": 1.0
+    }
+   },
+   "overall": {
+    "player_games": 50603,
+    "unmatched": 218,
+    "player_games_all_stats_agree": 0.9492915439796059,
+    "ppr_mae_vs_official_v1": 0.012720589688358498,
+    "ppr_exact_rate_v1": 0.9492915439796059,
+    "per_stat": {
+     "pass_yds": {
+      "agree": 6335,
+      "player_games_nonzero": 6335,
+      "agreement_rate": 1.0
+     },
+     "pass_td": {
+      "agree": 4522,
+      "player_games_nonzero": 4522,
+      "agreement_rate": 1.0
+     },
+     "int": {
+      "agree": 3001,
+      "player_games_nonzero": 3001,
+      "agreement_rate": 1.0
+     },
+     "rush_yds": {
+      "agree": 19385,
+      "player_games_nonzero": 21848,
+      "agreement_rate": 0.8872665690223361
+     },
+     "rush_td": {
+      "agree": 4045,
+      "player_games_nonzero": 4045,
+      "agreement_rate": 1.0
+     },
+     "rec": {
+      "agree": 39530,
+      "player_games_nonzero": 39538,
+      "agreement_rate": 0.9997976630077394
+     },
+     "rec_yds": {
+      "agree": 39205,
+      "player_games_nonzero": 39251,
+      "agreement_rate": 0.9988280553361698
+     },
+     "rec_td": {
+      "agree": 7467,
+      "player_games_nonzero": 7467,
+      "agreement_rate": 1.0
+     },
+     "fumble_lost": {
+      "agree": 2379,
+      "player_games_nonzero": 2436,
+      "agreement_rate": 0.9766009852216748,
+      "agreement_rate_incl_uncategorized_fumbles": 0.9987684729064039
+     },
+     "two_pt": {
+      "agree": 999,
+      "player_games_nonzero": 999,
+      "agreement_rate": 1.0
+     }
+    }
+   }
+  },
+  "dataset_plus_kneels_spikes": {
+   "extra_play_types": [
+    "qb_kneel",
+    "qb_spike"
+   ],
+   "per_season": {
+    "2015": {
+     "season": 2015,
+     "plays": 39135,
+     "player_games": 4923,
+     "matched": 4917,
+     "gt_only": 6,
+     "official_only": 0,
+     "unmatched_rate": 0.001218769043266301,
+     "per_stat": {
+      "pass_yds": {
+       "player_games_nonzero": 599,
+       "agree": 599,
+       "agreement_rate": 1.0,
+       "gt_total": 138002,
+       "official_total": 138002,
+       "abs_diff_total": 0
+      },
+      "pass_td": {
+       "player_games_nonzero": 454,
+       "agree": 454,
+       "agreement_rate": 1.0,
+       "gt_total": 867,
+       "official_total": 867,
+       "abs_diff_total": 0
+      },
+      "int": {
+       "player_games_nonzero": 308,
+       "agree": 308,
+       "agreement_rate": 1.0,
+       "gt_total": 458,
+       "official_total": 458,
+       "abs_diff_total": 0
+      },
+      "rush_yds": {
+       "player_games_nonzero": 2047,
+       "agree": 2047,
+       "agreement_rate": 1.0,
+       "gt_total": 57944,
+       "official_total": 57944,
+       "abs_diff_total": 0
+      },
+      "rush_td": {
+       "player_games_nonzero": 331,
+       "agree": 331,
+       "agreement_rate": 1.0,
+       "gt_total": 383,
+       "official_total": 383,
+       "abs_diff_total": 0
+      },
+      "rec": {
+       "player_games_nonzero": 3840,
+       "agree": 3840,
+       "agreement_rate": 1.0,
+       "gt_total": 11997,
+       "official_total": 11997,
+       "abs_diff_total": 0
+      },
+      "rec_yds": {
+       "player_games_nonzero": 3814,
+       "agree": 3807,
+       "agreement_rate": 0.9981646565285789,
+       "gt_total": 138059,
+       "official_total": 138002,
+       "abs_diff_total": 57
+      },
+      "rec_td": {
+       "player_games_nonzero": 753,
+       "agree": 753,
+       "agreement_rate": 1.0,
+       "gt_total": 867,
+       "official_total": 867,
+       "abs_diff_total": 0
+      },
+      "fumble_lost": {
+       "player_games_nonzero": 261,
+       "agree": 252,
+       "agreement_rate": 0.9655172413793104,
+       "gt_total": 280,
+       "official_total": 271,
+       "abs_diff_total": 9,
+       "agree_incl_uncategorized_fumbles": 261,
+       "agreement_rate_incl_uncategorized_fumbles": 1.0
+      },
+      "two_pt": {
+       "player_games_nonzero": 86,
+       "agree": 86,
+       "agreement_rate": 1.0,
+       "gt_total": 89,
+       "official_total": 89,
+       "abs_diff_total": 0
+      }
+     },
+     "player_games_all_stats_agree": 0.9967499492179566,
+     "ppr_mae_vs_official_v1": 0.004814137720901979,
+     "ppr_mae_vs_official_raw": 0.023095673369896492,
+     "ppr_max_abs_err_v1": 2.0,
+     "ppr_exact_rate_v1": 0.9967499492179566,
+     "scorer_reproduces_official": 1.0
+    },
+    "2016": {
+     "season": 2016,
+     "plays": 38778,
+     "player_games": 4916,
+     "matched": 4915,
+     "gt_only": 1,
+     "official_only": 0,
+     "unmatched_rate": 0.0002034174125305126,
+     "per_stat": {
+      "pass_yds": {
+       "player_games_nonzero": 602,
+       "agree": 602,
+       "agreement_rate": 1.0,
+       "gt_total": 136996,
+       "official_total": 136996,
+       "abs_diff_total": 0
+      },
+      "pass_td": {
+       "player_games_nonzero": 440,
+       "agree": 440,
+       "agreement_rate": 1.0,
+       "gt_total": 827,
+       "official_total": 827,
+       "abs_diff_total": 0
+      },
+      "int": {
+       "player_games_nonzero": 298,
+       "agree": 298,
+       "agreement_rate": 1.0,
+       "gt_total": 436,
+       "official_total": 436,
+       "abs_diff_total": 0
+      },
+      "rush_yds": {
+       "player_games_nonzero": 2024,
+       "agree": 2024,
+       "agreement_rate": 1.0,
+       "gt_total": 57931,
+       "official_total": 57931,
+       "abs_diff_total": 0
+      },
+      "rush_td": {
+       "player_games_nonzero": 383,
+       "agree": 383,
+       "agreement_rate": 1.0,
+       "gt_total": 462,
+       "official_total": 462,
+       "abs_diff_total": 0
+      },
+      "rec": {
+       "player_games_nonzero": 3854,
+       "agree": 3854,
+       "agreement_rate": 1.0,
+       "gt_total": 12042,
+       "official_total": 12042,
+       "abs_diff_total": 0
+      },
+      "rec_yds": {
+       "player_games_nonzero": 3834,
+       "agree": 3831,
+       "agreement_rate": 0.9992175273865415,
+       "gt_total": 137008,
+       "official_total": 136996,
+       "abs_diff_total": 22
+      },
+      "rec_td": {
+       "player_games_nonzero": 753,
+       "agree": 753,
+       "agreement_rate": 1.0,
+       "gt_total": 827,
+       "official_total": 827,
+       "abs_diff_total": 0
+      },
+      "fumble_lost": {
+       "player_games_nonzero": 242,
+       "agree": 239,
+       "agreement_rate": 0.987603305785124,
+       "gt_total": 251,
+       "official_total": 248,
+       "abs_diff_total": 3,
+       "agree_incl_uncategorized_fumbles": 242,
+       "agreement_rate_incl_uncategorized_fumbles": 1.0
+      },
+      "two_pt": {
+       "player_games_nonzero": 93,
+       "agree": 93,
+       "agreement_rate": 1.0,
+       "gt_total": 94,
+       "official_total": 94,
+       "abs_diff_total": 0
+      }
+     },
+     "player_games_all_stats_agree": 0.9987794955248169,
+     "ppr_mae_vs_official_v1": 0.0016680227827503117,
+     "ppr_mae_vs_official_raw": 0.01875508543531337,
+     "ppr_max_abs_err_v1": 2.0,
+     "ppr_exact_rate_v1": 0.9987794955248169,
+     "scorer_reproduces_official": 1.0
+    },
+    "2017": {
+     "season": 2017,
+     "plays": 38397,
+     "player_games": 4911,
+     "matched": 4907,
+     "gt_only": 3,
+     "official_only": 1,
+     "unmatched_rate": 0.0008144980655670943,
+     "per_stat": {
+      "pass_yds": {
+       "player_games_nonzero": 597,
+       "agree": 597,
+       "agreement_rate": 1.0,
+       "gt_total": 129030,
+       "official_total": 129030,
+       "abs_diff_total": 0
+      },
+      "pass_td": {
+       "player_games_nonzero": 435,
+       "agree": 435,
+       "agreement_rate": 1.0,
+       "gt_total": 782,
+       "official_total": 782,
+       "abs_diff_total": 0
+      },
+      "int": {
+       "player_games_nonzero": 298,
+       "agree": 298,
+       "agreement_rate": 1.0,
+       "gt_total": 441,
+       "official_total": 441,
+       "abs_diff_total": 0
+      },
+      "rush_yds": {
+       "player_games_nonzero": 2067,
+       "agree": 2067,
+       "agreement_rate": 1.0,
+       "gt_total": 58489,
+       "official_total": 58489,
+       "abs_diff_total": 0
+      },
+      "rush_td": {
+       "player_games_nonzero": 348,
+       "agree": 348,
+       "agreement_rate": 1.0,
+       "gt_total": 400,
+       "official_total": 400,
+       "abs_diff_total": 0
+      },
+      "rec": {
+       "player_games_nonzero": 3852,
+       "agree": 3850,
+       "agreement_rate": 0.9994807892004154,
+       "gt_total": 11386,
+       "official_total": 11386,
+       "abs_diff_total": 4
+      },
+      "rec_yds": {
+       "player_games_nonzero": 3829,
+       "agree": 3822,
+       "agreement_rate": 0.9981718464351006,
+       "gt_total": 129009,
+       "official_total": 129030,
+       "abs_diff_total": 59
+      },
+      "rec_td": {
+       "player_games_nonzero": 703,
+       "agree": 703,
+       "agreement_rate": 1.0,
+       "gt_total": 782,
+       "official_total": 782,
+       "abs_diff_total": 0
+      },
+      "fumble_lost": {
+       "player_games_nonzero": 228,
+       "agree": 220,
+       "agreement_rate": 0.9649122807017544,
+       "gt_total": 245,
+       "official_total": 237,
+       "abs_diff_total": 8,
+       "agree_incl_uncategorized_fumbles": 228,
+       "agreement_rate_incl_uncategorized_fumbles": 1.0
+      },
+      "two_pt": {
+       "player_games_nonzero": 61,
+       "agree": 61,
+       "agreement_rate": 1.0,
+       "gt_total": 62,
+       "official_total": 62,
+       "abs_diff_total": 0
+      }
+     },
+     "player_games_all_stats_agree": 0.9969456322541234,
+     "ppr_mae_vs_official_v1": 0.005273874974547025,
+     "ppr_mae_vs_official_raw": 0.019934840154754722,
+     "ppr_max_abs_err_v1": 3.2,
+     "ppr_exact_rate_v1": 0.9969456322541234,
+     "scorer_reproduces_official": 1.0
+    },
+    "2018": {
+     "season": 2018,
+     "plays": 38377,
+     "player_games": 4898,
+     "matched": 4893,
+     "gt_only": 5,
+     "official_only": 0,
+     "unmatched_rate": 0.0010208248264597796,
+     "per_stat": {
+      "pass_yds": {
+       "player_games_nonzero": 615,
+       "agree": 615,
+       "agreement_rate": 1.0,
+       "gt_total": 135877,
+       "official_total": 135877,
+       "abs_diff_total": 0
+      },
+      "pass_td": {
+       "player_games_nonzero": 449,
+       "agree": 449,
+       "agreement_rate": 1.0,
+       "gt_total": 873,
+       "official_total": 873,
+       "abs_diff_total": 0
+      },
+      "int": {
+       "player_games_nonzero": 294,
+       "agree": 294,
+       "agreement_rate": 1.0,
+       "gt_total": 435,
+       "official_total": 435,
+       "abs_diff_total": 0
+      },
+      "rush_yds": {
+       "player_games_nonzero": 2126,
+       "agree": 2126,
+       "agreement_rate": 1.0,
+       "gt_total": 60930,
+       "official_total": 60930,
+       "abs_diff_total": 0
+      },
+      "rush_td": {
+       "player_games_nonzero": 385,
+       "agree": 385,
+       "agreement_rate": 1.0,
+       "gt_total": 466,
+       "official_total": 466,
+       "abs_diff_total": 0
+      },
+      "rec": {
+       "player_games_nonzero": 3844,
+       "agree": 3842,
+       "agreement_rate": 0.9994797086368367,
+       "gt_total": 11960,
+       "official_total": 11960,
+       "abs_diff_total": 2
+      },
+      "rec_yds": {
+       "player_games_nonzero": 3821,
+       "agree": 3814,
+       "agreement_rate": 0.9981680188432348,
+       "gt_total": 135892,
+       "official_total": 135877,
+       "abs_diff_total": 47
+      },
+      "rec_td": {
+       "player_games_nonzero": 778,
+       "agree": 778,
+       "agreement_rate": 1.0,
+       "gt_total": 873,
+       "official_total": 873,
+       "abs_diff_total": 0
+      },
+      "fumble_lost": {
+       "player_games_nonzero": 239,
+       "agree": 233,
+       "agreement_rate": 0.9748953974895398,
+       "gt_total": 253,
+       "official_total": 247,
+       "abs_diff_total": 6,
+       "agree_incl_uncategorized_fumbles": 239,
+       "agreement_rate_incl_uncategorized_fumbles": 1.0
+      },
+      "two_pt": {
+       "player_games_nonzero": 114,
+       "agree": 114,
+       "agreement_rate": 1.0,
+       "gt_total": 120,
+       "official_total": 120,
+       "abs_diff_total": 0
+      }
+     },
+     "player_games_all_stats_agree": 0.9973458554512046,
+     "ppr_mae_vs_official_v1": 0.003817884850959673,
+     "ppr_mae_vs_official_raw": 0.011167823601470082,
+     "ppr_max_abs_err_v1": 2.1,
+     "ppr_exact_rate_v1": 0.9973458554512046,
+     "scorer_reproduces_official": 1.0
+    },
+    "2019": {
+     "season": 2019,
+     "plays": 38610,
+     "player_games": 4886,
+     "matched": 4882,
+     "gt_only": 4,
+     "official_only": 0,
+     "unmatched_rate": 0.0008186655751125665,
+     "per_stat": {
+      "pass_yds": {
+       "player_games_nonzero": 613,
+       "agree": 613,
+       "agreement_rate": 1.0,
+       "gt_total": 134152,
+       "official_total": 134152,
+       "abs_diff_total": 0
+      },
+      "pass_td": {
+       "player_games_nonzero": 434,
+       "agree": 434,
+       "agreement_rate": 1.0,
+       "gt_total": 829,
+       "official_total": 829,
+       "abs_diff_total": 0
+      },
+      "int": {
+       "player_games_nonzero": 286,
+       "agree": 286,
+       "agreement_rate": 1.0,
+       "gt_total": 423,
+       "official_total": 423,
+       "abs_diff_total": 0
+      },
+      "rush_yds": {
+       "player_games_nonzero": 2077,
+       "agree": 2077,
+       "agreement_rate": 1.0,
+       "gt_total": 60689,
+       "official_total": 60689,
+       "abs_diff_total": 0
+      },
+      "rush_td": {
+       "player_games_nonzero": 391,
+       "agree": 391,
+       "agreement_rate": 1.0,
+       "gt_total": 475,
+       "official_total": 475,
+       "abs_diff_total": 0
+      },
+      "rec": {
+       "player_games_nonzero": 3837,
+       "agree": 3835,
+       "agreement_rate": 0.999478759447485,
+       "gt_total": 11778,
+       "official_total": 11778,
+       "abs_diff_total": 4
+      },
+      "rec_yds": {
+       "player_games_nonzero": 3802,
+       "agree": 3800,
+       "agreement_rate": 0.9994739610731194,
+       "gt_total": 134152,
+       "official_total": 134152,
+       "abs_diff_total": 44
+      },
+      "rec_td": {
+       "player_games_nonzero": 720,
+       "agree": 720,
+       "agreement_rate": 1.0,
+       "gt_total": 829,
+       "official_total": 829,
+       "abs_diff_total": 0
+      },
+      "fumble_lost": {
+       "player_games_nonzero": 252,
+       "agree": 243,
+       "agreement_rate": 0.9642857142857143,
+       "gt_total": 272,
+       "official_total": 263,
+       "abs_diff_total": 9,
+       "agree_incl_uncategorized_fumbles": 251,
+       "agreement_rate_incl_uncategorized_fumbles": 0.996031746031746
+      },
+      "two_pt": {
+       "player_games_nonzero": 92,
+       "agree": 92,
+       "agreement_rate": 1.0,
+       "gt_total": 95,
+       "official_total": 95,
+       "abs_diff_total": 0
+      }
+     },
+     "player_games_all_stats_agree": 0.9977486696684404,
+     "ppr_mae_vs_official_v1": 0.005403192795743051,
+     "ppr_mae_vs_official_raw": 0.013999181334425,
+     "ppr_max_abs_err_v1": 4.200000000000001,
+     "ppr_exact_rate_v1": 0.9977486696684404,
+     "scorer_reproduces_official": 1.0
+    },
+    "2020": {
+     "season": 2020,
+     "plays": 39036,
+     "player_games": 5089,
+     "matched": 5083,
+     "gt_only": 5,
+     "official_only": 1,
+     "unmatched_rate": 0.0011790135586559245,
+     "per_stat": {
+      "pass_yds": {
+       "player_games_nonzero": 639,
+       "agree": 639,
+       "agreement_rate": 1.0,
+       "gt_total": 137271,
+       "official_total": 137271,
+       "abs_diff_total": 0
+      },
+      "pass_td": {
+       "player_games_nonzero": 458,
+       "agree": 458,
+       "agreement_rate": 1.0,
+       "gt_total": 916,
+       "official_total": 916,
+       "abs_diff_total": 0
+      },
+      "int": {
+       "player_games_nonzero": 299,
+       "agree": 299,
+       "agreement_rate": 1.0,
+       "gt_total": 416,
+       "official_total": 416,
+       "abs_diff_total": 0
+      },
+      "rush_yds": {
+       "player_games_nonzero": 2205,
+       "agree": 2205,
+       "agreement_rate": 1.0,
+       "gt_total": 63862,
+       "official_total": 63862,
+       "abs_diff_total": 0
+      },
+      "rush_td": {
+       "player_games_nonzero": 456,
+       "agree": 456,
+       "agreement_rate": 1.0,
+       "gt_total": 554,
+       "official_total": 554,
+       "abs_diff_total": 0
+      },
+      "rec": {
+       "player_games_nonzero": 3984,
+       "agree": 3984,
+       "agreement_rate": 1.0,
+       "gt_total": 12362,
+       "official_total": 12362,
+       "abs_diff_total": 0
+      },
+      "rec_yds": {
+       "player_games_nonzero": 3958,
+       "agree": 3956,
+       "agreement_rate": 0.9994946942900454,
+       "gt_total": 137257,
+       "official_total": 137271,
+       "abs_diff_total": 14
+      },
+      "rec_td": {
+       "player_games_nonzero": 814,
+       "agree": 814,
+       "agreement_rate": 1.0,
+       "gt_total": 916,
+       "official_total": 916,
+       "abs_diff_total": 0
+      },
+      "fumble_lost": {
+       "player_games_nonzero": 235,
+       "agree": 230,
+       "agreement_rate": 0.9787234042553191,
+       "gt_total": 248,
+       "official_total": 243,
+       "abs_diff_total": 5,
+       "agree_incl_uncategorized_fumbles": 234,
+       "agreement_rate_incl_uncategorized_fumbles": 0.9957446808510638
+      },
+      "two_pt": {
+       "player_games_nonzero": 108,
+       "agree": 108,
+       "agreement_rate": 1.0,
+       "gt_total": 112,
+       "official_total": 112,
+       "abs_diff_total": 0
+      }
+     },
+     "player_games_all_stats_agree": 0.9986244841815681,
+     "ppr_mae_vs_official_v1": 0.002240125761446359,
+     "ppr_mae_vs_official_raw": 0.014030261348005604,
+     "ppr_max_abs_err_v1": 2.0,
+     "ppr_exact_rate_v1": 0.9986244841815681,
+     "scorer_reproduces_official": 1.0
+    },
+    "2021": {
+     "season": 2021,
+     "plays": 40965,
+     "player_games": 5290,
+     "matched": 5287,
+     "gt_only": 3,
+     "official_only": 0,
+     "unmatched_rate": 0.0005671077504725897,
+     "per_stat": {
+      "pass_yds": {
+       "player_games_nonzero": 668,
+       "agree": 668,
+       "agreement_rate": 1.0,
+       "gt_total": 139837,
+       "official_total": 139837,
+       "abs_diff_total": 0
+      },
+      "pass_td": {
+       "player_games_nonzero": 473,
+       "agree": 473,
+       "agreement_rate": 1.0,
+       "gt_total": 889,
+       "official_total": 889,
+       "abs_diff_total": 0
+      },
+      "int": {
+       "player_games_nonzero": 317,
+       "agree": 317,
+       "agreement_rate": 1.0,
+       "gt_total": 463,
+       "official_total": 463,
+       "abs_diff_total": 0
+      },
+      "rush_yds": {
+       "player_games_nonzero": 2304,
+       "agree": 2304,
+       "agreement_rate": 1.0,
+       "gt_total": 65243,
+       "official_total": 65243,
+       "abs_diff_total": 0
+      },
+      "rush_td": {
+       "player_games_nonzero": 442,
+       "agree": 442,
+       "agreement_rate": 1.0,
+       "gt_total": 524,
+       "official_total": 524,
+       "abs_diff_total": 0
+      },
+      "rec": {
+       "player_games_nonzero": 4129,
+       "agree": 4129,
+       "agreement_rate": 1.0,
+       "gt_total": 12741,
+       "official_total": 12741,
+       "abs_diff_total": 0
+      },
+      "rec_yds": {
+       "player_games_nonzero": 4095,
+       "agree": 4092,
+       "agreement_rate": 0.9992673992673993,
+       "gt_total": 139820,
+       "official_total": 139837,
+       "abs_diff_total": 21
+      },
+      "rec_td": {
+       "player_games_nonzero": 779,
+       "agree": 779,
+       "agreement_rate": 1.0,
+       "gt_total": 889,
+       "official_total": 889,
+       "abs_diff_total": 0
+      },
+      "fumble_lost": {
+       "player_games_nonzero": 233,
+       "agree": 228,
+       "agreement_rate": 0.9785407725321889,
+       "gt_total": 245,
+       "official_total": 240,
+       "abs_diff_total": 5,
+       "agree_incl_uncategorized_fumbles": 233,
+       "agreement_rate_incl_uncategorized_fumbles": 1.0
+      },
+      "two_pt": {
+       "player_games_nonzero": 130,
+       "agree": 130,
+       "agreement_rate": 1.0,
+       "gt_total": 133,
+       "official_total": 133,
+       "abs_diff_total": 0
+      }
+     },
+     "player_games_all_stats_agree": 0.9984877126654065,
+     "ppr_mae_vs_official_v1": 0.002287334593572882,
+     "ppr_mae_vs_official_raw": 0.01022684310018914,
+     "ppr_max_abs_err_v1": 2.0,
+     "ppr_exact_rate_v1": 0.9984877126654065,
+     "scorer_reproduces_official": 1.0
+    },
+    "2022": {
+     "season": 2022,
+     "plays": 40498,
+     "player_games": 5210,
+     "matched": 5210,
+     "gt_only": 0,
+     "official_only": 0,
+     "unmatched_rate": 0.0,
+     "per_stat": {
+      "pass_yds": {
+       "player_games_nonzero": 660,
+       "agree": 660,
+       "agreement_rate": 1.0,
+       "gt_total": 133367,
+       "official_total": 133367,
+       "abs_diff_total": 0
+      },
+      "pass_td": {
+       "player_games_nonzero": 456,
+       "agree": 456,
+       "agreement_rate": 1.0,
+       "gt_total": 793,
+       "official_total": 793,
+       "abs_diff_total": 0
+      },
+      "int": {
+       "player_games_nonzero": 306,
+       "agree": 306,
+       "agreement_rate": 1.0,
+       "gt_total": 436,
+       "official_total": 436,
+       "abs_diff_total": 0
+      },
+      "rush_yds": {
+       "player_games_nonzero": 2311,
+       "agree": 2311,
+       "agreement_rate": 1.0,
+       "gt_total": 68815,
+       "official_total": 68815,
+       "abs_diff_total": 0
+      },
+      "rush_td": {
+       "player_games_nonzero": 441,
+       "agree": 441,
+       "agreement_rate": 1.0,
+       "gt_total": 516,
+       "official_total": 516,
+       "abs_diff_total": 0
+      },
+      "rec": {
+       "player_games_nonzero": 4044,
+       "agree": 4044,
+       "agreement_rate": 1.0,
+       "gt_total": 12199,
+       "official_total": 12199,
+       "abs_diff_total": 0
+      },
+      "rec_yds": {
+       "player_games_nonzero": 4013,
+       "agree": 4010,
+       "agreement_rate": 0.9992524296037877,
+       "gt_total": 133386,
+       "official_total": 133366,
+       "abs_diff_total": 20
+      },
+      "rec_td": {
+       "player_games_nonzero": 694,
+       "agree": 694,
+       "agreement_rate": 1.0,
+       "gt_total": 793,
+       "official_total": 793,
+       "abs_diff_total": 0
+      },
+      "fumble_lost": {
+       "player_games_nonzero": 250,
+       "agree": 244,
+       "agreement_rate": 0.976,
+       "gt_total": 261,
+       "official_total": 257,
+       "abs_diff_total": 6,
+       "agree_incl_uncategorized_fumbles": 249,
+       "agreement_rate_incl_uncategorized_fumbles": 0.996
+      },
+      "two_pt": {
+       "player_games_nonzero": 103,
+       "agree": 103,
+       "agreement_rate": 1.0,
+       "gt_total": 105,
+       "official_total": 105,
+       "abs_diff_total": 0
+      }
+     },
+     "player_games_all_stats_agree": 0.9982725527831094,
+     "ppr_mae_vs_official_v1": 0.0026871401151632645,
+     "ppr_mae_vs_official_raw": 0.007293666026871519,
+     "ppr_max_abs_err_v1": 2.0,
+     "ppr_exact_rate_v1": 0.9982725527831094,
+     "scorer_reproduces_official": 1.0
+    },
+    "2023": {
+     "season": 2023,
+     "plays": 40678,
+     "player_games": 5267,
+     "matched": 5266,
+     "gt_only": 0,
+     "official_only": 1,
+     "unmatched_rate": 0.00018986140117714068,
+     "per_stat": {
+      "pass_yds": {
+       "player_games_nonzero": 674,
+       "agree": 674,
+       "agreement_rate": 1.0,
+       "gt_total": 135425,
+       "official_total": 135425,
+       "abs_diff_total": 0
+      },
+      "pass_td": {
+       "player_games_nonzero": 464,
+       "agree": 464,
+       "agreement_rate": 1.0,
+       "gt_total": 799,
+       "official_total": 799,
+       "abs_diff_total": 0
+      },
+      "int": {
+       "player_games_nonzero": 314,
+       "agree": 314,
+       "agreement_rate": 1.0,
+       "gt_total": 443,
+       "official_total": 443,
+       "abs_diff_total": 0
+      },
+      "rush_yds": {
+       "player_games_nonzero": 2305,
+       "agree": 2305,
+       "agreement_rate": 1.0,
+       "gt_total": 64293,
+       "official_total": 64293,
+       "abs_diff_total": 0
+      },
+      "rush_td": {
+       "player_games_nonzero": 419,
+       "agree": 419,
+       "agreement_rate": 1.0,
+       "gt_total": 496,
+       "official_total": 496,
+       "abs_diff_total": 0
+      },
+      "rec": {
+       "player_games_nonzero": 4138,
+       "agree": 4138,
+       "agreement_rate": 1.0,
+       "gt_total": 12427,
+       "official_total": 12427,
+       "abs_diff_total": 0
+      },
+      "rec_yds": {
+       "player_games_nonzero": 4105,
+       "agree": 4103,
+       "agreement_rate": 0.9995127892813642,
+       "gt_total": 135430,
+       "official_total": 135425,
+       "abs_diff_total": 5
+      },
+      "rec_td": {
+       "player_games_nonzero": 719,
+       "agree": 719,
+       "agreement_rate": 1.0,
+       "gt_total": 799,
+       "official_total": 799,
+       "abs_diff_total": 0
+      },
+      "fumble_lost": {
+       "player_games_nonzero": 254,
+       "agree": 251,
+       "agreement_rate": 0.9881889763779528,
+       "gt_total": 275,
+       "official_total": 272,
+       "abs_diff_total": 3,
+       "agree_incl_uncategorized_fumbles": 254,
+       "agreement_rate_incl_uncategorized_fumbles": 1.0
+      },
+      "two_pt": {
+       "player_games_nonzero": 112,
+       "agree": 112,
+       "agreement_rate": 1.0,
+       "gt_total": 115,
+       "official_total": 115,
+       "abs_diff_total": 0
+      }
+     },
+     "player_games_all_stats_agree": 0.9990506929941143,
+     "ppr_mae_vs_official_v1": 0.0012340991076515019,
+     "ppr_mae_vs_official_raw": 0.006929941142965721,
+     "ppr_max_abs_err_v1": 2.0,
+     "ppr_exact_rate_v1": 0.9990506929941143,
+     "scorer_reproduces_official": 1.0
+    },
+    "2024": {
+     "season": 2024,
+     "plays": 40498,
+     "player_games": 5212,
+     "matched": 5206,
+     "gt_only": 3,
+     "official_only": 3,
+     "unmatched_rate": 0.0011511895625479663,
+     "per_stat": {
+      "pass_yds": {
+       "player_games_nonzero": 668,
+       "agree": 668,
+       "agreement_rate": 1.0,
+       "gt_total": 133048,
+       "official_total": 133048,
+       "abs_diff_total": 0
+      },
+      "pass_td": {
+       "player_games_nonzero": 459,
+       "agree": 459,
+       "agreement_rate": 1.0,
+       "gt_total": 845,
+       "official_total": 845,
+       "abs_diff_total": 0
+      },
+      "int": {
+       "player_games_nonzero": 281,
+       "agree": 281,
+       "agreement_rate": 1.0,
+       "gt_total": 405,
+       "official_total": 405,
+       "abs_diff_total": 0
+      },
+      "rush_yds": {
+       "player_games_nonzero": 2301,
+       "agree": 2300,
+       "agreement_rate": 0.9995654063450674,
+       "gt_total": 68724,
+       "official_total": 68759,
+       "abs_diff_total": 35
+      },
+      "rush_td": {
+       "player_games_nonzero": 449,
+       "agree": 449,
+       "agreement_rate": 1.0,
+       "gt_total": 545,
+       "official_total": 545,
+       "abs_diff_total": 0
+      },
+      "rec": {
+       "player_games_nonzero": 4016,
+       "agree": 4014,
+       "agreement_rate": 0.9995019920318725,
+       "gt_total": 12136,
+       "official_total": 12136,
+       "abs_diff_total": 8
+      },
+      "rec_yds": {
+       "player_games_nonzero": 3980,
+       "agree": 3970,
+       "agreement_rate": 0.9974874371859297,
+       "gt_total": 133034,
+       "official_total": 133048,
+       "abs_diff_total": 134
+      },
+      "rec_td": {
+       "player_games_nonzero": 754,
+       "agree": 754,
+       "agreement_rate": 1.0,
+       "gt_total": 845,
+       "official_total": 845,
+       "abs_diff_total": 0
+      },
+      "fumble_lost": {
+       "player_games_nonzero": 242,
+       "agree": 239,
+       "agreement_rate": 0.987603305785124,
+       "gt_total": 248,
+       "official_total": 245,
+       "abs_diff_total": 3,
+       "agree_incl_uncategorized_fumbles": 242,
+       "agreement_rate_incl_uncategorized_fumbles": 1.0
+      },
+      "two_pt": {
+       "player_games_nonzero": 100,
+       "agree": 100,
+       "agreement_rate": 1.0,
+       "gt_total": 102,
+       "official_total": 102,
+       "abs_diff_total": 0
+      }
+     },
+     "player_games_all_stats_agree": 0.9973138910207214,
+     "ppr_mae_vs_official_v1": 0.005928626247122136,
+     "ppr_mae_vs_official_raw": 0.010533384497314,
+     "ppr_max_abs_err_v1": 8.200000000000003,
+     "ppr_exact_rate_v1": 0.9973138910207214,
+     "scorer_reproduces_official": 1.0
+    }
+   },
+   "overall": {
+    "player_games": 50602,
+    "unmatched": 36,
+    "player_games_all_stats_agree": 0.9979447452669855,
+    "ppr_mae_vs_official_v1": 0.003513695110865285,
+    "ppr_exact_rate_v1": 0.9979447452669855,
+    "per_stat": {
+     "pass_yds": {
+      "agree": 6335,
+      "player_games_nonzero": 6335,
+      "agreement_rate": 1.0
+     },
+     "pass_td": {
+      "agree": 4522,
+      "player_games_nonzero": 4522,
+      "agreement_rate": 1.0
+     },
+     "int": {
+      "agree": 3001,
+      "player_games_nonzero": 3001,
+      "agreement_rate": 1.0
+     },
+     "rush_yds": {
+      "agree": 21766,
+      "player_games_nonzero": 21767,
+      "agreement_rate": 0.9999540588964947
+     },
+     "rush_td": {
+      "agree": 4045,
+      "player_games_nonzero": 4045,
+      "agreement_rate": 1.0
+     },
+     "rec": {
+      "agree": 39530,
+      "player_games_nonzero": 39538,
+      "agreement_rate": 0.9997976630077394
+     },
+     "rec_yds": {
+      "agree": 39205,
+      "player_games_nonzero": 39251,
+      "agreement_rate": 0.9988280553361698
+     },
+     "rec_td": {
+      "agree": 7467,
+      "player_games_nonzero": 7467,
+      "agreement_rate": 1.0
+     },
+     "fumble_lost": {
+      "agree": 2379,
+      "player_games_nonzero": 2436,
+      "agreement_rate": 0.9766009852216748,
+      "agreement_rate_incl_uncategorized_fumbles": 0.9987684729064039
+     },
+     "two_pt": {
+      "agree": 999,
+      "player_games_nonzero": 999,
+      "agreement_rate": 1.0
+     }
+    }
+   }
+  }
+ },
+ "mismatch_classes": {
+  "dataset": {
+   "lateral": {
+    "fumble_lost": 3,
+    "rec_yds": 38
+   },
+   "uncategorized_fumble": {
+    "fumble_lost": 54
+   },
+   "desc_name_variant": {
+    "rec": 8,
+    "rec_yds": 8
+   },
+   "kneel_excluded": {
+    "rush_yds": 2462
+   },
+   "out_of_scope_play": {
+    "rush_yds": 1
+   },
+   "unexplained": {}
+  },
+  "dataset_plus_kneels_spikes": {
+   "lateral": {
+    "fumble_lost": 3,
+    "rec_yds": 38
+   },
+   "uncategorized_fumble": {
+    "fumble_lost": 54
+   },
+   "desc_name_variant": {
+    "rec": 8,
+    "rec_yds": 8
+   },
+   "kneel_excluded": {},
+   "out_of_scope_play": {
+    "rush_yds": 1
+   },
+   "unexplained": {}
+  }
+ },
+ "mismatches": [
+  {
+   "season": 2017,
+   "game_id": "2017_01_LAC_DEN",
+   "team": "DEN",
+   "player": "D.Thomas",
+   "stat": "rec",
+   "gt": 3,
+   "official": 5,
+   "class": "desc_name_variant",
+   "player_id": "00-0027874"
+  },
+  {
+   "season": 2017,
+   "game_id": "2017_01_LAC_DEN",
+   "team": "DEN",
+   "player": "D.Thomas",
+   "stat": "rec_yds",
+   "gt": 55,
+   "official": 67,
+   "class": "desc_name_variant",
+   "player_id": "00-0027874"
+  },
+  {
+   "season": 2017,
+   "game_id": "2017_01_LAC_DEN",
+   "team": "DEN",
+   "player": "De.Thomas",
+   "stat": "rec",
+   "gt": 2,
+   "official": 0,
+   "class": "desc_name_variant",
+   "player_id": "00-0027874"
+  },
+  {
+   "season": 2017,
+   "game_id": "2017_01_LAC_DEN",
+   "team": "DEN",
+   "player": "De.Thomas",
+   "stat": "rec_yds",
+   "gt": 12,
+   "official": 0,
+   "class": "desc_name_variant",
+   "player_id": "00-0027874"
+  },
+  {
+   "season": 2018,
+   "game_id": "2018_07_LA_SF",
+   "team": "LA",
+   "player": "N.Williams",
+   "stat": "rec",
+   "gt": 1,
+   "official": 0,
+   "class": "desc_name_variant",
+   "player_id": "00-0029848"
+  },
+  {
+   "season": 2018,
+   "game_id": "2018_07_LA_SF",
+   "team": "LA",
+   "player": "N.Williams",
+   "stat": "rec_yds",
+   "gt": 11,
+   "official": 0,
+   "class": "desc_name_variant",
+   "player_id": "00-0029848"
+  },
+  {
+   "season": 2018,
+   "game_id": "2018_07_LA_SF",
+   "team": "LA",
+   "player": "N.Williamss",
+   "stat": "rec",
+   "gt": 1,
+   "official": 2,
+   "class": "desc_name_variant",
+   "player_id": "00-0029848"
+  },
+  {
+   "season": 2018,
+   "game_id": "2018_07_LA_SF",
+   "team": "LA",
+   "player": "N.Williamss",
+   "stat": "rec_yds",
+   "gt": 6,
+   "official": 17,
+   "class": "desc_name_variant",
+   "player_id": "00-0029848"
+  },
+  {
+   "season": 2019,
+   "game_id": "2019_12_DET_WAS",
+   "team": "DET",
+   "player": "M.Jones",
+   "stat": "rec",
+   "gt": 2,
+   "official": 0,
+   "class": "desc_name_variant",
+   "player_id": "00-0029293"
+  },
+  {
+   "season": 2019,
+   "game_id": "2019_12_DET_WAS",
+   "team": "DET",
+   "player": "M.Jones",
+   "stat": "rec_yds",
+   "gt": 22,
+   "official": 0,
+   "class": "desc_name_variant",
+   "player_id": "00-0029293"
+  },
+  {
+   "season": 2019,
+   "game_id": "2019_12_DET_WAS",
+   "team": "DET",
+   "player": "M.Jones Jr.",
+   "stat": "rec",
+   "gt": 3,
+   "official": 5,
+   "class": "desc_name_variant",
+   "player_id": "00-0029293"
+  },
+  {
+   "season": 2019,
+   "game_id": "2019_12_DET_WAS",
+   "team": "DET",
+   "player": "M.Jones Jr.",
+   "stat": "rec_yds",
+   "gt": 24,
+   "official": 46,
+   "class": "desc_name_variant",
+   "player_id": "00-0029293"
+  },
+  {
+   "season": 2024,
+   "game_id": "2024_03_CAR_LV",
+   "team": "CAR",
+   "player": "Di.Johnson",
+   "stat": "rec",
+   "gt": 4,
+   "official": 0,
+   "class": "desc_name_variant",
+   "player_id": "00-0035216"
+  },
+  {
+   "season": 2024,
+   "game_id": "2024_03_CAR_LV",
+   "team": "CAR",
+   "player": "Di.Johnson",
+   "stat": "rec_yds",
+   "gt": 42,
+   "official": 0,
+   "class": "desc_name_variant",
+   "player_id": "00-0035216"
+  },
+  {
+   "season": 2024,
+   "game_id": "2024_03_CAR_LV",
+   "team": "CAR",
+   "player": "Dio.Johnson",
+   "stat": "rec",
+   "gt": 4,
+   "official": 8,
+   "class": "desc_name_variant",
+   "player_id": "00-0035216"
+  },
+  {
+   "season": 2024,
+   "game_id": "2024_03_CAR_LV",
+   "team": "CAR",
+   "player": "Dio.Johnson",
+   "stat": "rec_yds",
+   "gt": 80,
+   "official": 122,
+   "class": "desc_name_variant",
+   "player_id": "00-0035216"
+  },
+  {
+   "season": 2015,
+   "game_id": "2015_06_CAR_SEA",
+   "team": "SEA",
+   "player": "R.Lockette",
+   "stat": "rec_yds",
+   "gt": 45,
+   "official": 43,
+   "class": "lateral",
+   "player_id": "00-0028442"
+  },
+  {
+   "season": 2015,
+   "game_id": "2015_09_GB_CAR",
+   "team": "GB",
+   "player": "D.Adams",
+   "stat": "rec_yds",
+   "gt": 105,
+   "official": 93,
+   "class": "lateral",
+   "player_id": "00-0031381"
+  },
+  {
+   "season": 2015,
+   "game_id": "2015_12_NYG_WAS",
+   "team": "NYG",
+   "player": "O.Beckham Jr.",
+   "stat": "rec_yds",
+   "gt": 146,
+   "official": 142,
+   "class": "lateral",
+   "player_id": "00-0031235"
+  },
+  {
+   "season": 2015,
+   "game_id": "2015_12_NYG_WAS",
+   "team": "NYG",
+   "player": "R.Randle",
+   "stat": "rec_yds",
+   "gt": 40,
+   "official": 36,
+   "class": "lateral",
+   "player_id": "00-0029262"
+  },
+  {
+   "season": 2015,
+   "game_id": "2015_12_OAK_TEN",
+   "team": "LV",
+   "player": "A.Cooper",
+   "stat": "rec_yds",
+   "gt": 127,
+   "official": 115,
+   "class": "lateral",
+   "player_id": "00-0031544"
+  },
+  {
+   "season": 2015,
+   "game_id": "2015_13_GB_DET",
+   "team": "GB",
+   "player": "R.Rodgers",
+   "stat": "rec_yds",
+   "gt": 162,
+   "official": 146,
+   "class": "lateral",
+   "player_id": "00-0031384"
+  },
+  {
+   "season": 2015,
+   "game_id": "2015_16_PIT_BAL",
+   "team": "PIT",
+   "player": "A.Brown",
+   "stat": "rec_yds",
+   "gt": 68,
+   "official": 61,
+   "class": "lateral",
+   "player_id": "00-0027793"
+  },
+  {
+   "season": 2016,
+   "game_id": "2016_11_TB_KC",
+   "team": "KC",
+   "player": "T.Hill",
+   "stat": "rec_yds",
+   "gt": 59,
+   "official": 53,
+   "class": "lateral",
+   "player_id": "00-0033040"
+  },
+  {
+   "season": 2016,
+   "game_id": "2016_13_HOU_GB",
+   "team": "HOU",
+   "player": "L.Miller",
+   "stat": "rec_yds",
+   "gt": 7,
+   "official": -4,
+   "class": "lateral",
+   "player_id": "00-0029615"
+  },
+  {
+   "season": 2016,
+   "game_id": "2016_13_HOU_GB",
+   "team": "HOU",
+   "player": "W.Fuller",
+   "stat": "rec_yds",
+   "gt": 54,
+   "official": 59,
+   "class": "lateral",
+   "player_id": "00-0033127"
+  },
+  {
+   "season": 2017,
+   "game_id": "2017_02_HOU_CIN",
+   "team": "CIN",
+   "player": "G.Bernard",
+   "stat": "rec_yds",
+   "gt": 8,
+   "official": 16,
+   "class": "lateral",
+   "player_id": "00-0030456"
+  },
+  {
+   "season": 2017,
+   "game_id": "2017_05_GB_DAL",
+   "team": "DAL",
+   "player": "B.Butler",
+   "stat": "rec_yds",
+   "gt": 59,
+   "official": 57,
+   "class": "lateral",
+   "player_id": "00-0030516"
+  },
+  {
+   "season": 2017,
+   "game_id": "2017_05_GB_DAL",
+   "team": "DAL",
+   "player": "E.Elliott",
+   "stat": "rec_yds",
+   "gt": -4,
+   "official": 16,
+   "class": "lateral",
+   "player_id": "00-0033045"
+  },
+  {
+   "season": 2017,
+   "game_id": "2017_07_TB_BUF",
+   "team": "TB",
+   "player": "C.Sims III",
+   "stat": "rec_yds",
+   "gt": 10,
+   "official": 7,
+   "class": "lateral",
+   "player_id": "00-0031390"
+  },
+  {
+   "season": 2017,
+   "game_id": "2017_16_LAC_NYJ",
+   "team": "NYJ",
+   "player": "B.Qvale",
+   "stat": "rec_yds",
+   "gt": 0,
+   "official": -2,
+   "class": "lateral",
+   "player_id": null
+  },
+  {
+   "season": 2018,
+   "game_id": "2018_02_PHI_TB",
+   "team": "PHI",
+   "player": "N.Agholor",
+   "stat": "rec_yds",
+   "gt": 95,
+   "official": 88,
+   "class": "lateral",
+   "player_id": "00-0031549"
+  },
+  {
+   "season": 2018,
+   "game_id": "2018_02_PHI_TB",
+   "team": "PHI",
+   "player": "N.Foles",
+   "stat": "rec_yds",
+   "gt": 0,
+   "official": -5,
+   "class": "lateral",
+   "player_id": "00-0029567"
+  },
+  {
+   "season": 2018,
+   "game_id": "2018_03_TEN_JAX",
+   "team": "JAX",
+   "player": "D.Westbrook",
+   "stat": "rec_yds",
+   "gt": 29,
+   "official": 31,
+   "class": "lateral",
+   "player_id": "00-0033839"
+  },
+  {
+   "season": 2018,
+   "game_id": "2018_09_PIT_BAL",
+   "team": "BAL",
+   "player": "J.Allen",
+   "stat": "rec_yds",
+   "gt": 16,
+   "official": 8,
+   "class": "lateral",
+   "player_id": "00-0031577"
+  },
+  {
+   "season": 2018,
+   "game_id": "2018_14_NE_MIA",
+   "team": "MIA",
+   "player": "D.Parker",
+   "stat": "rec_yds",
+   "gt": 15,
+   "official": 18,
+   "class": "lateral",
+   "player_id": "00-0031547"
+  },
+  {
+   "season": 2019,
+   "game_id": "2019_17_MIA_NE",
+   "team": "NE",
+   "player": "J.Thuney",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "lateral",
+   "player_id": "00-0032391"
+  },
+  {
+   "season": 2020,
+   "game_id": "2020_03_LA_BUF",
+   "team": "LA",
+   "player": "V.Jefferson",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "lateral",
+   "player_id": "00-0036415"
+  },
+  {
+   "season": 2020,
+   "game_id": "2020_16_CIN_HOU",
+   "team": "HOU",
+   "player": "B.Cooks",
+   "stat": "rec_yds",
+   "gt": 134,
+   "official": 141,
+   "class": "lateral",
+   "player_id": "00-0031236"
+  },
+  {
+   "season": 2020,
+   "game_id": "2020_16_CIN_HOU",
+   "team": "HOU",
+   "player": "M.Scharping",
+   "stat": "rec_yds",
+   "gt": 0,
+   "official": 7,
+   "class": "lateral",
+   "player_id": null
+  },
+  {
+   "season": 2021,
+   "game_id": "2021_01_CLE_KC",
+   "team": "CLE",
+   "player": "B.Mayfield",
+   "stat": "rec_yds",
+   "gt": 0,
+   "official": 11,
+   "class": "lateral",
+   "player_id": "00-0034855"
+  },
+  {
+   "season": 2021,
+   "game_id": "2021_09_HOU_MIA",
+   "team": "HOU",
+   "player": "N.Collins",
+   "stat": "rec_yds",
+   "gt": 27,
+   "official": 25,
+   "class": "lateral",
+   "player_id": "00-0036554"
+  },
+  {
+   "season": 2021,
+   "game_id": "2021_10_DET_PIT",
+   "team": "DET",
+   "player": "T.Benson",
+   "stat": "rec_yds",
+   "gt": 9,
+   "official": 17,
+   "class": "lateral",
+   "player_id": "00-0034930"
+  },
+  {
+   "season": 2022,
+   "game_id": "2022_03_PIT_CLE",
+   "team": "PIT",
+   "player": "C.Claypool",
+   "stat": "rec_yds",
+   "gt": 41,
+   "official": 35,
+   "class": "lateral",
+   "player_id": "00-0036326"
+  },
+  {
+   "season": 2022,
+   "game_id": "2022_04_CHI_NYG",
+   "team": "CHI",
+   "player": "T.Ebner",
+   "stat": "fumble_lost",
+   "gt": 0,
+   "official": 1,
+   "class": "lateral",
+   "player_id": "00-0037087"
+  },
+  {
+   "season": 2022,
+   "game_id": "2022_06_JAX_IND",
+   "team": "JAX",
+   "player": "Z.Jones",
+   "stat": "rec_yds",
+   "gt": 53,
+   "official": 42,
+   "class": "lateral",
+   "player_id": "00-0033891"
+  },
+  {
+   "season": 2022,
+   "game_id": "2022_18_NYJ_MIA",
+   "team": "NYJ",
+   "player": "J.Flacco",
+   "stat": "rec_yds",
+   "gt": 0,
+   "official": -3,
+   "class": "lateral",
+   "player_id": "00-0026158"
+  },
+  {
+   "season": 2023,
+   "game_id": "2023_09_TB_HOU",
+   "team": "TB",
+   "player": "R.Hainsey",
+   "stat": "rec_yds",
+   "gt": 0,
+   "official": -3,
+   "class": "lateral",
+   "player_id": null
+  },
+  {
+   "season": 2023,
+   "game_id": "2023_16_BUF_LAC",
+   "team": "LAC",
+   "player": "A.Ekeler",
+   "stat": "rec_yds",
+   "gt": 23,
+   "official": 21,
+   "class": "lateral",
+   "player_id": "00-0033699"
+  },
+  {
+   "season": 2024,
+   "game_id": "2024_03_SF_LA",
+   "team": "SF",
+   "player": "B.Aiyuk",
+   "stat": "rec_yds",
+   "gt": 43,
+   "official": 48,
+   "class": "lateral",
+   "player_id": "00-0036261"
+  },
+  {
+   "season": 2024,
+   "game_id": "2024_03_SF_LA",
+   "team": "SF",
+   "player": "D.Puni",
+   "stat": "rec_yds",
+   "gt": 0,
+   "official": -3,
+   "class": "lateral",
+   "player_id": null
+  },
+  {
+   "season": 2024,
+   "game_id": "2024_03_SF_LA",
+   "team": "SF",
+   "player": "E.Saubert",
+   "stat": "rec_yds",
+   "gt": 24,
+   "official": 41,
+   "class": "lateral",
+   "player_id": "00-0033576"
+  },
+  {
+   "season": 2024,
+   "game_id": "2024_03_SF_LA",
+   "team": "SF",
+   "player": "J.Mason",
+   "stat": "rec_yds",
+   "gt": 10,
+   "official": 11,
+   "class": "lateral",
+   "player_id": "00-0037525"
+  },
+  {
+   "season": 2024,
+   "game_id": "2024_04_JAX_HOU",
+   "team": "JAX",
+   "player": "G.Davis",
+   "stat": "rec_yds",
+   "gt": 5,
+   "official": -2,
+   "class": "lateral",
+   "player_id": "00-0036196"
+  },
+  {
+   "season": 2024,
+   "game_id": "2024_05_DAL_PIT",
+   "team": "PIT",
+   "player": "Z.Frazier",
+   "stat": "rec_yds",
+   "gt": 0,
+   "official": -2,
+   "class": "lateral",
+   "player_id": null
+  },
+  {
+   "season": 2024,
+   "game_id": "2024_09_LAC_CLE",
+   "team": "LAC",
+   "player": "J.Palmer",
+   "stat": "rec_yds",
+   "gt": 54,
+   "official": 63,
+   "class": "lateral",
+   "player_id": "00-0036988"
+  },
+  {
+   "season": 2024,
+   "game_id": "2024_09_LAC_CLE",
+   "team": "LAC",
+   "player": "L.McConkey",
+   "stat": "rec_yds",
+   "gt": 70,
+   "official": 64,
+   "class": "lateral",
+   "player_id": "00-0039915"
+  },
+  {
+   "season": 2024,
+   "game_id": "2024_15_MIA_HOU",
+   "team": "HOU",
+   "player": "D.Ogunbowale",
+   "stat": "rush_yds",
+   "gt": 0,
+   "official": 35,
+   "class": "out_of_scope_play",
+   "player_id": null
+  },
+  {
+   "season": 2015,
+   "game_id": "2015_04_CAR_TB",
+   "team": "TB",
+   "player": "J.Hawley",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0027717"
+  },
+  {
+   "season": 2015,
+   "game_id": "2015_04_OAK_CHI",
+   "team": "CHI",
+   "player": "M.Slauson",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0026500"
+  },
+  {
+   "season": 2015,
+   "game_id": "2015_04_PHI_WAS",
+   "team": "PHI",
+   "player": "N.Agholor",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0031549"
+  },
+  {
+   "season": 2015,
+   "game_id": "2015_06_ATL_NO",
+   "team": "ATL",
+   "player": "J.Stone",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0030750"
+  },
+  {
+   "season": 2015,
+   "game_id": "2015_08_IND_CAR",
+   "team": "IND",
+   "player": "J.Harrison",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0030649"
+  },
+  {
+   "season": 2015,
+   "game_id": "2015_08_TB_ATL",
+   "team": "ATL",
+   "player": "M.Person",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0028177"
+  },
+  {
+   "season": 2015,
+   "game_id": "2015_09_NYG_TB",
+   "team": "TB",
+   "player": "M.Evans",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0031408"
+  },
+  {
+   "season": 2015,
+   "game_id": "2015_13_JAX_TEN",
+   "team": "JAX",
+   "player": "S.Wisniewski",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0027986"
+  },
+  {
+   "season": 2015,
+   "game_id": "2015_16_PIT_BAL",
+   "team": "PIT",
+   "player": "D.Williams",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0024242"
+  },
+  {
+   "season": 2016,
+   "game_id": "2016_06_CAR_NO",
+   "team": "CAR",
+   "player": "C.Brown",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0031118"
+  },
+  {
+   "season": 2016,
+   "game_id": "2016_11_TB_KC",
+   "team": "KC",
+   "player": "E.Fisher",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0030584"
+  },
+  {
+   "season": 2016,
+   "game_id": "2016_16_MIN_GB",
+   "team": "MIN",
+   "player": "N.Easton",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0031765"
+  },
+  {
+   "season": 2017,
+   "game_id": "2017_04_WAS_KC",
+   "team": "WAS",
+   "player": "C.Thompson",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0030404"
+  },
+  {
+   "season": 2017,
+   "game_id": "2017_05_GB_DAL",
+   "team": "DAL",
+   "player": "J.Witten",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0022127"
+  },
+  {
+   "season": 2017,
+   "game_id": "2017_07_NYJ_MIA",
+   "team": "NYJ",
+   "player": "J.Kerley",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0028091"
+  },
+  {
+   "season": 2017,
+   "game_id": "2017_09_OAK_MIA",
+   "team": "LV",
+   "player": "M.Newhouse",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0027768"
+  },
+  {
+   "season": 2017,
+   "game_id": "2017_14_PHI_LA",
+   "team": "LA",
+   "player": "T.Austin",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0030525"
+  },
+  {
+   "season": 2017,
+   "game_id": "2017_16_LAC_NYJ",
+   "team": "NYJ",
+   "player": "E.McGuire",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0033295"
+  },
+  {
+   "season": 2017,
+   "game_id": "2017_16_OAK_PHI",
+   "team": "LV",
+   "player": "J.Richard",
+   "stat": "fumble_lost",
+   "gt": 2,
+   "official": 1,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0033025"
+  },
+  {
+   "season": 2017,
+   "game_id": "2017_17_DAL_PHI",
+   "team": "PHI",
+   "player": "M.Johnson",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0032980"
+  },
+  {
+   "season": 2018,
+   "game_id": "2018_02_MIA_NYJ",
+   "team": "MIA",
+   "player": "D.Kilgore",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0028101"
+  },
+  {
+   "season": 2018,
+   "game_id": "2018_02_PHI_TB",
+   "team": "PHI",
+   "player": "W.Smallwood",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0032782"
+  },
+  {
+   "season": 2018,
+   "game_id": "2018_03_TEN_JAX",
+   "team": "JAX",
+   "player": "D.Moncrief",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0031339"
+  },
+  {
+   "season": 2018,
+   "game_id": "2018_04_HOU_IND",
+   "team": "IND",
+   "player": "R.Kelly",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0032383"
+  },
+  {
+   "season": 2018,
+   "game_id": "2018_12_CLE_CIN",
+   "team": "CIN",
+   "player": "B.Price",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0034762"
+  },
+  {
+   "season": 2018,
+   "game_id": "2018_14_ATL_GB",
+   "team": "ATL",
+   "player": "A.Mack",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0026997"
+  },
+  {
+   "season": 2019,
+   "game_id": "2019_01_BUF_NYJ",
+   "team": "NYJ",
+   "player": "Q.Enunwa",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0031023"
+  },
+  {
+   "season": 2019,
+   "game_id": "2019_02_MIN_GB",
+   "team": "MIN",
+   "player": "S.Diggs",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0031588"
+  },
+  {
+   "season": 2019,
+   "game_id": "2019_03_PIT_SF",
+   "team": "SF",
+   "player": "R.James Jr.",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0034286"
+  },
+  {
+   "season": 2019,
+   "game_id": "2019_10_LA_PIT",
+   "team": "PIT",
+   "player": "M.Pouncey",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0027870"
+  },
+  {
+   "season": 2019,
+   "game_id": "2019_10_NYG_NYJ",
+   "team": "NYG",
+   "player": "G.Tate",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0027891"
+  },
+  {
+   "season": 2019,
+   "game_id": "2019_10_SEA_SF",
+   "team": "SEA",
+   "player": "G.Ifedi",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0032384"
+  },
+  {
+   "season": 2019,
+   "game_id": "2019_15_BUF_PIT",
+   "team": "PIT",
+   "player": "D.Johnson",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0035216"
+  },
+  {
+   "season": 2019,
+   "game_id": "2019_15_CHI_GB",
+   "team": "CHI",
+   "player": "J.Horsted",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0035562"
+  },
+  {
+   "season": 2020,
+   "game_id": "2020_10_LAC_MIA",
+   "team": "MIA",
+   "player": "T.Karras",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0032445"
+  },
+  {
+   "season": 2020,
+   "game_id": "2020_11_DET_CAR",
+   "team": "DET",
+   "player": "F.Ragnow",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0034345"
+  },
+  {
+   "season": 2020,
+   "game_id": "2020_12_NO_DEN",
+   "team": "DEN",
+   "player": "L.Cushenberry",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0036391"
+  },
+  {
+   "season": 2020,
+   "game_id": "2020_18_CLE_PIT",
+   "team": "PIT",
+   "player": "M.Pouncey",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0027870"
+  },
+  {
+   "season": 2021,
+   "game_id": "2021_08_MIA_BUF",
+   "team": "MIA",
+   "player": "A.Reiter",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0031958"
+  },
+  {
+   "season": 2021,
+   "game_id": "2021_12_CAR_MIA",
+   "team": "MIA",
+   "player": "A.Reiter",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0031958"
+  },
+  {
+   "season": 2021,
+   "game_id": "2021_17_LA_BAL",
+   "team": "BAL",
+   "player": "M.Brown",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0035662"
+  },
+  {
+   "season": 2021,
+   "game_id": "2021_19_PIT_KC",
+   "team": "KC",
+   "player": "Da.Williams",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0034301"
+  },
+  {
+   "season": 2021,
+   "game_id": "2021_20_LA_TB",
+   "team": "LA",
+   "player": "B.Allen",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0034804"
+  },
+  {
+   "season": 2022,
+   "game_id": "2022_03_PIT_CLE",
+   "team": "PIT",
+   "player": "N.Harris",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0036893"
+  },
+  {
+   "season": 2022,
+   "game_id": "2022_09_LV_JAX",
+   "team": "LV",
+   "player": "F.Moreau",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0034981"
+  },
+  {
+   "season": 2022,
+   "game_id": "2022_10_WAS_PHI",
+   "team": "PHI",
+   "player": "D.Smith",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0036912"
+  },
+  {
+   "season": 2022,
+   "game_id": "2022_14_MIN_DET",
+   "team": "MIN",
+   "player": "T.Hockenson",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0035229"
+  },
+  {
+   "season": 2022,
+   "game_id": "2022_15_NE_LV",
+   "team": "NE",
+   "player": "J.Meyers",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0034960"
+  },
+  {
+   "season": 2023,
+   "game_id": "2023_01_JAX_IND",
+   "team": "JAX",
+   "player": "T.Bigsby",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0038555"
+  },
+  {
+   "season": 2023,
+   "game_id": "2023_09_TB_HOU",
+   "team": "TB",
+   "player": "C.Otton",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0038129"
+  },
+  {
+   "season": 2023,
+   "game_id": "2023_14_MIN_LV",
+   "team": "LV",
+   "player": "G.Van Roten",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0029685"
+  },
+  {
+   "season": 2024,
+   "game_id": "2024_01_PIT_ATL",
+   "team": "ATL",
+   "player": "D.Dalman",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0036957"
+  },
+  {
+   "season": 2024,
+   "game_id": "2024_05_DAL_PIT",
+   "team": "PIT",
+   "player": "P.Freiermuth",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0036894"
+  },
+  {
+   "season": 2024,
+   "game_id": "2024_11_HOU_DAL",
+   "team": "DAL",
+   "player": "T.Guyton",
+   "stat": "fumble_lost",
+   "gt": 1,
+   "official": 0,
+   "class": "uncategorized_fumble",
+   "player_id": "00-0039341"
+  }
+ ]
+}

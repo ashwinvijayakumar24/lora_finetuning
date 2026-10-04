@@ -173,6 +173,25 @@ def test_same_player_same_yardage_stat_is_merged():
     assert rec_yds == [Credit("A.St. Brown", "rec_yds", 21)]
 
 
+def test_name_spacing_follows_desc():
+    # nflverse sometimes stores "D. Thomas" while desc prints "88-D.Thomas" (DEN 2017)
+    row = dict(ROWS["completion"], receiver_player_name="J. Williams")
+    res = build_label(row)
+    assert {c.player for c in res.label.credits} == {"B.Nix", "J.Williams"}
+    assert res.names_missing_from_desc == ()
+    # multi-part surnames are untouched
+    from playparse.data.ground_truth import normalize_name
+    assert normalize_name("A.St. Brown") == "A.St. Brown"
+    assert normalize_name("Dam. Williams") == "Dam.Williams"
+
+
+def test_name_kept_when_desc_uses_the_spaced_form():
+    row = dict(ROWS["completion"], receiver_player_name="J. Williams",
+               desc=ROWS["completion"]["desc"].replace("J.Williams", "J. Williams"))
+    names = {c.player for c in build_label(row).label.credits}
+    assert "J. Williams" in names
+
+
 def test_nan_values_are_missing():
     row = dict(ROWS["incompletion"], passing_yards=float("nan"), receiving_yards=float("nan"))
     assert build_label(row).label.matches(EMPTY)
