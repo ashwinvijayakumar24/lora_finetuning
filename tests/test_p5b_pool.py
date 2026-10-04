@@ -18,6 +18,7 @@ from playparse.serving.adapter import AdapterError
 from playparse.serving.adapter_pool import (
     AdapterPool,
     PoolFull,
+    build_plan,
     lora_delta_bgmv,
     lora_delta_loop,
     synthetic_adapter,
@@ -124,6 +125,39 @@ def test_pool_chunking_does_not_change_v2():
     whole = pool.delta(DOWN, x, slots)
     pool.chunk_bytes = 1                     # forces one row per chunk
     torch.testing.assert_close(pool.delta(DOWN, x, slots), whole, atol=0, rtol=0)
+
+
+def test_planned_kernels_match_unplanned():
+    """The host-side BatchPlan changes how rows are grouped, never what is computed."""
+    pool = AdapterPool(CFG, n_slots=3, max_rank=16)
+    for i, r in enumerate((4, 8, 16)):
+        pool.register(synthetic_adapter(CFG, r, seed=20 + i, b_std=0.1), f"a{i}")
+    s = [pool.acquire(f"a{i}") for i in range(3)]
+    # prefill chunk (5 rows, a0) | decode a2 | base prefill (3) | decode a1 | decode base | prefill a2 (4)
+    seq_slots = [s[0], s[2], -1, s[1], -1, s[2]]
+    q_lens = [5, 1, 3, 1, 1, 4]
+    rows = torch.tensor([sl for sl, q in zip(seq_slots, q_lens) for _ in range(q)])
+    plan = build_plan(seq_slots, q_lens, "cpu")
+    assert plan.n_rows == 15 and [g[0] for g in plan.groups] == sorted(set(s))
+    assert plan.segments == ((0, 5, s[0]), (11, 15, s[2]))
+    assert plan.decode_rows.tolist() == [5, 9]
+    for key in (Q, DOWN):
+        x = (torch.randn(15, pool.shapes[key][1], generator=torch.Generator().manual_seed(9)) * 0.5).half()
+        pool.kernel = "v1"
+        ref = pool.delta(key, x, rows)
+        torch.testing.assert_close(pool.delta(key, x, rows, plan), ref, atol=0, rtol=0)
+        pool.kernel = "v2"
+        v2 = pool.delta(key, x, rows, plan)
+        torch.testing.assert_close(v2.float(), ref.float(), atol=2e-3, rtol=1e-2)
+        assert torch.count_nonzero(v2[rows < 0]) == 0
+        # Prefill segments in v2 use the same matmuls as v1: bit-identical there.
+        torch.testing.assert_close(v2[:5], ref[:5], atol=0, rtol=0)
+
+
+def test_plan_with_only_base_rows_skips_the_kernel():
+    pool = AdapterPool(CFG, n_slots=1, max_rank=8)
+    plan = build_plan([-1, -1], [3, 1], "cpu")
+    assert pool.delta(Q, torch.zeros(4, 64).half(), torch.full((4,), -1), plan) is None
 
 
 # --------------------------------------------------------------------------

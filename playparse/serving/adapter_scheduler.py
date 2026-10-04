@@ -102,9 +102,8 @@ class _RoutedModel:
                 )
         seq_slots = [slot for slot, _ in record]
         self._sched.last_seq_slots = seq_slots
-        return self._model.forward_varlen(
-            token_ids, meta, backend, adapter=self._model.selection_for(seq_slots, meta)
-        )
+        selection = self._model.selection_for(seq_slots, meta, [q for _, q in record])
+        return self._model.forward_varlen(token_ids, meta, backend, adapter=selection)
 
 
 class AdapterScheduler(Scheduler):

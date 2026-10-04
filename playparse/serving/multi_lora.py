@@ -38,10 +38,11 @@ sequence that owns packed token ``t`` (built by the serving layer's
 """
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any, Sequence
 
 from playparse.serving._engine_path import ensure_engine_importable
-from playparse.serving.adapter_pool import AdapterPool
+from playparse.serving.adapter_pool import AdapterPool, BatchPlan, build_plan
 from playparse.serving.lora_engine import (
     AdapterSelection,
     current_selection,
@@ -58,12 +59,20 @@ from engine.model_gpu import LlamaModelGPU  # noqa: E402
 
 __all__ = [
     "MultiLoRAModelGPU",
+    "PlannedSelection",
     "PooledLoRALinear",
     "install_multi_lora_linear",
     "multi_lora_linear",
     "row_slots_for",
     "uninstall_multi_lora_linear",
 ]
+
+
+@dataclass(frozen=True)
+class PlannedSelection(AdapterSelection):
+    """P5a's per-row selection plus the host-side :class:`BatchPlan` for the kernels."""
+
+    plan: BatchPlan | None = None
 
 
 class PooledLoRALinear:
@@ -93,7 +102,7 @@ class PooledLoRALinear:
             raise ValueError(
                 f"{self.key}: row_slots has {row_slots.shape[0]} entries for {x.shape[0]} token rows"
             )
-        return self.pool.delta(self.key, x, row_slots)
+        return self.pool.delta(self.key, x, row_slots, getattr(selection, "plan", None))
 
     @property
     def T(self):
@@ -168,11 +177,21 @@ class MultiLoRAModelGPU(LlamaModelGPU):
         super().__init__(weights, config, device=device, **kwargs)
         self.pool = pool
 
-    def selection_for(self, seq_slots: Sequence[int], meta) -> AdapterSelection | None:
-        """The explicit selection for one batch, or None if every sequence is base-only."""
+    def selection_for(
+        self, seq_slots: Sequence[int], meta, query_lens: Sequence[int] | None = None,
+    ) -> AdapterSelection | None:
+        """The explicit selection for one batch, or None if every sequence is base-only.
+
+        ``query_lens`` (tokens per sequence this step) are read from ``meta`` if the
+        caller does not already have them on the host.
+        """
         if all(s < 0 for s in seq_slots):
             return None
-        return AdapterSelection.per_row(self.pool.slot_names(), row_slots_for(seq_slots, meta, self.device))
+        if query_lens is None:
+            query_lens = meta.query_lens.tolist()
+        plan = build_plan(seq_slots, query_lens, self.device)
+        return PlannedSelection(names=self.pool.slot_names(),
+                                row_slots=row_slots_for(seq_slots, meta, self.device), plan=plan)
 
     def forward_varlen(self, token_ids, meta, backend, *, adapter: AdapterSelection | None):
         """Batched forward. ``adapter`` is required: a per-row selection, or None for base."""

@@ -17,7 +17,7 @@ import sys
 
 import pytest
 
-from tests._p5b_util import (
+from _p5b_util import (
     ADAPTER_SPECS,
     CFG,
     PROMPTS,

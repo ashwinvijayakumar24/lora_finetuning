@@ -14,7 +14,7 @@ the base model, because the hidden states (and so K and V) differ. The tests:
 """
 import pytest
 
-from tests._p5b_util import BLOCK, PROMPTS, make_scheduler, mismatches, outputs, reference, submit
+from _p5b_util import BLOCK, PROMPTS, make_scheduler, mismatches, outputs, reference, submit
 
 from playparse.serving.adapter_radix import NAMESPACE_STRIDE, AdapterRadixCache
 

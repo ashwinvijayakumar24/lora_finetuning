@@ -47,17 +47,28 @@ so the loop kernel here computes the same numbers as P5a's single-adapter path.
 
 THE TWO KERNELS
 ---------------
-``lora_delta_loop`` ("v1") loops over the distinct adapters present in the batch
-and runs two small matmuls for each one's rows. It is P5a's reference algorithm
-on the pool layout and is the correctness reference for everything faster.
+**v1** loops over the distinct adapters present in the batch and runs two
+small matmuls for each one's rows. It is P5a's reference algorithm on the pool
+layout and the correctness reference for everything faster. Its cost grows with
+the number of distinct adapters in the batch.
 
-``lora_delta_bgmv`` ("v2") is the Punica BGMV pattern written in PyTorch: gather
-each row's ``A`` and ``B`` from the stacks, then two batched matmuls. Its cost
-does not grow with the number of distinct adapters in the batch, only with the
-number of rows, which is what lets it scale with N. It materialises the gathered
-weights (``rows x max_rank x (in + out)``), so rows are processed in chunks that
-keep that buffer under ``chunk_bytes``. A fused CUDA/Triton BGMV kernel avoids the
-materialisation entirely; that is the stretch "v3".
+**v2** is Punica's design written in PyTorch. Decode rows (one per decoding
+sequence, each possibly a different adapter) go through BGMV
+(``lora_delta_bgmv``): gather each row's ``A`` and ``B`` from the stacks, then
+two batched matmuls, at a cost that does not depend on how many distinct
+adapters there are. BGMV materialises the gathered weights
+(``rows x max_rank x (in + out)``), which is fine for a decode batch and
+wasteful for a prefill chunk, whose rows all share one adapter. So prefill
+chunks are handled segment by segment with one ordinary matmul pair each (the
+SGMV idea). Rows are processed in chunks that keep the gathered buffer under
+``chunk_bytes``. A fused CUDA/Triton kernel avoids the materialisation entirely;
+that is the stretch "v3".
+
+Both kernels take a :class:`BatchPlan`, built once per forward pass on the host
+from the scheduler's per-sequence slots and query lengths, so neither needs a
+device-to-host sync inside the 7-per-layer projection loop. Without a plan they
+fall back to deriving everything from ``row_slots`` (``lora_delta_loop`` syncs
+to find the distinct slots; ``lora_delta_bgmv`` treats every row as a decode row).
 """
 from __future__ import annotations
 
@@ -85,6 +96,8 @@ import torch  # noqa: E402
 __all__ = [
     "ALL_TARGETS",
     "AdapterPool",
+    "BatchPlan",
+    "build_plan",
     "PoolFull",
     "PoolStats",
     "lora_delta_bgmv",
@@ -174,6 +187,105 @@ def _bgmv_chunk(x: torch.Tensor, A: torch.Tensor, B: torch.Tensor, idx: torch.Te
     b = B[idx]                                            # (t, out, R)  gather
     xa = torch.bmm(x.unsqueeze(1), a.transpose(1, 2))     # (t, 1, R)    shrink
     return torch.bmm(xa, b.transpose(1, 2)).squeeze(1)    # (t, out)     expand
+
+
+# --------------------------------------------------------------------------
+# The batch plan: host-side structure, built once per forward pass
+# --------------------------------------------------------------------------
+
+@dataclass(frozen=True)
+class BatchPlan:
+    """Which rows use which adapter, computed ONCE per forward pass on the host.
+
+    The scheduler already knows, in Python, every sequence's slot and query
+    length. Turning that into index tensors once per step (instead of once per
+    projection, 7 x layers times) removes all device->host syncs from the
+    kernels, and it exposes the one structural fact that matters most for cost:
+
+    * a **decode** sequence contributes one row;
+    * a **prefill chunk** contributes a contiguous run of rows that all use the
+      SAME adapter.
+
+    ``groups``: per distinct adapter slot, the row indices that use it (v1).
+    ``decode_rows``/``decode_slots``: adapter rows from decode sequences (v2 BGMV).
+    ``segments``: ``(start, end, slot)`` for prefill chunks under an adapter (v2 SGMV).
+    Base-model rows appear nowhere: they contribute exactly zero.
+    """
+
+    groups: tuple[tuple[int, torch.Tensor], ...]
+    decode_rows: torch.Tensor | None
+    decode_slots: torch.Tensor | None
+    segments: tuple[tuple[int, int, int], ...]
+    n_rows: int
+
+
+def build_plan(seq_slots: Sequence[int], query_lens: Sequence[int], device) -> BatchPlan:
+    rows_by_slot: dict[int, list[int]] = {}
+    dec_rows: list[int] = []
+    dec_slots: list[int] = []
+    segments: list[tuple[int, int, int]] = []
+    start = 0
+    for slot, q in zip(seq_slots, query_lens):
+        end = start + q
+        if slot >= 0:
+            rows_by_slot.setdefault(slot, []).extend(range(start, end))
+            if q == 1:
+                dec_rows.append(start)
+                dec_slots.append(slot)
+            else:
+                segments.append((start, end, slot))
+        start = end
+
+    def t(v):
+        return torch.tensor(v, dtype=torch.long, device=device)
+
+    return BatchPlan(
+        groups=tuple((s, t(r)) for s, r in sorted(rows_by_slot.items())),
+        decode_rows=t(dec_rows) if dec_rows else None,
+        decode_slots=t(dec_slots) if dec_slots else None,
+        segments=tuple(segments),
+        n_rows=start,
+    )
+
+
+def _loop_planned(x, A, B, ranks, plan: BatchPlan) -> torch.Tensor:
+    """v1 with the plan: one pair of matmuls per distinct adapter, no host syncs."""
+    out = torch.zeros((x.shape[0], B.shape[1]), dtype=x.dtype, device=x.device)
+    for slot, rows in plan.groups:
+        r = ranks[slot]
+        if r == 0:
+            continue
+        b = B[slot, :, :r]
+        if r < B.shape[2]:
+            b = b.contiguous()
+        out.index_add_(0, rows, (x[rows] @ A[slot, :r].T) @ b.T)
+    return out
+
+
+def _bgmv_sgmv_planned(x, A, B, ranks, plan: BatchPlan, chunk_rows: int) -> torch.Tensor:
+    """v2 with the plan: BGMV over decode rows, one matmul pair per prefill segment.
+
+    This is Punica's split. Decode rows each need a different adapter, so they
+    are gathered and multiplied in one batched matmul (BGMV) whatever the number
+    of distinct adapters. A prefill chunk's rows all share one adapter, so
+    gathering a private copy of the weights for every one of its rows (what pure
+    BGMV does) would move ``rows x rank x (in + out)`` bytes to do the work of a
+    single matmul; instead each chunk is one ordinary matmul pair (the
+    segmented-GMV idea, SGMV, written as a loop over the step's few prefill chunks).
+    """
+    out = torch.zeros((x.shape[0], B.shape[1]), dtype=x.dtype, device=x.device)
+    if plan.decode_rows is not None:
+        d = lora_delta_bgmv(x[plan.decode_rows], A, B, plan.decode_slots, chunk_rows)
+        out.index_copy_(0, plan.decode_rows, d)
+    for start, end, slot in plan.segments:
+        r = ranks[slot]
+        if r == 0:
+            continue
+        b = B[slot, :, :r]
+        if r < B.shape[2]:
+            b = b.contiguous()
+        out[start:end] = (x[start:end] @ A[slot, :r].T) @ b.T
+    return out
 
 
 # --------------------------------------------------------------------------
@@ -490,18 +602,31 @@ class AdapterPool:
 
     # -- the math -------------------------------------------------------------
 
-    def delta(self, key: str, x: torch.Tensor, row_slots: torch.Tensor) -> torch.Tensor | None:
-        """Low-rank contribution for one projection over a mixed batch, via ``self.kernel``."""
+    def delta(
+        self, key: str, x: torch.Tensor, row_slots: torch.Tensor, plan: "BatchPlan | None" = None,
+    ) -> torch.Tensor | None:
+        """Low-rank contribution for one projection over a mixed batch, via ``self.kernel``.
+
+        With a :class:`BatchPlan` (what the serving path always passes) both
+        kernels use host-side batch structure computed once per forward pass;
+        without one they derive everything from ``row_slots`` on the device.
+        """
         A, B = self.A[key], self.B[key]
-        if row_slots.device != x.device:
-            row_slots = row_slots.to(x.device)
+        if self.kernel not in KERNELS:
+            raise ValueError(f"unknown kernel {self.kernel!r}; expected one of {KERNELS}")
+        out_dim, in_dim = self.shapes[key]
+        chunk = max(1, self.chunk_bytes // (self.max_rank * (in_dim + out_dim) * A.element_size()))
+        if plan is None:
+            if row_slots.device != x.device:
+                row_slots = row_slots.to(x.device)
+            if self.kernel == "v1":
+                return lora_delta_loop(x, A, B, self.slot_rank, row_slots)
+            return lora_delta_bgmv(x, A, B, row_slots, chunk)
+        if not plan.groups:
+            return None
         if self.kernel == "v1":
-            return lora_delta_loop(x, A, B, self.slot_rank, row_slots)
-        if self.kernel == "v2":
-            out_dim, in_dim = self.shapes[key]
-            per_row = self.max_rank * (in_dim + out_dim) * A.element_size()
-            return lora_delta_bgmv(x, A, B, row_slots, max(1, self.chunk_bytes // per_row))
-        raise ValueError(f"unknown kernel {self.kernel!r}; expected one of {KERNELS}")
+            return _loop_planned(x, A, B, self.slot_rank, plan)
+        return _bgmv_sgmv_planned(x, A, B, self.slot_rank, plan, chunk)
 
     # -- reporting -------------------------------------------------------------
 
