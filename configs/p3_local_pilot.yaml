@@ -16,7 +16,7 @@ lora:
 data:
   train: runs/p3_local_pilot/data/train_pilot.jsonl
   val: null                # set to $PLAYPARSE_PROCESSED_DIR/val.jsonl
-  max_len: 768             # the longest pilot example is 521 tokens; 512 would raise
+  max_len: 768             # the longest pilot example is 595 tokens (a lateral); 512 would raise
   mask_prompt: true
   on_overlength: raise
   val_loss_examples: 200   # proportional bucket-stratified val sample for val loss

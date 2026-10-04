@@ -1,0 +1,61 @@
+{
+ "train.jsonl": {
+  "n": 294016,
+  "over_512": 6,
+  "over_512_by_bucket": {
+   "challenge": 2,
+   "lateral": 4
+  },
+  "max": [
+   595,
+   "lateral",
+   "2022_04_CHI_NYG",
+   3895
+  ],
+  "total_tokens": 87857301,
+  "prompt_tokens": 78282871,
+  "completion_tokens": 9574430,
+  "mean_total": 298.8180949336091,
+  "mean_prompt": 266.25377870592075,
+  "mean_completion": 32.56431622768829,
+  "padded64_tokens": 100103296
+ },
+ "val.jsonl": {
+  "n": 38102,
+  "over_512": 0,
+  "over_512_by_bucket": {},
+  "max": [
+   482,
+   "lateral",
+   "2023_12_CHI_MIN",
+   3988
+  ],
+  "total_tokens": 11385553,
+  "prompt_tokens": 10143469,
+  "completion_tokens": 1242084,
+  "mean_total": 298.8177261036166,
+  "mean_prompt": 266.21880741168445,
+  "mean_completion": 32.598918691932184,
+  "padded64_tokens": 12966720
+ },
+ "train_50k.jsonl": {
+  "n": 50000,
+  "over_512": 1,
+  "over_512_by_bucket": {
+   "lateral": 1
+  },
+  "max": [
+   595,
+   "lateral",
+   "2022_04_CHI_NYG",
+   3895
+  ],
+  "total_tokens": 14946973,
+  "prompt_tokens": 13316212,
+  "completion_tokens": 1630761,
+  "mean_total": 298.93946,
+  "mean_prompt": 266.32424,
+  "mean_completion": 32.61522,
+  "padded64_tokens": 17029696
+ }
+}

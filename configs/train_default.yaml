@@ -14,7 +14,7 @@ lora:
 data:
   train: data/processed/train.jsonl
   val: data/processed/val.jsonl
-  max_len: 512
+  max_len: 640            # longest train example is 595 tokens (a lateral); 512 raised on 6 plays
   mask_prompt: true
   on_overlength: raise
 train:
