@@ -102,3 +102,56 @@ def make_peft_adapter(
     peft_model.eval()
     peft_model.save_pretrained(str(out_dir))
     return peft_model
+
+
+# --------------------------------------------------------------------------
+# P5b: engine weights without a checkpoint, and a serving stack around them
+# --------------------------------------------------------------------------
+
+def random_engine_weights(config: dict[str, Any], seed: int = 0, device: str = "cpu", std: float | None = None):
+    """A random weight dict in the engine's own format (fp16, HF names, tied lm_head).
+
+    The same names and shapes ``engine.loader.load_weights_gpu`` returns, built
+    in memory: the P5b scheduler tests need a real ``LlamaModelGPU`` forward
+    pass (so batching, attention and the linear() hook are the production code)
+    but not HF or PEFT, and skipping the disk round trip keeps them fast. It is
+    also how the benchmark builds a 1B-shaped model with fewer layers.
+    """
+    import torch
+
+    from playparse.serving.adapter import SUPPORTED_MODULES, engine_weight_name, expected_linear_shapes
+
+    g = torch.Generator().manual_seed(seed)
+    std = config.get("initializer_range", 0.02) if std is None else std
+
+    def rnd(*shape):
+        return (torch.randn(*shape, generator=g) * std).to(device=device, dtype=torch.float16)
+
+    H, V = config["hidden_size"], config["vocab_size"]
+    w = {"model.embed_tokens.weight": rnd(V, H)}
+    w["lm_head.weight"] = w["model.embed_tokens.weight"]          # tied, as in Llama 3.2 1B
+    w["model.norm.weight"] = torch.ones(H, device=device, dtype=torch.float16)
+    shapes = expected_linear_shapes(config)
+    for i in range(config["num_hidden_layers"]):
+        p = f"model.layers.{i}"
+        w[f"{p}.input_layernorm.weight"] = torch.ones(H, device=device, dtype=torch.float16)
+        w[f"{p}.post_attention_layernorm.weight"] = torch.ones(H, device=device, dtype=torch.float16)
+        for m in SUPPORTED_MODULES:
+            w[engine_weight_name(i, m)] = rnd(*shapes[m])
+    return w
+
+
+def paged_backend(config: dict[str, Any], num_blocks: int, block_size: int, device: str = "cpu"):
+    """A ``PagedTorchBackend`` sized for ``config`` (fp16, like the engine's activations)."""
+    import torch
+
+    from playparse.serving._serving_path import ensure_serving_importable
+
+    ensure_serving_importable()
+    from serving.backends.paged_torch import PagedTorchBackend
+
+    return PagedTorchBackend(
+        num_layers=config["num_hidden_layers"], num_blocks=num_blocks, block_size=block_size,
+        n_kv_heads=config["num_key_value_heads"], n_heads=config["num_attention_heads"],
+        head_dim=config["head_dim"], device=device, dtype=torch.float16,
+    )

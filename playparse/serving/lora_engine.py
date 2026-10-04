@@ -304,15 +304,39 @@ def lora_linear(x: torch.Tensor, w: Any) -> torch.Tensor:
     return _BASE_LINEAR(x, w)
 
 
+lora_linear.next_linear = lambda: _BASE_LINEAR   # type: ignore[attr-defined]
+
+
+def linear_chain_contains(fn: Any) -> bool:
+    """Is ``fn`` already one of the wrappers stacked on ``components_gpu.linear``?
+
+    Wrappers (this module's ``lora_linear``, P5b's ``multi_lora_linear``) expose
+    ``next_linear()``, the function they delegate to. Checking only the top of
+    the stack is not enough: re-installing a wrapper that sits lower down would
+    make it delegate to a wrapper that delegates back to it, an infinite
+    recursion on the first forward pass (docs/issues/p5b-linear-wrapper-cycle.md).
+    """
+    f = _components_gpu.linear
+    seen = 0
+    while f is not None and seen < 16:
+        if f is fn:
+            return True
+        nxt = getattr(f, "next_linear", None)
+        f = nxt() if nxt is not None else None
+        seen += 1
+    return False
+
+
 def install_lora_linear() -> None:
     """Replace ``engine.components_gpu.linear`` with :func:`lora_linear`.
 
-    Idempotent. Process-wide by nature (it replaces a module global), but
-    behaviour-preserving for every weight that is not a LoRALinear: those go
-    straight to the original function after one type check.
+    Idempotent, including when another wrapper has been stacked on top since
+    (see :func:`linear_chain_contains`). Process-wide by nature (it replaces a
+    module global), but behaviour-preserving for every weight that is not a
+    LoRALinear: those go straight to the original function after one type check.
     """
     global _BASE_LINEAR
-    if _components_gpu.linear is lora_linear:
+    if linear_chain_contains(lora_linear):
         return
     _BASE_LINEAR = _components_gpu.linear
     _components_gpu.linear = lora_linear
