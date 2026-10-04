@@ -224,15 +224,17 @@ class MemoryTracker:
     """Peak memory, measured the best way each backend allows.
 
     cuda: torch.cuda.max_memory_allocated (exact peak of tensor allocations).
-    mps:  max of torch.mps.driver_allocated_memory() sampled after every
-          micro-batch (MPS has no peak counter; this is total memory the Metal
-          driver holds for the process, including its caching).
+    mps:  max of torch.mps.driver_allocated_memory() sampled before and after
+          every backward (MPS has no peak counter; this is total memory the
+          Metal driver holds for the process, including its cache). The max of
+          current_allocated_memory() (live tensors only) is kept as peak_alloc.
     cpu:  process peak resident set size (ru_maxrss).
     """
 
     def __init__(self, device: torch.device):
         self.device = device
         self._peak = 0
+        self._peak_alloc = 0
         if device.type == "cuda":
             torch.cuda.reset_peak_memory_stats(device)
 
@@ -243,6 +245,15 @@ class MemoryTracker:
     def sample(self) -> None:
         if self.device.type == "mps":
             self._peak = max(self._peak, int(torch.mps.driver_allocated_memory()))
+            self._peak_alloc = max(self._peak_alloc, int(torch.mps.current_allocated_memory()))
+
+    def peak_alloc_bytes(self) -> int | None:
+        """Peak of live tensor memory (cuda exact, mps sampled, cpu unavailable)."""
+        if self.device.type == "cuda":
+            return int(torch.cuda.max_memory_allocated(self.device))
+        if self.device.type == "mps":
+            return self._peak_alloc
+        return None
 
     def peak_bytes(self) -> int:
         if self.device.type == "cuda":
@@ -313,6 +324,8 @@ def accumulate_gradients(
         with autocast_context(device, autocast):
             logits = model_logits(model, b["input_ids"], b["attention_mask"])
         loss_sum, _ = token_loss_sum(logits, b["labels"])
+        if on_micro_batch is not None:
+            on_micro_batch()  # activations are at their peak here, just before backward
         (loss_sum / n_total).backward()
         loss_total += float(loss_sum.detach())
         del logits, loss_sum
@@ -692,6 +705,7 @@ def train(
                 "step_time_s": win_time / win_steps,
                 "tokens_seen": tokens_seen,
                 "peak_mem_bytes": mem.peak_bytes(),
+                "peak_alloc_bytes": mem.peak_alloc_bytes(),
                 "mem_kind": mem.kind,
             }
             log.write(rec)
