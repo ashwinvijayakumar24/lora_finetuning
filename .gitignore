@@ -10,3 +10,4 @@ runs/
 *.safetensors
 !tests/fixtures/**/*.safetensors
 .env
+.claude/
