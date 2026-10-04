@@ -10,6 +10,7 @@ from playparse.lora.inject import (
     merge_lora,
     trainable_parameters,
 )
+from playparse.lora.io import load_adapter, read_adapter, save_adapter
 from playparse.lora.lora_linear import LoRALinear
 
 __all__ = [
@@ -19,9 +20,12 @@ __all__ = [
     "count_total",
     "count_trainable",
     "inject_lora",
+    "load_adapter",
     "load_lora_state_dict",
     "lora_modules",
     "lora_state_dict",
     "merge_lora",
+    "read_adapter",
+    "save_adapter",
     "trainable_parameters",
 ]
