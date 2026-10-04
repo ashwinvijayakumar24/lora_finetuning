@@ -1,0 +1,122 @@
+{
+  "metadata": {
+    "label": "LOCAL / INDICATIVE",
+    "timestamp_utc": "2026-10-04T22:42:19+00:00",
+    "host": "ashwins-mac.local",
+    "platform": "macOS-15.6.1-arm64-arm-64bit-Mach-O",
+    "python": "3.13.7",
+    "torch": "2.12.0",
+    "device": "mps",
+    "playparse_git_sha": "fc945fc0059794d98f28a7dbd09a9a1477681da3",
+    "playparse_git_dirty": false,
+    "engine_dir": "/Applications/Ashwin/Programming/personal projects/custom_llm/llm_inference_engine",
+    "engine_git_sha": "a3d0ab80f41d8ad834a385fa81744574e31b2eed",
+    "serving_layer_dir": "/Applications/Ashwin/Programming/personal projects/custom_llm/llm_serving_layer",
+    "serving_layer_git_sha": "5562eadf642675bdec1765396beeb05f820fc7e5",
+    "serving_layer_vendored_engine_sha": "a3d0ab80f41d8ad834a385fa81744574e31b2eed",
+    "slurm_job_id": null,
+    "settings": {
+      "layers": 16,
+      "n_new": 12,
+      "block": 16
+    },
+    "chip": "Apple M4",
+    "mem_gb": 16.0
+  },
+  "device": "mps",
+  "layers": 16,
+  "n_new": 12,
+  "mix": {
+    "a": "r8",
+    "b": null,
+    "c": "r64",
+    "d": "r16",
+    "a2": "r64",
+    "c2": null
+  },
+  "secs": {
+    "v1": 3.893061166978441,
+    "v2": 3.820955250004772
+  },
+  "base_differs_from_adapter": {
+    "c": true
+  },
+  "kernels": {
+    "v1": [
+      {
+        "request": "a",
+        "adapter": "r8",
+        "equal": true,
+        "first_divergence": null
+      },
+      {
+        "request": "b",
+        "adapter": null,
+        "equal": true,
+        "first_divergence": null
+      },
+      {
+        "request": "c",
+        "adapter": "r64",
+        "equal": true,
+        "first_divergence": null
+      },
+      {
+        "request": "d",
+        "adapter": "r16",
+        "equal": true,
+        "first_divergence": null
+      },
+      {
+        "request": "a2",
+        "adapter": "r64",
+        "equal": true,
+        "first_divergence": null
+      },
+      {
+        "request": "c2",
+        "adapter": null,
+        "equal": true,
+        "first_divergence": null
+      }
+    ],
+    "v2": [
+      {
+        "request": "a",
+        "adapter": "r8",
+        "equal": true,
+        "first_divergence": null
+      },
+      {
+        "request": "b",
+        "adapter": null,
+        "equal": true,
+        "first_divergence": null
+      },
+      {
+        "request": "c",
+        "adapter": "r64",
+        "equal": true,
+        "first_divergence": null
+      },
+      {
+        "request": "d",
+        "adapter": "r16",
+        "equal": true,
+        "first_divergence": null
+      },
+      {
+        "request": "a2",
+        "adapter": "r64",
+        "equal": true,
+        "first_divergence": null
+      },
+      {
+        "request": "c2",
+        "adapter": null,
+        "equal": true,
+        "first_divergence": null
+      }
+    ]
+  }
+}
