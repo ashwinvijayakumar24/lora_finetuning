@@ -128,8 +128,12 @@ def lora_delta_loop(
         if r == 0:
             continue
         rows = torch.nonzero(row_slots == slot).squeeze(1)
-        a = A[slot, :r]                 # (r, in)
-        b = B[slot, :, :r]              # (out, r)
+        a = A[slot, :r]                 # (r, in), contiguous
+        b = B[slot, :, :r]              # (out, r), strided when r < max_rank
+        if r < B.shape[2]:
+            # Same contiguous (out, r) layout P5a's LoRALinear holds. A strided
+            # operand also sends MPS matmul to a slow fallback path.
+            b = b.contiguous()
         if out is None:
             out = torch.zeros((x.shape[0], B.shape[1]), dtype=x.dtype, device=x.device)
         out.index_add_(0, rows, (x[rows] @ a.T) @ b.T)
