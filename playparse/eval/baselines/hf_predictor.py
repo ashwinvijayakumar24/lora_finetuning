@@ -26,13 +26,9 @@ from pathlib import Path
 from typing import Any
 
 from playparse.eval.harness import Prediction
-from playparse.prompt import SYSTEM_PROMPT, build_messages
+from playparse.prompt import CHAT_DATE_STRING, SYSTEM_PROMPT, build_messages
 
 FEWSHOT_R2_PATH = Path(__file__).with_name("fewshot_r2.json")
-
-# Fixed so the rendered prompt never depends on the day the eval runs. This is the
-# template's own fallback value.
-CHAT_DATE_STRING = "26 Jul 2024"
 
 # Gold labels in train seasons 2015-2022 are p99 88, max 105 tokens compact (see
 # docs/benchmarks/p1-local-throughput.md); base models pretty-print with spaces and
@@ -68,6 +64,18 @@ def render_chat(tokenizer, msgs: list[dict[str, str]]) -> str:
     return tokenizer.apply_chat_template(
         msgs, tokenize=False, add_generation_prompt=True, date_string=CHAT_DATE_STRING
     )
+
+
+def render_record(
+    tokenizer, record: dict, examples: Sequence[Example] = (), system: str = SYSTEM_PROMPT
+) -> str:
+    """The prompt text the harness sends for one record (no model needed).
+
+    With no examples this is exactly the training prompt: tokenized with
+    add_special_tokens=False it gives the same ids as
+    `playparse.train.collate.encode_prompt` (tests/test_prompt_parity.py).
+    """
+    return render_chat(tokenizer, build_fewshot_messages(record, examples, system))
 
 
 def pick_device(requested: str | None = None) -> str:
@@ -149,7 +157,7 @@ class HFPredictor:
 
     def render(self, record: dict) -> str:
         examples = self.examples_fn(record) if self.examples_fn else ()
-        return render_chat(self.tokenizer, build_fewshot_messages(record, examples, self.system))
+        return render_record(self.tokenizer, record, examples, self.system)
 
     def predict_batch(self, records: Sequence[dict]) -> list[Prediction]:
         import torch

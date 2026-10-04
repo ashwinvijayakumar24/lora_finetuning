@@ -5,9 +5,8 @@ import pytest
 import torch
 
 from p2_fixtures import load_tokenizer, sample_records
-from playparse.prompt import build_messages
+from playparse.prompt import CHAT_DATE_STRING, build_messages
 from playparse.train.collate import (
-    DEFAULT_DATE_STRING,
     IGNORE_INDEX,
     OverLengthError,
     collate,
@@ -35,7 +34,7 @@ def test_end_of_turn_is_eot_not_end_of_text(tok):
     full = tok.apply_chat_template(
         build_messages("PHI", "x") + [{"role": "assistant", "content": "{}"}],
         tokenize=False,
-        date_string=DEFAULT_DATE_STRING,
+        date_string=CHAT_DATE_STRING,
     )
     assert full.endswith("{}<|eot_id|>")
     assert stop_token_ids(tok)[0] == eot and 128001 in stop_token_ids(tok)
@@ -62,7 +61,7 @@ def test_prompt_is_date_independent(tok):
     b = tok.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True, date_string="02 Jan 2025")
     assert a != b  # the date really is part of the prompt
     assert render_prompt(tok, "PHI", "x") == render_prompt(tok, "PHI", "x")
-    assert f"Today Date: {DEFAULT_DATE_STRING}" in render_prompt(tok, "PHI", "x")
+    assert f"Today Date: {CHAT_DATE_STRING}" in render_prompt(tok, "PHI", "x")
 
 
 def test_rendering_is_stable_regardless_of_system_date(tok, monkeypatch):
@@ -96,7 +95,7 @@ def test_prompt_matches_template_tokenization(tok):
         build_messages(rec["posteam"], rec["desc"]),
         tokenize=True,
         add_generation_prompt=True,
-        date_string=DEFAULT_DATE_STRING,
+        date_string=CHAT_DATE_STRING,
     )
     ref_ids = ref["input_ids"] if hasattr(ref, "keys") else ref
     assert encode_prompt(tok, rec["posteam"], rec["desc"]) == list(ref_ids)
@@ -113,7 +112,7 @@ def test_full_sequence_matches_template_with_assistant_turn(tok):
         full = tok.apply_chat_template(
             build_messages(rec["posteam"], rec["desc"]) + [{"role": "assistant", "content": rec["label"]}],
             tokenize=False,
-            date_string=DEFAULT_DATE_STRING,
+            date_string=CHAT_DATE_STRING,
         )
         assert ex.input_ids == tok(full, add_special_tokens=False)["input_ids"]
 
