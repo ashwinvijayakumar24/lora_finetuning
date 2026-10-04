@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.DS_Store
+data/raw/
+data/cache/
+checkpoints/
+runs/
+*.safetensors
+!tests/fixtures/**/*.safetensors
+.env
