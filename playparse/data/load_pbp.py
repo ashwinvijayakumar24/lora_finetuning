@@ -20,8 +20,11 @@ Scope decisions (see docs/phases/P1-data.md for the reasoning):
   stats. nflverse files them as `play_type == 'run'` (occasionally `pass`), so they
   pass the filter and are labeled like any other run.
 * **Excluded:** kickoffs, punts, field goals, extra points, kneels, spikes, and
-  rows with no play type (timeouts, quarter ends). Kneels do carry official
-  rushing yards (usually -1); the cross-check reports their effect separately.
+  rows with no play type (quarter ends). Kneels do carry official rushing yards
+  (usually -1); the cross-check reports their effect separately.
+* **Timeouts are excluded too**, although nflverse files them as `no_play`
+  (`is_timeout_row`). They are not plays, and keeping them would have made 44% of
+  the `penalty_nullified` bucket the trivial text "Timeout #1 by SF at 10:39."
 """
 from __future__ import annotations
 
@@ -92,10 +95,28 @@ def stats_path(season: int, data_dir: Path | None = None) -> Path:
     return (data_dir or paths.DATA_RAW) / f"stats_player_week_{season}.parquet"
 
 
+def is_timeout_row(df: pd.DataFrame) -> pd.Series:
+    """`no_play` rows that are not plays at all (timeouts).
+
+    nflverse files every timeout ("Timeout #2 by BAL at 00:31.") as
+    ``play_type == 'no_play'`` with no `posteam`: 20,006 of the 45,784 `no_play`
+    rows in 2015-2024. A real wiped-out play always has a penalty in its text,
+    so a `no_play` row without the word "penalty" is dropped. Two timeouts mention
+    a penalty in a scorer's comment ("Timeout #3 by TEN at 00:22. penalty was
+    charged due to an injury..."), so a row that starts with "Timeout" and never
+    says "No Play" is dropped too. See docs/issues/p1-timeouts-filed-as-no-play.md.
+    """
+    desc = df["desc"].fillna("")
+    no_penalty_text = ~desc.str.contains("penalty", case=False, regex=False)
+    bare_timeout = desc.str.match(r"\s*Timeout\b") & ~desc.str.contains("No Play", case=False, regex=False)
+    return (df["play_type"] == "no_play") & (no_penalty_text | bare_timeout)
+
+
 def in_v1_scope(df: pd.DataFrame, extra_play_types: Iterable[str] = ()) -> pd.Series:
     """Boolean mask of rows that belong in the v1 dataset."""
     keep = set(V1_PLAY_TYPES) | set(extra_play_types)
-    return df["play_type"].isin(keep) | (df["two_point_attempt"].fillna(0) == 1)
+    in_scope = df["play_type"].isin(keep) | (df["two_point_attempt"].fillna(0) == 1)
+    return in_scope & ~is_timeout_row(df)
 
 
 def load_pbp_season(

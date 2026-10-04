@@ -1,6 +1,6 @@
 {
   "dataset": "playparse-v1",
-  "builder_hash": "d14200671deb0ae4a76273d9c0df9be435da6e796d5e342bdd000307b5cf422d",
+  "builder_hash": "dfa690d841fb345807b38744f530b5e2387638678e8d664b0aa0a84622f95720",
   "seasons": {
     "train": [
       2015,
@@ -51,30 +51,30 @@
   },
   "splits": {
     "train": {
-      "plays": 309845,
+      "plays": 294016,
       "by_bucket": {
         "lateral": 166,
         "two_point": 1039,
-        "challenge": 2922,
+        "challenge": 2920,
         "interception": 3353,
         "fumble": 4034,
         "penalty_stands": 6739,
         "td": 9742,
-        "penalty_nullified": 36114,
+        "penalty_nullified": 20287,
         "normal": 245736
       },
       "by_season_type": {
-        "REG": 296423,
-        "POST": 13422
+        "REG": 281334,
+        "POST": 12682
       },
-      "nullified": 36270,
+      "nullified": 20441,
       "credits": 412104,
       "name_in_desc_rate": 1.0,
       "dropped_credits": 0,
       "noisy_plays": 111
     },
     "val": {
-      "plays": 40155,
+      "plays": 38102,
       "by_bucket": {
         "lateral": 16,
         "two_point": 145,
@@ -83,21 +83,21 @@
         "fumble": 523,
         "penalty_stands": 829,
         "td": 1205,
-        "penalty_nullified": 4527,
+        "penalty_nullified": 2474,
         "normal": 32145
       },
       "by_season_type": {
-        "REG": 38328,
-        "POST": 1827
+        "REG": 36364,
+        "POST": 1738
       },
-      "nullified": 4549,
+      "nullified": 2496,
       "credits": 53308,
       "name_in_desc_rate": 1.0,
       "dropped_credits": 0,
       "noisy_plays": 11
     },
     "test": {
-      "plays": 39986,
+      "plays": 37859,
       "by_bucket": {
         "lateral": 29,
         "two_point": 155,
@@ -106,14 +106,14 @@
         "fumble": 530,
         "penalty_stands": 859,
         "td": 1309,
-        "penalty_nullified": 4921,
+        "penalty_nullified": 2794,
         "normal": 31455
       },
       "by_season_type": {
-        "REG": 38202,
-        "POST": 1784
+        "REG": 36174,
+        "POST": 1685
       },
-      "nullified": 4936,
+      "nullified": 2809,
       "credits": 52811,
       "name_in_desc_rate": 1.0,
       "dropped_credits": 0,
@@ -124,23 +124,23 @@
     "train_50k": {
       "plays": 50000,
       "by_bucket": {
-        "lateral": 21,
-        "two_point": 154,
-        "challenge": 472,
-        "interception": 540,
-        "fumble": 662,
+        "lateral": 23,
+        "two_point": 182,
+        "challenge": 520,
+        "interception": 571,
+        "fumble": 719,
         "penalty_stands": 1135,
-        "td": 1566,
-        "penalty_nullified": 5791,
-        "normal": 39659
+        "td": 1771,
+        "penalty_nullified": 3463,
+        "normal": 41616
       }
     },
     "eval_lite": {
-      "plays": 2924,
+      "plays": 2795,
       "games": 18,
       "by_part": {
         "topup": 386,
-        "game": 2538
+        "game": 2409
       },
       "by_bucket": {
         "lateral": 29,
@@ -150,7 +150,7 @@
         "fumble": 100,
         "penalty_stands": 100,
         "td": 100,
-        "penalty_nullified": 314,
+        "penalty_nullified": 185,
         "normal": 1981
       },
       "game_part_by_bucket": {
@@ -161,7 +161,7 @@
         "fumble": 35,
         "penalty_stands": 49,
         "td": 90,
-        "penalty_nullified": 314,
+        "penalty_nullified": 185,
         "normal": 1981
       }
     }
@@ -245,34 +245,34 @@
   },
   "files": {
     "train.jsonl": {
-      "rows": 309845,
-      "bytes": 109411363,
-      "sha256": "56f86a18970dbf0ab0cafc01ad1c5919da8bf43b78393b7217ca5a477f60d555"
+      "rows": 294016,
+      "bytes": 106006190,
+      "sha256": "57e3949a336f0689c87d37b45a00a7eb380193d687f74c67dc3081c13acb8187"
     },
     "val.jsonl": {
-      "rows": 40155,
-      "bytes": 14119815,
-      "sha256": "bc2b975030f69171fe73387400e23f64e2f77910ca6826ccae466b6e2bf95194"
+      "rows": 38102,
+      "bytes": 13678731,
+      "sha256": "ff783df4b7bbc4e9d2d530ab1fb5904339070f5c62342aab30f4971299672361"
     },
     "test.jsonl": {
-      "rows": 39986,
-      "bytes": 14108281,
-      "sha256": "e4851bc6db4638488765f639d9ab8f52ed22883abb6415a24234fab76fad07c7"
+      "rows": 37859,
+      "bytes": 13651286,
+      "sha256": "13d0d714f5abc9e3e8869e6dfab87f6becaf25ba2d15e1f281af68299553038c"
     },
     "train_50k.jsonl": {
       "rows": 50000,
-      "bytes": 17651822,
-      "sha256": "99b2b9a146f9c001b3a375057ac2f1afcc7fecca35ba909d1ad6d157269eb52d"
+      "bytes": 18047652,
+      "sha256": "fae9974741b91d4d5c0d983bddc3646d44c8df4ffb8079e20f8cff011b5c3d4b"
     },
     "eval_lite.jsonl": {
-      "rows": 2924,
-      "bytes": 1139676,
-      "sha256": "b82d967950945283cd731a506c6cef8905284f20ec0a5fa6c1a77b41d5d058a2"
+      "rows": 2795,
+      "bytes": 1108847,
+      "sha256": "78081c8134e0f8c977160baf30d89226815dd6188847114653802d561b9e12c8"
     }
   },
   "frozen_eval": {
     "file": "test.jsonl",
-    "sha256": "e4851bc6db4638488765f639d9ab8f52ed22883abb6415a24234fab76fad07c7",
+    "sha256": "13d0d714f5abc9e3e8869e6dfab87f6becaf25ba2d15e1f281af68299553038c",
     "note": "Touched only for final ladder numbers. Every result file must carry this hash."
   }
 }

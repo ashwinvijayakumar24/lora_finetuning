@@ -6,9 +6,11 @@ cases are never swallowed by common ones. `PRECEDENCE` is that order, fixed from
 standalone frequency of each condition over the training seasons (2015-2022), as
 measured by `bucket_flag_rates` and recorded in docs/phases/P1-data.md:
 
-    lateral (0.05%) < two_point (0.34%) < challenge (0.95%) < interception (1.13%)
-      < fumble (1.44%) < penalty_stands (2.37%) < td (3.58%)
-      < penalty_nullified (11.7%) < normal
+    lateral (0.06%) < two_point (0.35%) < challenge (1.01%) < interception (1.19%)
+      < fumble (1.52%) < penalty_stands (2.49%) < td (3.78%)
+      < penalty_nullified (6.95%) < normal (83.6%)
+
+(shares of the 294,016 training plays satisfying each condition on its own)
 
 Bucket conditions (any play may satisfy several; precedence picks one):
 

@@ -6,7 +6,7 @@
    "per_season": {
     "2015": {
      "season": 2015,
-     "plays": 38638,
+     "plays": 36731,
      "player_games": 4923,
      "matched": 4896,
      "gt_only": 6,
@@ -105,7 +105,7 @@
     },
     "2016": {
      "season": 2016,
-     "plays": 38314,
+     "plays": 36447,
      "player_games": 4916,
      "matched": 4904,
      "gt_only": 1,
@@ -204,7 +204,7 @@
     },
     "2017": {
      "season": 2017,
-     "plays": 37920,
+     "plays": 36012,
      "player_games": 4911,
      "matched": 4890,
      "gt_only": 3,
@@ -303,7 +303,7 @@
     },
     "2018": {
      "season": 2018,
-     "plays": 37884,
+     "plays": 35888,
      "player_games": 4898,
      "matched": 4873,
      "gt_only": 5,
@@ -402,7 +402,7 @@
     },
     "2019": {
      "season": 2019,
-     "plays": 38111,
+     "plays": 36218,
      "player_games": 4886,
      "matched": 4860,
      "gt_only": 4,
@@ -501,7 +501,7 @@
     },
     "2020": {
      "season": 2020,
-     "plays": 38502,
+     "plays": 36520,
      "player_games": 5089,
      "matched": 5068,
      "gt_only": 5,
@@ -600,7 +600,7 @@
     },
     "2021": {
      "season": 2021,
-     "plays": 40483,
+     "plays": 38341,
      "player_games": 5291,
      "matched": 5264,
      "gt_only": 4,
@@ -699,7 +699,7 @@
     },
     "2022": {
      "season": 2022,
-     "plays": 39993,
+     "plays": 37859,
      "player_games": 5210,
      "matched": 5200,
      "gt_only": 0,
@@ -798,7 +798,7 @@
     },
     "2023": {
      "season": 2023,
-     "plays": 40155,
+     "plays": 38102,
      "player_games": 5267,
      "matched": 5246,
      "gt_only": 0,
@@ -897,7 +897,7 @@
     },
     "2024": {
      "season": 2024,
-     "plays": 39986,
+     "plays": 37859,
      "player_games": 5212,
      "matched": 5184,
      "gt_only": 3,
@@ -1064,7 +1064,7 @@
    "per_season": {
     "2015": {
      "season": 2015,
-     "plays": 39135,
+     "plays": 37228,
      "player_games": 4923,
      "matched": 4917,
      "gt_only": 6,
@@ -1163,7 +1163,7 @@
     },
     "2016": {
      "season": 2016,
-     "plays": 38778,
+     "plays": 36911,
      "player_games": 4916,
      "matched": 4915,
      "gt_only": 1,
@@ -1262,7 +1262,7 @@
     },
     "2017": {
      "season": 2017,
-     "plays": 38397,
+     "plays": 36489,
      "player_games": 4911,
      "matched": 4907,
      "gt_only": 3,
@@ -1361,7 +1361,7 @@
     },
     "2018": {
      "season": 2018,
-     "plays": 38377,
+     "plays": 36381,
      "player_games": 4898,
      "matched": 4893,
      "gt_only": 5,
@@ -1460,7 +1460,7 @@
     },
     "2019": {
      "season": 2019,
-     "plays": 38610,
+     "plays": 36717,
      "player_games": 4886,
      "matched": 4882,
      "gt_only": 4,
@@ -1559,7 +1559,7 @@
     },
     "2020": {
      "season": 2020,
-     "plays": 39036,
+     "plays": 37054,
      "player_games": 5089,
      "matched": 5083,
      "gt_only": 5,
@@ -1658,7 +1658,7 @@
     },
     "2021": {
      "season": 2021,
-     "plays": 40965,
+     "plays": 38823,
      "player_games": 5290,
      "matched": 5287,
      "gt_only": 3,
@@ -1757,7 +1757,7 @@
     },
     "2022": {
      "season": 2022,
-     "plays": 40498,
+     "plays": 38364,
      "player_games": 5210,
      "matched": 5210,
      "gt_only": 0,
@@ -1856,7 +1856,7 @@
     },
     "2023": {
      "season": 2023,
-     "plays": 40678,
+     "plays": 38625,
      "player_games": 5267,
      "matched": 5266,
      "gt_only": 0,
@@ -1955,7 +1955,7 @@
     },
     "2024": {
      "season": 2024,
-     "plays": 40498,
+     "plays": 38371,
      "player_games": 5212,
      "matched": 5206,
      "gt_only": 3,
