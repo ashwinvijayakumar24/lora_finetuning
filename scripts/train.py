@@ -28,6 +28,7 @@ from playparse.train.build import (  # noqa: E402
     apply_lora,
     describe_device,
     load_base_model,
+    nested_sample,
     read_jsonl,
 )
 from playparse.train.collate import encode_records, pad_token_id  # noqa: E402
@@ -92,6 +93,8 @@ def main(argv: list[str] | None = None) -> int:
     tok = AutoTokenizer.from_pretrained(spec.model.weights or str(WEIGHTS))
     t0 = time.time()
     train_recs = read_jsonl(spec.data.train, spec.data.limit_train)
+    if spec.data.train_sample:
+        train_recs = nested_sample(train_recs, spec.data.train_sample, spec.data.train_sample_seed)
     val_recs = read_jsonl(spec.data.val, spec.data.limit_val) if spec.data.val else []
     train_ex, train_rep = encode_records(train_recs, tok, spec.data.max_len, spec.data.mask_prompt,
                                          spec.data.on_overlength)
@@ -108,6 +111,7 @@ def main(argv: list[str] | None = None) -> int:
                 if spec.gen_eval_examples and val_recs else [])
     meta = {"spec": spec.to_dict(), "git_sha": git_sha(), "argv": sys.argv, **describe_device(device),
             "train_report": vars(train_rep), "val_report": vars(val_rep) if val_rep else None,
+            "n_train_records": len(train_recs),
             "val_loss_keys": [f"{r.get('game_id')}#{r.get('play_id')}" for r in val_loss_recs],
             "gen_eval_keys": [f"{r.get('game_id')}#{r.get('play_id')}" for r in gen_recs]}
     (out / "run_spec.json").write_text(json.dumps(spec.to_dict(), indent=2))

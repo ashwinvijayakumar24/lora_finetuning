@@ -52,7 +52,12 @@ class DataSpec:
     max_len: int = 512
     mask_prompt: bool = True
     on_overlength: str = "raise"  # raise | drop
-    limit_train: int | None = None
+    limit_train: int | None = None  # first N train records (file order; for smoke runs)
+    # >0: train on the first N of a seeded permutation of the train file. Sizes are
+    # nested (the 1k sample is inside the 5k sample), which is what a data-size
+    # curve needs. 0 = all records.
+    train_sample: int = 0
+    train_sample_seed: int = 0
     limit_val: int | None = None  # first N val records (file order)
     # >0: val loss on a seeded, bucket-proportional sample of this many val records
     # (seed = gen_eval_seed) instead of the head of the file, which is a few games.
@@ -197,6 +202,17 @@ def playparse_adapter_io(
     return save_fn, load_fn
 
 
+def nested_sample(records: list[dict], n: int, seed: int) -> list[dict]:
+    """The first n records of a seeded permutation (nested across n for one seed)."""
+    import random
+
+    if n <= 0 or n >= len(records):
+        return list(records)
+    order = list(range(len(records)))
+    random.Random(seed).shuffle(order)
+    return [records[i] for i in order[:n]]
+
+
 def read_jsonl(path: str | os.PathLike, limit: int | None = None) -> list[dict]:
     out = []
     with open(path) as f:
@@ -222,5 +238,5 @@ def describe_device(device: torch.device) -> dict:
 
 __all__ = [
     "ModelSpec", "LoRASpec", "DataSpec", "RunSpec", "load_base_model", "apply_lora", "playparse_adapter_io",
-    "read_jsonl", "resolve_device", "describe_device", "model_dtype",
+    "read_jsonl", "nested_sample", "resolve_device", "describe_device", "model_dtype",
 ]
