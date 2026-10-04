@@ -12,6 +12,7 @@ from playparse.lora import (
     lora_modules,
     lora_state_dict,
     merge_lora,
+    unload_lora,
 )
 from tests._lora_util import (
     copy_ours_to_peft,
@@ -149,6 +150,18 @@ def test_merge_lora_equals_unmerged_and_returns_plain_model():
     assert not any(isinstance(m, LoRALinear) for m in merged.modules())
     assert type(merged.model.layers[0].self_attn.q_proj) is nn.Linear
     torch.testing.assert_close(after, before, rtol=1e-5, atol=1e-5)
+
+
+def test_unload_lora_restores_base_exactly():
+    base, model = tiny_pair()
+    inject_lora(model, LoRAConfig(r=4, alpha=8, dropout=0.0))
+    randomize_lora(model)
+    model.model.layers[0].mlp.up_proj.merge()  # unload must undo merges too
+    unload_lora(model)
+    assert not any(isinstance(m, LoRALinear) for m in model.modules())
+    ids = input_ids()
+    with torch.no_grad():
+        torch.testing.assert_close(model(ids).logits, base(ids).logits, rtol=1e-6, atol=1e-6)
 
 
 def test_inject_twice_or_no_match_raises():

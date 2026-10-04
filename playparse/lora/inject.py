@@ -105,6 +105,15 @@ def load_lora_state_dict(model: nn.Module, state: dict[str, torch.Tensor]) -> No
             target.copy_(tensor.to(target.dtype))
 
 
+def unload_lora(model: nn.Module) -> nn.Module:
+    """Remove the wrappers without merging: the base model comes back unchanged."""
+    for name, module in list(lora_modules(model)):
+        if module.merged:
+            module.unmerge()
+        _set_submodule(model, name, module.base_layer)
+    return model
+
+
 def merge_lora(model: nn.Module) -> nn.Module:
     """Fold every adapter into its base weight and remove the wrappers.
 

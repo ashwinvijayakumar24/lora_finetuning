@@ -9,6 +9,7 @@ from playparse.lora.inject import (
     lora_state_dict,
     merge_lora,
     trainable_parameters,
+    unload_lora,
 )
 from playparse.lora.io import load_adapter, read_adapter, save_adapter
 from playparse.lora.lora_linear import LoRALinear
@@ -28,4 +29,5 @@ __all__ = [
     "read_adapter",
     "save_adapter",
     "trainable_parameters",
+    "unload_lora",
 ]
