@@ -330,3 +330,38 @@ def test_same_seed_same_run(tmp_path):
     r1 = train(tiny_lora(seed=0, dropout=0.1), synthetic_examples(8), None, cfg(tmp_path / "1", save_final=False), pad_id=0)
     r2 = train(tiny_lora(seed=0, dropout=0.1), synthetic_examples(8), None, cfg(tmp_path / "2", save_final=False), pad_id=0)
     assert _train_losses(r1.history) == _train_losses(r2.history)
+
+
+# ---------------------------------------------------------------------------
+# Host-to-device copies (docs/issues/p2-mps-nonblocking-copy-race.md)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.skipif(not torch.backends.mps.is_available(), reason="needs Apple MPS")
+def test_eval_loss_independent_of_batch_size_on_mps():
+    """A non_blocking CPU->MPS copy of a temporary batch raced with its deallocation
+    and fed garbage labels to the loss. Counts and losses must not depend on batching."""
+    mps = torch.device("mps")
+    model = tiny_lora(vocab=64, seed=0).to(mps)
+    exs = synthetic_examples(32, seed=4, prompt_len=(40, 120), completion_len=(5, 30))
+    ref_loss, ref_n = evaluate_loss(model, exs, mps, 1, 0)
+    assert ref_n == sum(e.n_completion for e in exs)
+    for bs in (4, 8, 32):
+        for _ in range(3):
+            loss, n = evaluate_loss(model, exs, mps, bs, 0)
+            assert n == ref_n
+            assert loss == pytest.approx(ref_loss, rel=1e-3)
+
+
+@pytest.mark.skipif(not torch.backends.mps.is_available(), reason="needs Apple MPS")
+def test_accumulated_token_count_and_loss_match_cpu_on_mps():
+    exs = synthetic_examples(16, seed=6, prompt_len=(40, 120), completion_len=(5, 30))
+    micro = [collate(exs[i : i + 4], pad_id=0) for i in range(0, 16, 4)]
+    cpu_model = tiny_lora(seed=0)
+    loss_cpu, n_cpu = accumulate_gradients(cpu_model, micro, CPU)
+    mps_model = tiny_lora(seed=0).to("mps")
+    for _ in range(3):
+        mps_model.zero_grad(set_to_none=True)
+        loss_mps, n_mps = accumulate_gradients(mps_model, micro, torch.device("mps"))
+        assert n_mps == n_cpu
+        assert loss_mps == pytest.approx(loss_cpu, rel=1e-3)

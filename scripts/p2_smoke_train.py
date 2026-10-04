@@ -29,7 +29,7 @@ import torch  # noqa: E402
 from playparse.paths import WEIGHTS  # noqa: E402
 from playparse.train.build import LoRASpec, ModelSpec, apply_lora, exact_match_callback, load_base_model  # noqa: E402
 from playparse.train.collate import encode_records, pad_token_id  # noqa: E402
-from playparse.train.loop import TrainConfig, resolve_device, train  # noqa: E402
+from playparse.train.loop import TrainConfig, release_cached_memory, resolve_device, train  # noqa: E402
 from playparse.train.synthetic import synth_records  # noqa: E402
 
 
@@ -91,11 +91,12 @@ def run_smoke(steps: int = 40, n_train: int = 64, n_val: int = 16, micro: int = 
         before = cb(model.eval(), 0)
         before["gen_time_s"] = time.perf_counter() - t
         model.train()
+        release_cached_memory(dev)
 
     tmp = output_dir or tempfile.mkdtemp(prefix="p2_smoke_")
     cfg = TrainConfig(output_dir=tmp, seed=0, lr=lr, max_steps=steps, warmup_steps=max(1, steps // 10),
                       min_lr_ratio=0.1, micro_batch_size=micro, grad_accum_steps=accum, log_every=1,
-                      eval_every=max(1, steps // 4), eval_batch_size=8, save_every=None, save_final=True,
+                      eval_every=max(1, steps // 4), eval_batch_size=4, save_every=None, save_final=True,
                       device=str(dev), autocast=autocast)
     t_train = time.perf_counter()
     res = train(model, train_ex, val_ex, cfg, pad_id=pad_token_id(tok), save_fn=save_fn, load_fn=load_fn,

@@ -220,6 +220,19 @@ def synchronize(device: torch.device) -> None:
         torch.mps.synchronize()
 
 
+def release_cached_memory(device: torch.device) -> None:
+    """Return cached allocator blocks to the system after eval or generation.
+
+    On MPS the caching allocator keeps blocks sized for the eval batch (and the
+    KV cache of generation), and the next training step's allocations fragment
+    around them. On a 16 GB machine that was enough to hit an out-of-memory error
+    (docs/issues/p2-mps-activation-memory.md). On CUDA this is unnecessary, so it
+    is skipped to avoid slowing down allocation.
+    """
+    if device.type == "mps":
+        torch.mps.empty_cache()
+
+
 class MemoryTracker:
     """Peak memory, measured the best way each backend allows.
 
@@ -298,7 +311,12 @@ def token_loss_sum(logits: torch.Tensor, labels: torch.Tensor) -> tuple[torch.Te
 
 
 def _to_device(batch: dict[str, torch.Tensor], device: torch.device) -> dict[str, torch.Tensor]:
-    return {k: v.to(device, non_blocking=True) for k, v in batch.items()}
+    # Blocking copy. A non_blocking copy from ordinary (unpinned) CPU memory to MPS
+    # returns before the data is read; the temporary CPU batch is then freed and
+    # reused, and the device receives garbage labels. That silently corrupted
+    # losses and token counts (docs/issues/p2-mps-nonblocking-copy-race.md). The
+    # batches are a few KB of token ids, so overlap would gain nothing anyway.
+    return {k: v.to(device) for k, v in batch.items()}
 
 
 def accumulate_gradients(
@@ -720,6 +738,7 @@ def train(
             last_val_loss, n_val_tokens = evaluate_loss(
                 model, val_subset, device, eval_bs, pad_id, cfg.autocast, cfg.pad_to_multiple_of
             )
+            release_cached_memory(device)
             metrics.update({"val_loss": last_val_loss, "val_tokens": n_val_tokens})
             log.write({"event": "eval", "step": step, "val_loss": last_val_loss, "val_tokens": n_val_tokens,
                        "eval_time_s": time.perf_counter() - t_eval})
@@ -731,6 +750,7 @@ def train(
             with torch.no_grad():
                 cb_metrics = dict(val_callback(model, step) or {})
             model.train(was_training)
+            release_cached_memory(device)
             metrics.update(cb_metrics)
             log.write({"event": "val_callback", "step": step, **cb_metrics})
 
