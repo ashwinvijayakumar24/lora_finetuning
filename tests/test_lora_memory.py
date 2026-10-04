@@ -1,4 +1,9 @@
 """The analytic parameter counts must equal what an injected model actually trains."""
+import os
+import subprocess
+import sys
+from pathlib import Path
+
 import pytest
 import torch
 from transformers import LlamaConfig, LlamaForCausalLM
@@ -47,6 +52,27 @@ def test_memory_arithmetic():
     est = lora_memory(n_total=100, n_lora=10)
     assert est.weights == 200 + 40 and est.grads == 40 and est.master == 0
     assert est.total == 200 + 16 * 10
+
+
+def test_script_imports_its_own_checkout():
+    """Guard for docs/issues/p0-worktree-script-imports-main-checkout.md.
+
+    Runs the script's module body (not main) in a fresh interpreter launched the
+    way a user would, without PYTHONPATH, and checks which playparse it loaded.
+    """
+    root = Path(__file__).resolve().parent.parent
+    script = root / "scripts" / "p0_param_table.py"
+    env = {k: v for k, v in os.environ.items() if k != "PYTHONPATH"}
+    code = (
+        f"import runpy; runpy.run_path({str(script)!r}, run_name='not_main'); "
+        "import playparse; print(playparse.__file__)"
+    )
+    out = subprocess.run(
+        [sys.executable, "-c", code], cwd=root / "scripts", env=env,
+        capture_output=True, text=True, timeout=120,
+    )
+    assert out.returncode == 0, out.stderr
+    assert Path(out.stdout.strip().splitlines()[-1]).resolve().is_relative_to(root)
 
 
 def test_param_table_shape():

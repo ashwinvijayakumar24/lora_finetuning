@@ -18,8 +18,14 @@ import datetime as dt
 import gc
 import json
 import subprocess
+import sys
 import time
 from pathlib import Path
+
+# The venv has an editable install pointing at the main checkout; without this,
+# running the script from a git worktree imports the *main* checkout's playparse
+# (see docs/issues/p0-worktree-script-imports-main-checkout.md).
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import torch
 import transformers
