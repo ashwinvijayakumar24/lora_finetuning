@@ -50,8 +50,14 @@ def sample_records() -> list[dict]:
     ]
 
 
-def tiny_llama(vocab: int = 64, seed: int = 0, layers: int = 2, hidden: int = 32):
-    """A random-init Llama small enough to train in milliseconds on CPU."""
+def tiny_llama(vocab: int = 64, seed: int = 0, layers: int = 2, hidden: int = 32, embed_std: float | None = None):
+    """A random-init Llama small enough to train in milliseconds on CPU.
+
+    embed_std rescales the (tied) embedding matrix. With the default init (std 0.02)
+    the tied output head can only produce logits within about +-0.6, so a frozen
+    base plus LoRA (which cannot touch embeddings or the head) has a loss floor near
+    the unigram entropy. See docs/issues/p2-tiny-lora-loss-floor.md.
+    """
     from transformers import LlamaConfig, LlamaForCausalLM
 
     torch.manual_seed(seed)
@@ -68,14 +74,18 @@ def tiny_llama(vocab: int = 64, seed: int = 0, layers: int = 2, hidden: int = 32
     )
     model = LlamaForCausalLM(cfg)
     model.config._attn_implementation = "eager"
+    if embed_std is not None:
+        with torch.no_grad():
+            model.get_input_embeddings().weight.normal_(0, embed_std)
     return model
 
 
-def tiny_lora(vocab: int = 64, seed: int = 0, r: int = 4, dropout: float = 0.0, layers: int = 2):
+def tiny_lora(vocab: int = 64, seed: int = 0, r: int = 4, dropout: float = 0.0, layers: int = 2,
+              embed_std: float | None = None):
     """tiny_llama + PEFT LoRA on all linear layers: the stand-in for playparse.lora."""
     from peft import LoraConfig, get_peft_model
 
-    base = tiny_llama(vocab=vocab, seed=seed, layers=layers)
+    base = tiny_llama(vocab=vocab, seed=seed, layers=layers, embed_std=embed_std)
     torch.manual_seed(seed + 1)
     cfg = LoraConfig(r=r, lora_alpha=2 * r, lora_dropout=dropout, target_modules="all-linear", init_lora_weights=True)
     model = get_peft_model(base, cfg)
