@@ -23,3 +23,4 @@ unblock it. Work continues on everything not downstream of a pin. A pin becomes 
 | Script | Resolves | Notes |
 |---|---|---|
 | `scripts/slurm/p5a_bench.sbatch` | L1, L3 (batch 1) | Fill the `<PLACEHOLDER>` account, QOS, partition, and storage paths. L3's threshold is fixed in advance at ≤15% decode overhead at r=16, batch 1. It may be revised before the run, not after. |
+| `scripts/slurm/train_h100.sbatch CONFIG OUTDIR [k=v ...]` | R5, sweeps, R7 | Fill the `>>> FILL IN <<<` account, QOS, paths, and GPU gres. Auto-resumes from checkpoints and requeues on time-limit warning. |

@@ -53,3 +53,11 @@ Documented, labels unchanged:
 - transformers 5 saves `config.json` without `rope_theta`/`rope_scaling`, which the engine needs. [p5a-transformers5-rope-config](issues/p5a-transformers5-rope-config.md)
 - The engine can only quantize weights loaded from disk; merge-then-quantize needed an in-memory path. [p5a-quant-loader-needs-disk](issues/p5a-quant-loader-needs-disk.md)
 - The first real-model oracle run thrashed swap. Fixed: zero-copy views of HF parameters and a low-memory layer option. [p5a-oracle-memory](issues/p5a-oracle-memory.md)
+
+## P2 — training loop
+
+- **Serious, silent:** `non_blocking=True` CPU→MPS copies of temporary batches delivered garbage labels (eval loss 2.28 instead of 0.53 depending on batch size) and caused OOMs. Fixed: blocking copies; two MPS tests failed before the fix. Earlier smoke numbers were discarded. [p2-mps-nonblocking-copy-race](issues/p2-mps-nonblocking-copy-race.md)
+- The chat template stamps today's date into the prompt. Fixed: pinned date, with a clock-faking test. [p2-chat-template-date](issues/p2-chat-template-date.md)
+- Micro-batch 4 needed ~13 GB on MPS (fp32 copies of LoRA inputs), and varying shapes fragmented the allocator. Fixed: micro-batch 1 × accumulation 8, pad to a multiple of 64, MPS memory cap, cache emptied after eval. [p2-mps-activation-memory](issues/p2-mps-activation-memory.md)
+- Toy models with tied embeddings at std 0.02 cap the logits, so LoRA plateaued at loss 3.57 in tests. Fixed in tests by rescaling embeddings. [p2-tiny-lora-loss-floor](issues/p2-tiny-lora-loss-floor.md)
+- In transformers 5, `apply_chat_template(tokenize=True)` returns a dict, not a list of ids. [p2-apply-chat-template-returns-batchencoding](issues/p2-apply-chat-template-returns-batchencoding.md)
