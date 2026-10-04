@@ -1,0 +1,278 @@
+{
+  "dataset": "playparse-v1",
+  "builder_hash": "dfa690d841fb345807b38744f530b5e2387638678e8d664b0aa0a84622f95720",
+  "seasons": {
+    "train": [
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022
+    ],
+    "val": [
+      2023
+    ],
+    "test": [
+      2024
+    ]
+  },
+  "record_keys": [
+    "game_id",
+    "play_id",
+    "season",
+    "week",
+    "season_type",
+    "posteam",
+    "desc",
+    "bucket",
+    "label"
+  ],
+  "bucket_precedence": [
+    "lateral",
+    "two_point",
+    "challenge",
+    "interception",
+    "fumble",
+    "penalty_stands",
+    "td",
+    "penalty_nullified",
+    "normal"
+  ],
+  "seeds": {
+    "train_50k": 20151,
+    "eval_lite": 20241
+  },
+  "eval_lite_params": {
+    "core_plays": 2400,
+    "min_per_bucket": 100
+  },
+  "splits": {
+    "train": {
+      "plays": 294016,
+      "by_bucket": {
+        "lateral": 166,
+        "two_point": 1039,
+        "challenge": 2920,
+        "interception": 3353,
+        "fumble": 4034,
+        "penalty_stands": 6739,
+        "td": 9742,
+        "penalty_nullified": 20287,
+        "normal": 245736
+      },
+      "by_season_type": {
+        "REG": 281334,
+        "POST": 12682
+      },
+      "nullified": 20441,
+      "credits": 412104,
+      "name_in_desc_rate": 1.0,
+      "dropped_credits": 0,
+      "noisy_plays": 111
+    },
+    "val": {
+      "plays": 38102,
+      "by_bucket": {
+        "lateral": 16,
+        "two_point": 145,
+        "challenge": 330,
+        "interception": 435,
+        "fumble": 523,
+        "penalty_stands": 829,
+        "td": 1205,
+        "penalty_nullified": 2474,
+        "normal": 32145
+      },
+      "by_season_type": {
+        "REG": 36364,
+        "POST": 1738
+      },
+      "nullified": 2496,
+      "credits": 53308,
+      "name_in_desc_rate": 1.0,
+      "dropped_credits": 0,
+      "noisy_plays": 11
+    },
+    "test": {
+      "plays": 37859,
+      "by_bucket": {
+        "lateral": 29,
+        "two_point": 155,
+        "challenge": 335,
+        "interception": 393,
+        "fumble": 530,
+        "penalty_stands": 859,
+        "td": 1309,
+        "penalty_nullified": 2794,
+        "normal": 31455
+      },
+      "by_season_type": {
+        "REG": 36174,
+        "POST": 1685
+      },
+      "nullified": 2809,
+      "credits": 52811,
+      "name_in_desc_rate": 1.0,
+      "dropped_credits": 0,
+      "noisy_plays": 23
+    }
+  },
+  "subsets": {
+    "train_50k": {
+      "plays": 50000,
+      "by_bucket": {
+        "lateral": 23,
+        "two_point": 182,
+        "challenge": 520,
+        "interception": 571,
+        "fumble": 719,
+        "penalty_stands": 1135,
+        "td": 1771,
+        "penalty_nullified": 3463,
+        "normal": 41616
+      }
+    },
+    "eval_lite": {
+      "plays": 2795,
+      "games": 18,
+      "by_part": {
+        "topup": 386,
+        "game": 2409
+      },
+      "by_bucket": {
+        "lateral": 29,
+        "two_point": 100,
+        "challenge": 100,
+        "interception": 100,
+        "fumble": 100,
+        "penalty_stands": 100,
+        "td": 100,
+        "penalty_nullified": 185,
+        "normal": 1981
+      },
+      "game_part_by_bucket": {
+        "lateral": 2,
+        "two_point": 12,
+        "challenge": 28,
+        "interception": 27,
+        "fumble": 35,
+        "penalty_stands": 49,
+        "td": 90,
+        "penalty_nullified": 185,
+        "normal": 1981
+      }
+    }
+  },
+  "text_yards_check": {
+    "test:challenge": {
+      "checked": 216,
+      "text_disagrees": 8,
+      "rate": 0.037037037037037035
+    },
+    "test:fumble": {
+      "checked": 284,
+      "text_disagrees": 118,
+      "rate": 0.4154929577464789
+    },
+    "test:normal": {
+      "checked": 24558,
+      "text_disagrees": 0,
+      "rate": 0.0
+    },
+    "test:penalty_stands": {
+      "checked": 680,
+      "text_disagrees": 115,
+      "rate": 0.16911764705882354
+    },
+    "test:td": {
+      "checked": 1309,
+      "text_disagrees": 0,
+      "rate": 0.0
+    },
+    "train:challenge": {
+      "checked": 1838,
+      "text_disagrees": 65,
+      "rate": 0.03536452665941241
+    },
+    "train:fumble": {
+      "checked": 2404,
+      "text_disagrees": 780,
+      "rate": 0.324459234608985
+    },
+    "train:normal": {
+      "checked": 188476,
+      "text_disagrees": 0,
+      "rate": 0.0
+    },
+    "train:penalty_stands": {
+      "checked": 5364,
+      "text_disagrees": 675,
+      "rate": 0.12583892617449666
+    },
+    "train:td": {
+      "checked": 9742,
+      "text_disagrees": 0,
+      "rate": 0.0
+    },
+    "val:challenge": {
+      "checked": 203,
+      "text_disagrees": 7,
+      "rate": 0.034482758620689655
+    },
+    "val:fumble": {
+      "checked": 283,
+      "text_disagrees": 103,
+      "rate": 0.36395759717314485
+    },
+    "val:normal": {
+      "checked": 24845,
+      "text_disagrees": 0,
+      "rate": 0.0
+    },
+    "val:penalty_stands": {
+      "checked": 651,
+      "text_disagrees": 107,
+      "rate": 0.16436251920122888
+    },
+    "val:td": {
+      "checked": 1205,
+      "text_disagrees": 0,
+      "rate": 0.0
+    }
+  },
+  "files": {
+    "train.jsonl": {
+      "rows": 294016,
+      "bytes": 106006190,
+      "sha256": "57e3949a336f0689c87d37b45a00a7eb380193d687f74c67dc3081c13acb8187"
+    },
+    "val.jsonl": {
+      "rows": 38102,
+      "bytes": 13678731,
+      "sha256": "ff783df4b7bbc4e9d2d530ab1fb5904339070f5c62342aab30f4971299672361"
+    },
+    "test.jsonl": {
+      "rows": 37859,
+      "bytes": 13651286,
+      "sha256": "13d0d714f5abc9e3e8869e6dfab87f6becaf25ba2d15e1f281af68299553038c"
+    },
+    "train_50k.jsonl": {
+      "rows": 50000,
+      "bytes": 18047652,
+      "sha256": "fae9974741b91d4d5c0d983bddc3646d44c8df4ffb8079e20f8cff011b5c3d4b"
+    },
+    "eval_lite.jsonl": {
+      "rows": 2795,
+      "bytes": 1108847,
+      "sha256": "78081c8134e0f8c977160baf30d89226815dd6188847114653802d561b9e12c8"
+    }
+  },
+  "frozen_eval": {
+    "file": "test.jsonl",
+    "sha256": "13d0d714f5abc9e3e8869e6dfab87f6becaf25ba2d15e1f281af68299553038c",
+    "note": "Touched only for final ladder numbers. Every result file must carry this hash."
+  }
+}

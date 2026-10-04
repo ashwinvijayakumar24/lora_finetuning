@@ -16,3 +16,4 @@ runs/
 registry/adapters/
 registry/.lock
 registry/**/.*.tmp
+data/processed/

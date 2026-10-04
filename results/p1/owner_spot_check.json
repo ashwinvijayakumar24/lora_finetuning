@@ -1,0 +1,205 @@
+{
+ "instructions": "Read each desc, check the label, fill owner_verdict with correct / wrong / ambiguous.",
+ "plays": [
+  {
+   "audit_id": 5,
+   "bucket": "lateral",
+   "desc": "(:02) (Shotgun) 13-B.Purdy pass short left to 10-R.Bell to SF 42 for 12 yards. Lateral to 82-E.Saubert to SF 39 for -3 yards. Lateral to 11-B.Aiyuk to SF 44 for 5 yards. Lateral to 24-J.Mason to SF 45 for 1 yard. Lateral to 77-D.Puni to SF 42 for -3 yards. Lateral to 82-E.Saubert to LA 38 for 20 yards. Lateral to 64-J.Brendel to LA 35 for 3 yards (3-K.Curl). FUMBLES (3-K.Curl), ball out of bounds at LA 36.",
+   "label": "{\"nullified\":false,\"credits\":[{\"player\":\"B.Purdy\",\"stat\":\"pass_yds\",\"value\":34},{\"player\":\"R.Bell\",\"stat\":\"rec\",\"value\":1},{\"player\":\"J.Brendel\",\"stat\":\"rec_yds\",\"value\":2},{\"player\":\"R.Bell\",\"stat\":\"rec_yds\",\"value\":12}]}",
+   "model_verdict": "wrong",
+   "model_note": "Six laterals; label credits only R.Bell (12) and the last lateral J.Brendel (2). Text also gives E.Saubert -3 and +20, B.Aiyuk 5, J.Mason 1, D.Puni -3, and Brendel 3. nflverse records only the last lateral.",
+   "owner_verdict": null,
+   "owner_note": null
+  },
+  {
+   "audit_id": 6,
+   "bucket": "lateral",
+   "desc": "(6:05) 70-A.Anderson reported in as eligible. 17-J.Allen pass short left to 18-A.Cooper to SF 9 for -2 yards. Lateral to 17-J.Allen for 9 yards, TOUCHDOWN.",
+   "label": "{\"nullified\":false,\"credits\":[{\"player\":\"J.Allen\",\"stat\":\"pass_yds\",\"value\":7},{\"player\":\"J.Allen\",\"stat\":\"pass_td\",\"value\":1},{\"player\":\"A.Cooper\",\"stat\":\"rec\",\"value\":1},{\"player\":\"J.Allen\",\"stat\":\"rec_yds\",\"value\":7},{\"player\":\"J.Allen\",\"stat\":\"rec_td\",\"value\":1}]}",
+   "model_verdict": "wrong",
+   "model_note": "Text: A.Cooper 'for -2 yards', then J.Allen 'for 9 yards'. Label: Cooper rec with no rec_yds (0), Allen rec_yds 7. Pass yards (7) and the TD are right; the split between the two receivers is not what the text says.",
+   "owner_verdict": null,
+   "owner_note": null
+  },
+  {
+   "audit_id": 11,
+   "bucket": "lateral",
+   "desc": "(14:55) 18-M.Mariota Aborted. 63-T.Biadasz FUMBLES at WAS 41, recovered by WAS-18-M.Mariota at WAS 39. 18-M.Mariota to WAS 42 for 3 yards (99-S.Tuttle).",
+   "label": "{\"nullified\":false,\"credits\":[{\"player\":\"M.Mariota\",\"stat\":\"rush_yds\",\"value\":1}]}",
+   "model_verdict": "ambiguous",
+   "model_note": "Aborted snap: center fumbles, QB Mariota recovers and runs 'to WAS 42 for 3 yards'. Label rush_yds 1 (measured from the line of scrimmage, WAS 41). Matches the official books, but the text's own number is 3; a reader needs the convention.",
+   "owner_verdict": null,
+   "owner_note": null
+  },
+  {
+   "audit_id": 13,
+   "bucket": "lateral",
+   "desc": "(:12) (Shotgun) 8-W.Levis pass deep left to 10-D.Hopkins to TEN 19 for 16 yards. Lateral to 85-C.Okonkwo to TEN 22 for 3 yards (54-D.Odeyingbo). FUMBLES (54-D.Odeyingbo), touched at TEN 15, recovered by TEN-8-W.Levis at TEN 13. 8-W.Levis to TEN 13 for no gain (45-E.Speed).",
+   "label": "{\"nullified\":false,\"credits\":[{\"player\":\"W.Levis\",\"stat\":\"pass_yds\",\"value\":12},{\"player\":\"D.Hopkins\",\"stat\":\"rec\",\"value\":1},{\"player\":\"C.Okonkwo\",\"stat\":\"rec_yds\",\"value\":-4},{\"player\":\"D.Hopkins\",\"stat\":\"rec_yds\",\"value\":16}]}",
+   "model_verdict": "ambiguous",
+   "model_note": "Lateral then fumble recovered by the passer at TEN 13. Label: Okonkwo rec_yds -4, pass_yds 12. A straight reading of the spots gives -6 / 10; the official measure apparently uses a different spot.",
+   "owner_verdict": null,
+   "owner_note": null
+  },
+  {
+   "audit_id": 15,
+   "bucket": "lateral",
+   "desc": "(5:03) (Shotgun) 14-A.Dalton to CAR 36 for -4 yards. FUMBLES, and recovers at CAR 36. 14-A.Dalton to CAR 34 for -2 yards. Pass back to 30-C.Hubbard to CAR 45 for 11 yards (6-K.Gordon).",
+   "label": "{\"nullified\":false,\"credits\":[{\"player\":\"C.Hubbard\",\"stat\":\"rush_yds\",\"value\":5}]}",
+   "model_verdict": "ambiguous",
+   "model_note": "QB fumbles, recovers, then 'Pass back to C.Hubbard ... for 11 yards'. Label: Hubbard rush_yds 5 (net from the line of scrimmage), Dalton nothing. Official convention; the text gives Dalton -4/-2 and Hubbard +11.",
+   "owner_verdict": null,
+   "owner_note": null
+  },
+  {
+   "audit_id": 97,
+   "bucket": "fumble",
+   "desc": "(9:49) (Shotgun) 7-G.Smith FUMBLES (Aborted) at SEA 35, recovered by SEA-9-K.Walker at SEA 22. 9-K.Walker to SEA 19 for -3 yards (56-C.Rozeboom).",
+   "label": "{\"nullified\":false,\"credits\":[]}",
+   "model_verdict": "ambiguous",
+   "model_note": "Aborted snap, RB K.Walker recovers and runs 'for -3 yards'. Label: no credits. Official books agree, but compare play 11, where the QB's run after a recovery is credited. Convention not readable from the text.",
+   "owner_verdict": null,
+   "owner_note": null
+  },
+  {
+   "audit_id": 1,
+   "bucket": "lateral",
+   "desc": "(:01) (Shotgun) 11-M.Rudolph pass short middle to 0-C.Ridley to BUF 13 for 33 yards [50-G.Rousseau]. Lateral to 10-D.Hopkins to BUF 19 for -6 yards (91-E.Oliver). FUMBLES (91-E.Oliver), touched at BUF 21, recovered by TEN-20-T.Pollard at BUF 21. 20-T.Pollard to BUF 21 for no gain (94-D.Smoot).",
+   "label": "{\"nullified\":false,\"credits\":[{\"player\":\"M.Rudolph\",\"stat\":\"pass_yds\",\"value\":25},{\"player\":\"C.Ridley\",\"stat\":\"rec\",\"value\":1},{\"player\":\"C.Ridley\",\"stat\":\"rec_yds\",\"value\":33},{\"player\":\"D.Hopkins\",\"stat\":\"rec_yds\",\"value\":-8}]}",
+   "model_verdict": "correct",
+   "model_note": "Correct, but needs spot arithmetic: Hopkins' lateral gain is measured to the recovery spot (BUF 13 -> BUF 21 = -8), not the text's -6.",
+   "owner_verdict": null,
+   "owner_note": null
+  },
+  {
+   "audit_id": 19,
+   "bucket": "lateral",
+   "desc": "(:06) (Shotgun) 6-B.Mayfield pass short middle to 14-C.Godwin to TB 44 for 8 yards. Lateral to 78-T.Wirfs to NO 43 for 13 yards (48-J.Gray). FUMBLES (48-J.Gray), recovered by TB-88-C.Otton at NO 47.",
+   "label": "{\"nullified\":false,\"credits\":[{\"player\":\"B.Mayfield\",\"stat\":\"pass_yds\",\"value\":17},{\"player\":\"C.Godwin\",\"stat\":\"rec\",\"value\":1},{\"player\":\"C.Godwin\",\"stat\":\"rec_yds\",\"value\":8},{\"player\":\"T.Wirfs\",\"stat\":\"rec_yds\",\"value\":9}]}",
+   "model_verdict": "correct",
+   "model_note": "Correct, needs spot arithmetic: Wirfs credited to the recovery spot (+9), not the text's 13.",
+   "owner_verdict": null,
+   "owner_note": null
+  },
+  {
+   "audit_id": 33,
+   "bucket": "two_point",
+   "desc": "TWO-POINT CONVERSION ATTEMPT. 10-D.Maye pass to 38-R.Stevenson is complete. ATTEMPT SUCCEEDS. Caught by 9-K.Boutte. Lateraled to 38-R.Stevenson",
+   "label": "{\"nullified\":false,\"credits\":[{\"player\":\"D.Maye\",\"stat\":\"two_pt\",\"value\":1},{\"player\":\"R.Stevenson\",\"stat\":\"two_pt\",\"value\":1}]}",
+   "model_verdict": "correct",
+   "model_note": "Correct per nflverse: two-point credited to R.Stevenson, who took a lateral from K.Boutte (comment at the end of the text).",
+   "owner_verdict": null,
+   "owner_note": null
+  },
+  {
+   "audit_id": 115,
+   "bucket": "penalty_stands",
+   "desc": "(4:18) 22-M.Carter left end to LA 46 for 8 yards (48-O.Speights). PENALTY on ARI-84-E.Higgins, Offensive Holding, 10 yards, enforced at ARI 47.",
+   "label": "{\"nullified\":false,\"credits\":[{\"player\":\"M.Carter\",\"stat\":\"rush_yds\",\"value\":1}]}",
+   "model_verdict": "correct",
+   "model_note": "Correct, needs spot arithmetic: holding enforced at ARI 47 -> rush credited to the spot (1), not the text's 8.",
+   "owner_verdict": null,
+   "owner_note": null
+  },
+  {
+   "audit_id": 116,
+   "bucket": "penalty_stands",
+   "desc": "(5:44) 28-J.Mixon left end to HOU 37 for 17 yards (4-D.Reed, 35-J.Mills). NYJ-4-D.Reed was injured during the play. PENALTY on HOU-87-C.Stover, Offensive Holding, 10 yards, enforced at HOU 22.",
+   "label": "{\"nullified\":false,\"credits\":[{\"player\":\"J.Mixon\",\"stat\":\"rush_yds\",\"value\":2}]}",
+   "model_verdict": "correct",
+   "model_note": "Correct, spot foul: 17 yards in text, 2 credited (HOU 20 -> spot HOU 22).",
+   "owner_verdict": null,
+   "owner_note": null
+  },
+  {
+   "audit_id": 119,
+   "bucket": "penalty_stands",
+   "desc": "(3:25) (Shotgun) 13-B.Purdy left tackle for 5 yards, TOUCHDOWN NULLIFIED by Penalty. PENALTY on SF-14-R.Pearsall, Offensive Holding, 10 yards, enforced at CHI 1.",
+   "label": "{\"nullified\":false,\"credits\":[{\"player\":\"B.Purdy\",\"stat\":\"rush_yds\",\"value\":4}]}",
+   "model_verdict": "correct",
+   "model_note": "Correct: 'TOUCHDOWN NULLIFIED by Penalty', holding at CHI 1 -> 4 yards, no TD.",
+   "owner_verdict": null,
+   "owner_note": null
+  },
+  {
+   "audit_id": 48,
+   "bucket": "challenge",
+   "desc": "(12:16) 68-M.Dunn and 59-W.Reid reported in as eligible. 27-D.Foreman right guard for 1 yard, TOUCHDOWN. The Replay Official reviewed the runner broke the plane ruling, and the play was REVERSED. 68-M.Dunn and 59-W.Reid reported in as eligible. 27-D.Foreman right guard to CIN 1 for no gain (50-S.Heyward, 24-V.Bell). FUMBLES (24-V.Bell), RECOVERED by CIN-24-V.Bell at CIN 1.",
+   "label": "{\"nullified\":false,\"credits\":[{\"player\":\"D.Foreman\",\"stat\":\"fumble_lost\",\"value\":1}]}",
+   "model_verdict": "correct",
+   "model_note": "Correct: TD reversed; final ruling is no gain plus a lost fumble.",
+   "owner_verdict": null,
+   "owner_note": null
+  },
+  {
+   "audit_id": 64,
+   "bucket": "challenge",
+   "desc": "(7:19) (No Huddle, Shotgun) 1-K.Murray pass deep left to 14-Mi.Wilson to WAS 24 for 22 yards (11-J.Chinn; 4-F.Luvu). Washington challenged the runner was down by contact ruling, and the play was REVERSED. (No Huddle, Shotgun) 1-K.Murray pass deep left to 14-Mi.Wilson to WAS 24 for 22 yards (4-F.Luvu; 11-J.Chinn). FUMBLES (4-F.Luvu), RECOVERED by WAS-4-F.Luvu at WAS 24.",
+   "label": "{\"nullified\":false,\"credits\":[{\"player\":\"K.Murray\",\"stat\":\"pass_yds\",\"value\":22},{\"player\":\"Mi.Wilson\",\"stat\":\"rec\",\"value\":1},{\"player\":\"Mi.Wilson\",\"stat\":\"rec_yds\",\"value\":22},{\"player\":\"Mi.Wilson\",\"stat\":\"fumble_lost\",\"value\":1}]}",
+   "model_verdict": "correct",
+   "model_note": "Correct: challenge reversed 'down by contact' into a lost fumble.",
+   "owner_verdict": null,
+   "owner_note": null
+  },
+  {
+   "audit_id": 46,
+   "bucket": "challenge",
+   "desc": "(7:38) 10-J.Herbert pass deep left to 89-J.Reagor to ARI 3 for 41 yards (24-S.Thomas). FUMBLES (24-S.Thomas), RECOVERED by ARI-34-J.Thompson at ARI 0. Touchback. The Replay Official reviewed the runner was inbounds ruling, and the play was Upheld. The ruling on the field stands.",
+   "label": "{\"nullified\":false,\"credits\":[{\"player\":\"J.Herbert\",\"stat\":\"pass_yds\",\"value\":41},{\"player\":\"J.Reagor\",\"stat\":\"rec\",\"value\":1},{\"player\":\"J.Reagor\",\"stat\":\"rec_yds\",\"value\":41},{\"player\":\"J.Reagor\",\"stat\":\"fumble_lost\",\"value\":1}]}",
+   "model_verdict": "correct",
+   "model_note": "Correct: forward fumble out of the end zone (touchback) is a lost fumble; yards to the fumble spot.",
+   "owner_verdict": null,
+   "owner_note": null
+  },
+  {
+   "audit_id": 96,
+   "bucket": "fumble",
+   "desc": "(1:12) 1-J.Hurts FUMBLES (Aborted) at GB 2, recovered by PHI-26-S.Barkley at GB 3.",
+   "label": "{\"nullified\":false,\"credits\":[]}",
+   "model_verdict": "correct",
+   "model_note": "Correct: aborted snap recovered by a teammate with no advance; no credits.",
+   "owner_verdict": null,
+   "owner_note": null
+  },
+  {
+   "audit_id": 24,
+   "bucket": "two_point",
+   "desc": "TWO-POINT CONVERSION ATTEMPT. 17-J.Allen is sacked. ATTEMPT FAILS.",
+   "label": "{\"nullified\":false,\"credits\":[]}",
+   "model_verdict": "correct",
+   "model_note": "",
+   "owner_verdict": null,
+   "owner_note": null
+  },
+  {
+   "audit_id": 37,
+   "bucket": "two_point",
+   "desc": "TWO-POINT CONVERSION ATTEMPT. 5-J.Daniels pass to 30-A.Ekeler is complete. ATTEMPT FAILS.",
+   "label": "{\"nullified\":false,\"credits\":[]}",
+   "model_verdict": "correct",
+   "model_note": "",
+   "owner_verdict": null,
+   "owner_note": null
+  },
+  {
+   "audit_id": 128,
+   "bucket": "penalty_stands",
+   "desc": "(4:32) (Shotgun) 10-K.Shakir left end ran ob at SEA 39 for 2 yards (13-E.Jones). Penalty on BUF-0-K.Coleman, Unnecessary Roughness, offsetting. Penalty on SEA-29-J.Jobe, Unnecessary Roughness, offsetting.",
+   "label": "{\"nullified\":false,\"credits\":[{\"player\":\"K.Shakir\",\"stat\":\"rush_yds\",\"value\":2}]}",
+   "model_verdict": "correct",
+   "model_note": "",
+   "owner_verdict": null,
+   "owner_note": null
+  },
+  {
+   "audit_id": 177,
+   "bucket": "penalty_nullified",
+   "desc": "(6:54) (No Huddle) 17-J.Allen up the middle to NYJ 1 for no gain (96-L.Taylor; 36-C.Clark). PENALTY on BUF, Illegal Formation, 5 yards, enforced at NYJ 1 - No Play.",
+   "label": "{\"nullified\":true,\"credits\":[]}",
+   "model_verdict": "correct",
+   "model_note": "",
+   "owner_verdict": null,
+   "owner_note": null
+  }
+ ]
+}
