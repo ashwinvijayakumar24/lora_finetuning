@@ -65,6 +65,30 @@ def test_prompt_is_date_independent(tok):
     assert f"Today Date: {DEFAULT_DATE_STRING}" in render_prompt(tok, "PHI", "x")
 
 
+def test_rendering_is_stable_regardless_of_system_date(tok, monkeypatch):
+    """Fake the clock the template reads ("strftime_now") and check our rendering ignores it."""
+    import datetime as dt
+
+    import transformers.utils.chat_template_utils as ctu
+
+    def fake_clock(day):
+        class FakeDatetime(dt.datetime):
+            @classmethod
+            def now(cls, tz=None):
+                return dt.datetime(2031, 1, day, 12, 0, 0)
+
+        return FakeDatetime
+
+    rendered, unpinned = [], []
+    for day in (1, 2):
+        monkeypatch.setattr(ctu, "datetime", fake_clock(day))
+        rendered.append(render_prompt(tok, "PHI", "x"))
+        unpinned.append(tok.apply_chat_template(build_messages("PHI", "x"), tokenize=False, add_generation_prompt=True))
+    assert unpinned[0] != unpinned[1] and "Today Date: 01 Jan 2031" in unpinned[0]  # the hazard is real
+    assert rendered[0] == rendered[1]
+    assert encode_prompt(tok, "PHI", "x") == encode_prompt(tok, "PHI", "x")
+
+
 def test_prompt_matches_template_tokenization(tok):
     """Our prompt ids equal the template's own tokenization (with the pinned date)."""
     rec = sample_records()[0]

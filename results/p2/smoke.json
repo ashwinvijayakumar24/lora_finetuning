@@ -1,0 +1,130 @@
+{
+  "git_sha": "383c3a3de62d7396c6ce550b4a9abde3149fcab9",
+  "date": "2026-10-04",
+  "hardware": {
+    "platform": "macOS-15.6.1-arm64-arm-64bit-Mach-O",
+    "python": "3.13.7",
+    "torch": "2.12.0",
+    "chip": "Apple M4",
+    "ram_gib": 16.0,
+    "transformers": "5.10.1",
+    "peft": "0.21.2"
+  },
+  "settings": {
+    "device": "mps",
+    "autocast": "auto",
+    "gradient_checkpointing": false,
+    "pad_to_multiple_of": 64,
+    "mps_mem_fraction": 0.75,
+    "base_dtype": "torch.bfloat16",
+    "lora": {
+      "impl": "peft",
+      "r": 16,
+      "alpha": 32,
+      "dropout": 0.05,
+      "targets": [
+        "q_proj",
+        "k_proj",
+        "v_proj",
+        "o_proj",
+        "gate_proj",
+        "up_proj",
+        "down_proj"
+      ]
+    },
+    "steps": 30,
+    "micro_batch_size": 1,
+    "grad_accum_steps": 8,
+    "effective_batch": 8,
+    "lr": 0.0002,
+    "warmup_steps": 3,
+    "min_lr_ratio": 0.1,
+    "n_train": 64,
+    "n_val": 16,
+    "data": "synthetic template plays (playparse.train.synthetic)"
+  },
+  "data": {
+    "max_tokens": 313,
+    "mean_tokens": 261.8,
+    "mean_completion_tokens": 39.3
+  },
+  "params": {
+    "trainable": 11272192,
+    "total": 1247086592,
+    "trainable_pct": 0.904
+  },
+  "timing": {
+    "model_load_s": 13.5,
+    "train_wall_s": 564.8,
+    "median_step_s": 14.636,
+    "median_tokens_per_sec": 144.1,
+    "median_target_tokens_per_sec": 20.0
+  },
+  "memory": {
+    "peak_bytes": 6831865856,
+    "peak_gib": 6.36,
+    "kind": "mps_driver_allocated_max",
+    "peak_alloc_gib": 5.35
+  },
+  "loss": {
+    "train": [
+      0.4587,
+      0.4317,
+      0.2119,
+      0.1834,
+      0.1463,
+      0.106,
+      0.1015,
+      0.0543,
+      0.0453,
+      0.0268,
+      0.0356,
+      0.0189,
+      0.0298,
+      0.0099,
+      0.0226,
+      0.0078,
+      0.0049,
+      0.0058,
+      0.0402,
+      0.0101,
+      0.0054,
+      0.0045,
+      0.006,
+      0.0114,
+      0.006,
+      0.0047,
+      0.0021,
+      0.0044,
+      0.001,
+      0.0048
+    ],
+    "val": {
+      "7": 0.0619,
+      "14": 0.0173,
+      "21": 0.0239,
+      "28": 0.0129,
+      "30": 0.0111
+    },
+    "first": 0.4587,
+    "last": 0.0048
+  },
+  "gen_eval": {
+    "before": {
+      "val_exact_match": 0.0,
+      "val_parse_rate": 0.375,
+      "val_gen_n": 16,
+      "val_gen_sample": "{\"nullified\": false, \"credits\": [{\"player\": \"27-J.Gibbs\", \"stat\": \"pass_yds\", \"value\": 25}, {\"player\": \"27-J.Gibbs\", \"stat\": \"pass_td\", \"value\": 1}, {\"player\": \"27-J.Gibbs\", \"stat\": \"rec\", \"value\": 0}, {\"player\": \"27-J.Gibbs\", \"stat\": \"rec_yds\",",
+      "gen_time_s": 39.88576695899246
+    },
+    "after": {
+      "val_exact_match": 0.9375,
+      "val_parse_rate": 1.0,
+      "val_gen_n": 16,
+      "val_gen_sample": "{\"nullified\":false,\"credits\":[{\"player\":\"J.Gibbs\",\"stat\":\"rush_yds\",\"value\":25}]}",
+      "gen_time_s": 25.978579375019763
+    },
+    "n": 16
+  },
+  "adapter_checkpoint_bytes": 45125004
+}

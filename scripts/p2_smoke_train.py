@@ -63,7 +63,8 @@ def hardware() -> dict:
 def run_smoke(steps: int = 40, n_train: int = 64, n_val: int = 16, micro: int = 1, accum: int = 8,
               lr: float = 2e-4, device: str = "auto", autocast: str = "auto", gen: bool = True,
               output_dir: str | None = None, gen_n: int = 16, grad_ckpt: bool = False,
-              lora_dropout: float = 0.05, mps_mem_fraction: float | None = 0.7) -> dict:
+              lora_dropout: float = 0.05, mps_mem_fraction: float | None = 0.75,
+              pad_to_multiple_of: int | None = 64) -> dict:
     from transformers import AutoTokenizer
 
     dev = resolve_device(device)
@@ -97,7 +98,7 @@ def run_smoke(steps: int = 40, n_train: int = 64, n_val: int = 16, micro: int = 
     cfg = TrainConfig(output_dir=tmp, seed=0, lr=lr, max_steps=steps, warmup_steps=max(1, steps // 10),
                       min_lr_ratio=0.1, micro_batch_size=micro, grad_accum_steps=accum, log_every=1,
                       eval_every=max(1, steps // 4), eval_batch_size=4, save_every=None, save_final=True,
-                      device=str(dev), autocast=autocast)
+                      device=str(dev), autocast=autocast, pad_to_multiple_of=pad_to_multiple_of)
     t_train = time.perf_counter()
     res = train(model, train_ex, val_ex, cfg, pad_id=pad_token_id(tok), save_fn=save_fn, load_fn=load_fn,
                 log_to_stdout=True)
@@ -119,7 +120,7 @@ def run_smoke(steps: int = 40, n_train: int = 64, n_val: int = 16, micro: int = 
         "date": time.strftime("%Y-%m-%d"),
         "hardware": hardware(),
         "settings": {
-            "device": str(dev), "autocast": autocast, "gradient_checkpointing": grad_ckpt,
+            "device": str(dev), "autocast": autocast, "gradient_checkpointing": grad_ckpt, "pad_to_multiple_of": pad_to_multiple_of,
             "mps_mem_fraction": mps_mem_fraction if dev.type == "mps" else None, "base_dtype": str(next(model.parameters()).dtype),
             "lora": {"impl": impl, "r": lora.r, "alpha": lora.alpha, "dropout": lora.dropout, "targets": lora.targets},
             "steps": steps, "micro_batch_size": micro, "grad_accum_steps": accum,
@@ -153,7 +154,8 @@ def main() -> int:
     ap.add_argument("--accum", type=int, default=8)
     ap.add_argument("--grad-ckpt", action="store_true")
     ap.add_argument("--lora-dropout", type=float, default=0.05)
-    ap.add_argument("--mps-mem-fraction", type=float, default=0.7)
+    ap.add_argument("--mps-mem-fraction", type=float, default=0.75)
+    ap.add_argument("--pad-to-multiple-of", type=int, default=64)
     ap.add_argument("--lr", type=float, default=2e-4)
     ap.add_argument("--device", default="auto")
     ap.add_argument("--autocast", default="auto")
@@ -162,7 +164,8 @@ def main() -> int:
     args = ap.parse_args()
     result = run_smoke(steps=args.steps, micro=args.micro, accum=args.accum, lr=args.lr, device=args.device,
                        autocast=args.autocast, gen=not args.no_gen, grad_ckpt=args.grad_ckpt,
-                       lora_dropout=args.lora_dropout, mps_mem_fraction=args.mps_mem_fraction)
+                       lora_dropout=args.lora_dropout, mps_mem_fraction=args.mps_mem_fraction,
+                       pad_to_multiple_of=args.pad_to_multiple_of or None)
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(result, indent=2, default=str) + "\n")
