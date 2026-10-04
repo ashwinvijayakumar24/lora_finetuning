@@ -30,12 +30,11 @@ are identical apart from the sibling's ``engine/bench`` directory.
 """
 from __future__ import annotations
 
-import importlib.util
 import os
 import sys
 from pathlib import Path
 
-from playparse.serving._engine_path import ensure_engine_importable
+from playparse.serving._engine_path import ensure_engine_importable, register_package
 
 SERVING_DIR_ENV = "PLAYPARSE_SERVING_DIR"
 _SERVING_REPO_NAME = "llm_serving_layer"
@@ -79,23 +78,6 @@ def check_engine() -> Path:
     return Path(sys.modules["engine"].__file__).resolve().parent.parent
 
 
-def _register_package(name: str, root: Path) -> None:
-    """Import ``root/name`` as top-level package ``name`` without touching ``sys.path``."""
-    if name in sys.modules:
-        return
-    pkg_dir = root / name
-    spec = importlib.util.spec_from_file_location(
-        name, pkg_dir / "__init__.py", submodule_search_locations=[str(pkg_dir)]
-    )
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[name] = module
-    try:
-        spec.loader.exec_module(module)
-    except BaseException:
-        del sys.modules[name]
-        raise
-
-
 def ensure_serving_importable() -> Path:
     """Make ``import serving`` and ``import bench`` resolve to the serving layer. Idempotent.
 
@@ -111,9 +93,9 @@ def ensure_serving_importable() -> Path:
         mod_file = getattr(sys.modules["serving"], "__file__", None)
         if mod_file:
             root = Path(mod_file).resolve().parent.parent
-            _register_package("bench", root)
+            register_package("bench", root)
             return root
     root = serving_dir()
-    _register_package("serving", root)
-    _register_package("bench", root)
+    register_package("serving", root)
+    register_package("bench", root)
     return root

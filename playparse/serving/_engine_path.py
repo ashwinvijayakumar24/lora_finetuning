@@ -2,8 +2,8 @@
 
 The engine is not pip-installed into this project's venv on purpose: PlayParse
 extends it from the outside (PRD §12) and must never edit it. Instead the
-engine's repository root is put on ``sys.path`` so that ``import engine``
-resolves to the owner's checkout.
+``engine`` package is imported from the owner's checkout by file location
+(:func:`register_package`), without adding the repository root to ``sys.path``.
 
 Resolution order:
 
@@ -15,6 +15,7 @@ Resolution order:
 """
 from __future__ import annotations
 
+import importlib.util
 import os
 import sys
 from pathlib import Path
@@ -45,17 +46,42 @@ def engine_dir() -> Path:
     )
 
 
-def ensure_engine_importable() -> Path:
-    """Put the engine root on ``sys.path`` (idempotent) and return it.
+def register_package(name: str, root: Path) -> None:
+    """Import ``root/name`` as top-level package ``name`` without touching ``sys.path``.
 
-    If some other ``engine`` package is already imported (for example the copy
-    vendored inside ``llm_serving_layer``), it is left alone: P5b runs inside the
-    serving layer and must patch *that* module object, not a second copy.
+    Putting a repository root on ``sys.path`` exposes every top-level name in it.
+    The engine and the serving layer both have a regular ``tests`` package, which
+    then shadows this repository's ``tests`` directory (a namespace package) for
+    any later ``from tests._lora_util import ...``
+    (docs/issues/p5b-serving-root-shadows-tests.md).
+    """
+    if name in sys.modules:
+        return
+    pkg_dir = root / name
+    spec = importlib.util.spec_from_file_location(
+        name, pkg_dir / "__init__.py", submodule_search_locations=[str(pkg_dir)]
+    )
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    try:
+        spec.loader.exec_module(module)
+    except BaseException:
+        del sys.modules[name]
+        raise
+
+
+def ensure_engine_importable() -> Path:
+    """Make ``import engine`` resolve to the engine checkout (idempotent) and return its root.
+
+    Only the ``engine`` package is registered; ``sys.path`` is not modified (see
+    :func:`register_package`). If some other ``engine`` package is already
+    imported (for example the copy vendored inside ``llm_serving_layer``), it is
+    left alone: P5b runs inside the serving layer and must patch *that* module
+    object, not a second copy.
     """
     if "engine" in sys.modules:
         mod_file = getattr(sys.modules["engine"], "__file__", None)
         return Path(mod_file).resolve().parent.parent if mod_file else engine_dir()
     root = engine_dir()
-    if str(root) not in sys.path:
-        sys.path.insert(0, str(root))
+    register_package("engine", root)
     return root
