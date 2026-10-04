@@ -17,3 +17,9 @@ unblock it. Work continues on everything not downstream of a pin. A pin becomes 
 - **B3:** fill in the placeholders in `scripts/slurm/*.sbatch` (account, QOS) or tell
   me the values, and confirm I can reach the cluster from this machine (for example,
   `ssh <user>@login-phoenix.pace.gatech.edu` works non-interactively).
+
+## Ready-to-run GPU jobs (waiting on B3)
+
+| Script | Resolves | Notes |
+|---|---|---|
+| `scripts/slurm/p5a_bench.sbatch` | L1, L3 (batch 1) | Fill the `<PLACEHOLDER>` account, QOS, partition, and storage paths. L3's threshold is fixed in advance at ≤15% decode overhead at r=16, batch 1. It may be revised before the run, not after. |

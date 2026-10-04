@@ -45,3 +45,11 @@ Documented, labels unchanged:
 - Ground-truth convention questions raised before real labels existed (zero-yard credits, botched snaps, two-point penalties, lateral yards). The zero-yard one turned out to be worth 3.8 points of R0 exact match; resolved by following the ground truth. [p1-eval-gt-convention-questions](issues/p1-eval-gt-convention-questions.md)
 - Scripts run by file path imported the main checkout's code instead of the worktree's. [p1-eval-editable-install-shadows-worktree](issues/p1-eval-editable-install-shadows-worktree.md)
 - R1 greedy outputs differ between batch 16 and batch 1 (padding changes fp16 numerics). Batch size is now part of the config hash. [p1-eval-batch-size-changes-greedy-outputs](issues/p1-eval-batch-size-changes-greedy-outputs.md)
+
+## P5a — engine LoRA
+
+- The engine's `linear(x, w)` is never told which layer it serves, and the LM head bypasses it, so the adapter must ride on the weight object and `linear` is replaced process-wide. Open: a small engine change would remove this. [p5a-linear-no-module-identity](issues/p5a-linear-no-module-identity.md)
+- An adapter selected around `generate()` silently stopped applying when tokens were pulled after the block exited, which is exactly what a streaming server does. Fixed: `generate_with_adapter`. [p5a-generator-context](issues/p5a-generator-context.md)
+- transformers 5 saves `config.json` without `rope_theta`/`rope_scaling`, which the engine needs. [p5a-transformers5-rope-config](issues/p5a-transformers5-rope-config.md)
+- The engine can only quantize weights loaded from disk; merge-then-quantize needed an in-memory path. [p5a-quant-loader-needs-disk](issues/p5a-quant-loader-needs-disk.md)
+- The first real-model oracle run thrashed swap. Fixed: zero-copy views of HF parameters and a low-memory layer option. [p5a-oracle-memory](issues/p5a-oracle-memory.md)
