@@ -24,3 +24,5 @@ unblock it. Work continues on everything not downstream of a pin. A pin becomes 
 |---|---|---|
 | `scripts/slurm/p5a_bench.sbatch` | L1, L3 (batch 1) | Fill the `<PLACEHOLDER>` account, QOS, partition, and storage paths. L3's threshold is fixed in advance at ≤15% decode overhead at r=16, batch 1. It may be revised before the run, not after. |
 | `scripts/slurm/train_h100.sbatch CONFIG OUTDIR [k=v ...]` | R5, sweeps, R7 | Fill the `>>> FILL IN <<<` account, QOS, paths, and GPU gres. Auto-resumes from checkpoints and requeues on time-limit warning. |
+| `scripts/slurm/p5b_bench.sbatch` | CUDA gate incl. FlashInfer, L3 (batch 32), L4, L5 | Fill the `<PLACEHOLDER>` lines. Thresholds fixed in source before any run: L3 ≤15% overhead at r=16 batch 32; L4 v2 at N=256 uniform keeps ≥50% of its N=1 goodput. |
+| `scripts/slurm/p5b_vllm.sbatch` | L7 | Needs a separate `vllm` conda env; reuses our frozen SLO and offered rate via `--from-artifact`. Threshold: our goodput within 2× of vLLM's. |

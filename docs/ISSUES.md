@@ -61,3 +61,11 @@ Documented, labels unchanged:
 - Micro-batch 4 needed ~13 GB on MPS (fp32 copies of LoRA inputs), and varying shapes fragmented the allocator. Fixed: micro-batch 1 × accumulation 8, pad to a multiple of 64, MPS memory cap, cache emptied after eval. [p2-mps-activation-memory](issues/p2-mps-activation-memory.md)
 - Toy models with tied embeddings at std 0.02 cap the logits, so LoRA plateaued at loss 3.57 in tests. Fixed in tests by rescaling embeddings. [p2-tiny-lora-loss-floor](issues/p2-tiny-lora-loss-floor.md)
 - In transformers 5, `apply_chat_template(tokenize=True)` returns a dict, not a list of ids. [p2-apply-chat-template-returns-batchencoding](issues/p2-apply-chat-template-returns-batchencoding.md)
+
+## P5b — multi-LoRA serving
+
+- Re-installing P5a's `linear()` wrapper after P5b's formed a delegation cycle (RecursionError). Fixed: the installer walks the wrapper chain. [p5b-linear-wrapper-cycle](issues/p5b-linear-wrapper-cycle.md)
+- Adding a sibling repo root to `sys.path` let its `tests` package shadow ours; the full suite passed only by file sort order. Fixed: `engine`, `serving`, `bench` registered by file location. [p5b-serving-root-shadows-tests](issues/p5b-serving-root-shadows-tests.md)
+- The serving layer's `Scheduler.step()` has no forward hook; worked around with recorded slots checked against BatchMeta every step. Proposed upstream patch included. [p5b-scheduler-forward-hook](issues/p5b-scheduler-forward-hook.md)
+- Early kernel costs were not about adapters: host syncs per projection (v1), per-row weight copies in prefill (v2), and a slow MPS strided-slice fallback. Fixed: per-forward BatchPlan. [p5b-kernel-costs-not-about-adapters](issues/p5b-kernel-costs-not-about-adapters.md)
+- The first SLO calibration measured a negative TTFT; the SLO guard caught it. [p5b-calibration-negative-ttft](issues/p5b-calibration-negative-ttft.md)
