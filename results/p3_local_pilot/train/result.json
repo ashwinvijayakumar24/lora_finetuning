@@ -1,0 +1,9 @@
+{
+  "step": 300,
+  "train_loss": 0.0010526038395861784,
+  "val_loss": 0.0005650439170587542,
+  "best_metric": 0.9111111111111111,
+  "best_step": 300,
+  "stopped_early": false,
+  "last_checkpoint": "runs/p3_local_pilot/train/checkpoints/step_0000300"
+}

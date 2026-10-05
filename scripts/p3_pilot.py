@@ -9,7 +9,12 @@ Stages (each is resumable; rerun the same command after an interruption):
         --data runs/p3_local_pilot/data/eval_pilot.jsonl --out runs/p3_local_pilot/eval/lora --dtype bfloat16
     python -m playparse.eval.run --rung r0 --data runs/p3_local_pilot/data/eval_pilot.jsonl --out runs/p3_local_pilot/eval/r0
     python -m playparse.eval.run --rung r1 --data runs/p3_local_pilot/data/eval_pilot.jsonl --out runs/p3_local_pilot/eval/r1 --dtype bfloat16
+    python scripts/p3_pilot.py slice       # 108-play balanced slice for R2
+    python -m playparse.eval.run --rung r2 --data runs/p3_local_pilot/data/eval_r2_slice.jsonl --out runs/p3_local_pilot/eval/r2 --dtype bfloat16 --batch-size 4
+    python scripts/p3_pilot.py valdiag     # val plays from the losing buckets, for error analysis (extra/)
     python scripts/p3_pilot.py report      # comparison table, paired CIs, copies artifacts to results/
+
+(The pilot ran the adapter and R1 with --batch-size 16.)
 
 Data design (written to runs/p3_local_pilot/data/, which is git-ignored; the
 manifest with every key and file hash goes to results/p3_local_pilot/):
@@ -262,6 +267,28 @@ def cmd_report(args: argparse.Namespace) -> None:
     for a in [r for r in rungs if r.startswith("lora")]:
         for b in [r for r in rungs if not r.startswith("lora")]:
             summary["paired"][f"{a}-minus-{b}"] = paired_bucket_diffs(eval_root / a, eval_root / b)
+    if (eval_root / "r2" / "predictions.jsonl").exists():
+        summary["r2_slice"] = slice_comparison(eval_root)
+    for sub_dir in ("extra",):
+        for d in sorted((RUN / sub_dir).glob("*")) if (RUN / sub_dir).exists() else []:
+            if (d / "result.json").exists():
+                dst = RESULTS / sub_dir / d.name
+                dst.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(d / "result.json", dst / "result.json")
+                shutil.copy2(d / "predictions.jsonl", dst / "predictions.jsonl")
+    train_dir = RUN / "train"
+    if (train_dir / "metrics.jsonl").exists():
+        dst = RESULTS / "train"
+        dst.mkdir(parents=True, exist_ok=True)
+        for name in ("metrics.jsonl", "run_spec.json", "run_meta.json", "result.json"):
+            shutil.copy2(train_dir / name, dst / name)
+        if (train_dir / "val_predictions").exists():
+            shutil.copytree(train_dir / "val_predictions", dst / "val_predictions", dirs_exist_ok=True)
+        final = sorted((train_dir / "checkpoints").glob("step_*"))[-1] / "adapter"
+        summary["adapter"] = {"path": str(final.relative_to(REPO)),
+                              "adapter_model_sha256": sha256(final / "adapter_model.safetensors"),
+                              "adapter_config": json.loads((final / "adapter_config.json").read_text())}
+        shutil.copy2(final / "adapter_config.json", dst / "adapter_config.json")
     (RESULTS / "summary.json").write_text(json.dumps(summary, indent=1, default=float) + "\n")
 
     def cell(ci: dict) -> str:
@@ -270,20 +297,79 @@ def cmd_report(args: argparse.Namespace) -> None:
         return f"{100 * ci['point']:.1f} [{100 * ci['lo']:.1f}, {100 * ci['hi']:.1f}]"
 
     names = ["OVERALL"] + BUCKETS
-    print("| bucket | n | " + " | ".join(rungs) + " |")
-    print("|---|---|" + "---|" * len(rungs))
+    n_max = max(summary["rungs"][r]["overall"]["n"] for r in rungs)
+    full = [r for r in rungs if summary["rungs"][r]["overall"]["n"] == n_max]  # slice rungs listed separately
+    print("| bucket | n | " + " | ".join(full) + " |")
+    print("|---|---|" + "---|" * len(full))
     for b in names:
-        blocks = [summary["rungs"][r]["overall" if b == "OVERALL" else "buckets"] for r in rungs]
+        blocks = [summary["rungs"][r]["overall" if b == "OVERALL" else "buckets"] for r in full]
         blocks = [x if b == "OVERALL" else x.get(b) for x in blocks]
         if any(x is None for x in blocks):
             continue
         print(f"| {b} | {blocks[0]['n']} | " + " | ".join(cell(x["exact_match"]) for x in blocks) + " |")
+    if "r2_slice" in summary:
+        print("\nexact match on the R2 slice (correct/n)")
+        for rung, per in summary["r2_slice"].items():
+            print(f"  {rung:<6} " + "  ".join(f"{b}={v['exact']}/{v['n']}" for b, v in per.items()))
     for k, v in summary["paired"].items():
         print(f"\npaired exact-match difference {k} (pp, 95% game-cluster bootstrap)")
         for b in names:
             if b in v:
                 d = v[b]
                 print(f"  {b:<18} n={d['n']:>4}  {100 * d['diff']:+6.1f} [{100 * d['lo']:+6.1f}, {100 * d['hi']:+6.1f}]")
+
+
+def cmd_slice(args: argparse.Namespace) -> None:
+    """A small bucket-balanced slice of the eval set for the slow few-shot rung (R2)."""
+    from playparse.train.val_eval import stratified_subset
+
+    ev = read_jsonl(DATA / "eval_pilot.jsonl")
+    sl = stratified_subset(ev, args.n, seed=args.seed, strategy="balanced")
+    sl.sort(key=lambda r: (r["game_id"], r["play_id"]))
+    write_jsonl(DATA / "eval_r2_slice.jsonl", sl)
+    mpath = RESULTS / "data_manifest.json"
+    m = json.loads(mpath.read_text())
+    m["files"]["eval_r2_slice.jsonl"] = {
+        "n": len(sl), "sha256": sha256(DATA / "eval_r2_slice.jsonl"), "seed": args.seed,
+        "design": "bucket-balanced seeded subset of eval_pilot for R2 (few-shot is ~4x the prompt length)",
+        "by_bucket": dict(Counter(r["bucket"] for r in sl)),
+        "keys": [f"{r['game_id']}#{r['play_id']}" for r in sl],
+    }
+    mpath.write_text(json.dumps(m, indent=1) + "\n")
+    print(len(sl), dict(Counter(r["bucket"] for r in sl)))
+
+
+def cmd_valdiag(args: argparse.Namespace) -> None:
+    """Val (2023) plays from the buckets where the pilot lost to R0, for error analysis.
+
+    The eval set is drawn from the 2024 test season, so its play text is not read
+    for diagnosis; the same buckets on val are inspected instead.
+    """
+    rng = random.Random(args.seed)
+    bb = by_bucket(read_jsonl(Path(args.processed) / "val.jsonl"))
+    out = list(bb["lateral"])
+    for b in ("penalty_stands", "fumble"):
+        out += rng.sample(bb[b], args.n)
+    out.sort(key=lambda r: (r["game_id"], r["play_id"]))
+    write_jsonl(DATA / "val_diag.jsonl", out)
+    print(len(out), dict(Counter(r["bucket"] for r in out)), sha256(DATA / "val_diag.jsonl"))
+
+
+def slice_comparison(eval_root: Path, slice_rung: str = "r2") -> dict:
+    """Exact match of every rung restricted to the keys the slice rung was run on."""
+    keys = set(_load_preds(eval_root / slice_rung))
+    out: dict = {}
+    for d in sorted(eval_root.iterdir()):
+        if not (d / "predictions.jsonl").exists():
+            continue
+        rows = [r for k, r in _load_preds(d).items() if k in keys]
+        per: dict = defaultdict(lambda: [0, 0])
+        for r in rows:
+            for b in (r["bucket"], "OVERALL"):
+                per[b][0] += int(r["exact"])
+                per[b][1] += 1
+        out[d.name] = {b: {"exact": e, "n": n} for b, (e, n) in sorted(per.items())}
+    return out
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -295,6 +381,15 @@ def main(argv: list[str] | None = None) -> None:
     d.add_argument("--n-hard", type=int, default=1200)
     d.add_argument("--n-eval-normal", type=int, default=200)
     d.set_defaults(fn=cmd_data)
+    sl = sub.add_parser("slice")
+    sl.add_argument("--n", type=int, default=108)
+    sl.add_argument("--seed", type=int, default=20264)
+    sl.set_defaults(fn=cmd_slice)
+    vd = sub.add_parser("valdiag")
+    vd.add_argument("--processed", default=str(DATA_PROCESSED))
+    vd.add_argument("--n", type=int, default=48)
+    vd.add_argument("--seed", type=int, default=20265)
+    vd.set_defaults(fn=cmd_valdiag)
     r = sub.add_parser("report")
     r.set_defaults(fn=cmd_report)
     args = ap.parse_args(argv)
