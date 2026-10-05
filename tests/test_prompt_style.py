@@ -231,3 +231,19 @@ def test_train_cli_encodes_with_spec_style(tmp_path):
         assert json.loads((out / "run_spec.json").read_text())["data"]["prompt_style"] == style
         means[style] = json.loads((out / "run_meta.json").read_text())["train_report"]["mean_tokens"]
     assert means["full"] - means["minimal"] == pytest.approx(186)
+
+
+def test_lora_predictor_refuses_mismatched_style(tmp_path):
+    from playparse.eval.baselines.lora_predictor import LoRAPredictor, trained_prompt_style
+
+    adapter = tmp_path / "run" / "checkpoints" / "step_0000010" / "adapter"
+    adapter.mkdir(parents=True)
+    (adapter / "adapter_config.json").write_text(json.dumps({"r": 4, "lora_alpha": 8, "target_modules": ["q_proj"]}))
+    (adapter / "adapter_model.safetensors").write_bytes(b"x")
+    assert trained_prompt_style(adapter) is None
+    (tmp_path / "run" / "run_spec.json").write_text(json.dumps({"data": {"train": "t"}}))
+    assert trained_prompt_style(adapter) == "full"  # a spec from before the option
+    (tmp_path / "run" / "run_spec.json").write_text(json.dumps({"data": {"prompt_style": "minimal"}}))
+    assert trained_prompt_style(adapter) == "minimal"
+    with pytest.raises(ValueError, match="prompt_style='minimal'"):
+        LoRAPredictor("/nonexistent/weights", adapter)  # raises before any model load
