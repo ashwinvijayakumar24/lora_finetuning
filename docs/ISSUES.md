@@ -69,3 +69,12 @@ Documented, labels unchanged:
 - The serving layer's `Scheduler.step()` has no forward hook; worked around with recorded slots checked against BatchMeta every step. Proposed upstream patch included. [p5b-scheduler-forward-hook](issues/p5b-scheduler-forward-hook.md)
 - Early kernel costs were not about adapters: host syncs per projection (v1), per-row weight copies in prefill (v2), and a slow MPS strided-slice fallback. Fixed: per-forward BatchPlan. [p5b-kernel-costs-not-about-adapters](issues/p5b-kernel-costs-not-about-adapters.md)
 - The first SLO calibration measured a negative TTFT; the SLO guard caught it. [p5b-calibration-negative-ttft](issues/p5b-calibration-negative-ttft.md)
+
+## P3 — integration and local pilot
+
+- The pinned chat-template date was defined twice (train and eval). Fixed: one constant in `playparse/prompt.py`, plus a train/eval prompt-parity test. [p3-duplicated-chat-date](issues/p3-duplicated-chat-date.md)
+- Training with our own LoRA wrote checkpoints no downstream loader could read. Fixed: PEFT format everywhere. [p3-lora-checkpoints-not-peft-format](issues/p3-lora-checkpoints-not-peft-format.md)
+- The old val callback scored the first N val plays, which are almost all normal. Fixed: seeded, bucket-stratified subset. [p3-val-callback-head-of-file](issues/p3-val-callback-head-of-file.md)
+- 6 train plays exceed 512 tokens, so the first full H100 run would have crashed at startup. Fixed: `max_len` 640. [p3-default-max-len-too-short](issues/p3-default-max-len-too-short.md)
+- The pilot's per-bucket allocation ignored caps (caught by a test; no effect on the real pilot data). [p3-pilot-allocation-ignored-caps](issues/p3-pilot-allocation-ignored-caps.md)
+- Two agents' real-model jobs overlapped on the laptop GPU, distorting both timings. [p3-shared-mps-contention](issues/p3-shared-mps-contention.md)
