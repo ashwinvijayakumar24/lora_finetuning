@@ -1,0 +1,53 @@
+# P3 prompt ablation: the P3 local pilot with prompt_style "minimal" (no system message).
+# Identical to configs/p3_local_pilot.yaml except data.prompt_style, data.train (a
+# hash-verified copy of the same 2,400 plays), and train.output_dir.
+# Data: `python scripts/p3_prompt_ablation.py data` copies the pilot's train/eval files and checks their sha256.
+#   python scripts/train.py --config configs/p3_prompt_ablation.yaml \
+#       --set data.val="\"$PLAYPARSE_PROCESSED_DIR/val.jsonl\"" [--resume latest]
+model:
+  weights: null
+  dtype: auto              # bf16 base on MPS; LoRA weights fp32
+  gradient_checkpointing: false
+  attn_implementation: sdpa
+lora:
+  impl: playparse
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  targets: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+data:
+  train: runs/p3_prompt_ablation/data/train_pilot.jsonl
+  val: null                # set to $PLAYPARSE_PROCESSED_DIR/val.jsonl
+  max_len: 768             # the longest pilot example is 595 tokens (a lateral); 512 would raise
+  mask_prompt: true
+  prompt_style: minimal    # the one change: no system message (eval with --prompt-style minimal)
+  on_overlength: raise
+  val_loss_examples: 200   # proportional bucket-stratified val sample for val loss
+train:
+  output_dir: runs/p3_prompt_ablation/train
+  seed: 0
+  lr: 2.0e-4
+  weight_decay: 0.0
+  max_grad_norm: 1.0
+  epochs: 1                # 2,400 examples / 8 = 300 optimizer steps
+  warmup_ratio: 0.03
+  min_lr_ratio: 0.1
+  micro_batch_size: 1      # micro-batch 4 swaps on 16 GB (docs/issues/p2-mps-activation-memory.md)
+  grad_accum_steps: 8
+  pad_to_multiple_of: 64   # fixed shapes keep the MPS allocator from fragmenting
+  log_every: 5
+  eval_every: 75
+  eval_batch_size: 8
+  gen_every: 100
+  save_every: 25           # resumable: at most 25 steps (~6 min) lost on a crash
+  keep_last_checkpoints: 2
+  save_best: true
+  early_stop_metric: val_exact_match
+  early_stop_mode: max
+  early_stop_patience: null
+  device: auto
+  autocast: auto           # none on MPS
+gen_eval_examples: 90      # 10 per bucket from val (balanced)
+gen_eval_seed: 0
+gen_eval_strategy: balanced
+gen_max_new_tokens: 128
