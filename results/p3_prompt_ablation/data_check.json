@@ -1,0 +1,16 @@
+{
+ "train_pilot.jsonl": {
+  "sha256": "006528ff19b31368f148120fb00f609e207f863922fc19c4dae6b73de08a0f2e",
+  "manifest_sha256": "006528ff19b31368f148120fb00f609e207f863922fc19c4dae6b73de08a0f2e",
+  "n": 2400,
+  "keys_match_manifest": true,
+  "identical": true
+ },
+ "eval_pilot.jsonl": {
+  "sha256": "3f7df5cb275e94167412ecbafdffb11d78871c38ffdd9278c6ca443917a8d01f",
+  "manifest_sha256": "3f7df5cb275e94167412ecbafdffb11d78871c38ffdd9278c6ca443917a8d01f",
+  "n": 1014,
+  "keys_match_manifest": true,
+  "identical": true
+ }
+}

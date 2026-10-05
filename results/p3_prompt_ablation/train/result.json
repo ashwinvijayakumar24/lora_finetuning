@@ -1,0 +1,9 @@
+{
+  "step": 300,
+  "train_loss": 0.004914359818212688,
+  "val_loss": 0.000567132922198934,
+  "best_metric": 0.9222222222222223,
+  "best_step": 300,
+  "stopped_early": false,
+  "last_checkpoint": "runs/p3_prompt_ablation/train/checkpoints/step_0000300"
+}

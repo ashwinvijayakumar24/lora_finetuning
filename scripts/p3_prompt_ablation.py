@@ -16,9 +16,16 @@ Stages (each can be rerun; training and eval resume):
         --set data.val="\"$PLAYPARSE_PROCESSED_DIR/val.jsonl\"" [--resume latest]
     python scripts/p3_prompt_ablation.py eval --name lora_minimal --prompt-style minimal \
         --adapter runs/p3_prompt_ablation/train/checkpoints/step_0000300/adapter
-    # timing control: the full-prompt pilot adapter on the first 256 eval plays, same machine state
+    # speed control: both adapters on the first 256 eval plays, back to back
     python scripts/p3_prompt_ablation.py eval --name lora_full_timing --prompt-style full --limit 256 \
         --adapter <pilot adapter dir>
+    python scripts/p3_prompt_ablation.py eval --name lora_minimal_timing --prompt-style minimal --limit 256 \
+        --adapter runs/p3_prompt_ablation/train/checkpoints/step_0000300/adapter
+    # training-throughput control: the full-prompt config for 30 steps, idle machine, no validation
+    python scripts/train.py --config configs/p3_local_pilot.yaml --set \
+        'data.train="runs/p3_prompt_ablation/data/train_pilot.jsonl"' data.val=null gen_eval_examples=0 \
+        'train.output_dir="runs/p3_prompt_ablation/full_probe"' train.max_steps=30 train.epochs=null \
+        train.save_every=1000 train.save_best=false train.save_final=false
     python scripts/p3_prompt_ablation.py report
 
 `eval` wraps `python -m playparse.eval.run` (same harness, batch 16, bf16, greedy,
@@ -159,6 +166,45 @@ def cmd_tokens(args: argparse.Namespace) -> None:
     print(json.dumps({k: v["minimal_over_full"] for k, v in out.items()}, indent=1))
 
 
+def cmd_gpu_projection(args: argparse.Namespace) -> None:
+    """Tokens one R5 epoch processes under the GPU config (micro-batch 16, each batch
+    right-padded to its longest example, shuffled), for both styles.
+
+    The minimal prompt is exactly the system prompt's tokens shorter for every
+    example (tests/test_prompt_style.py), so only the full lengths are computed.
+    """
+    import random
+
+    from transformers import AutoTokenizer
+
+    from playparse.prompt import SYSTEM_PROMPT
+    from playparse.train.collate import encode_record
+
+    tok = AutoTokenizer.from_pretrained(str(WEIGHTS))
+    delta = len(tok(SYSTEM_PROMPT, add_special_tokens=False)["input_ids"])
+    full = [len(encode_record(r, tok)) for r in read_jsonl(Path(args.processed) / "train.jsonl")]
+    out: dict = {"n": len(full), "system_prompt_tokens": delta, "micro_batch": args.micro_batch,
+                 "n_shuffles": args.n_shuffles}
+    for style, lens in (("full", full), ("minimal", [n - delta for n in full])):
+        padded = []
+        for s in range(args.n_shuffles):
+            order = list(range(len(lens)))
+            random.Random(s).shuffle(order)
+            tot = 0
+            for i in range(0, len(order), args.micro_batch):
+                b = [lens[j] for j in order[i:i + args.micro_batch]]
+                tot += max(b) * len(b)
+            padded.append(tot)
+        out[style] = {"real_tokens": sum(lens), "batch_padded_tokens_mean": statistics.mean(padded),
+                      "padding_overhead": statistics.mean(padded) / sum(lens) - 1}
+    out["minimal_over_full_real"] = out["minimal"]["real_tokens"] / out["full"]["real_tokens"]
+    out["minimal_over_full_batch_padded"] = (out["minimal"]["batch_padded_tokens_mean"]
+                                             / out["full"]["batch_padded_tokens_mean"])
+    RESULTS.mkdir(parents=True, exist_ok=True)
+    (RESULTS / "gpu_projection.json").write_text(json.dumps(out, indent=1) + "\n")
+    print(json.dumps(out, indent=1))
+
+
 # --------------------------------------------------------------------------- eval
 
 
@@ -177,8 +223,9 @@ def _poll_mps_peak(stop: threading.Event, box: dict, every: float = 0.25) -> Non
 def cmd_eval(args: argparse.Namespace) -> None:
     from playparse.eval import run as eval_run
 
-    out = RUN / "eval" / args.name
-    argv = ["--rung", "lora", "--adapter", args.adapter, "--data", str(DATA / "eval_pilot.jsonl"),
+    out = RUN / ("extra" if args.data else "eval") / args.name
+    data = args.data or str(DATA / "eval_pilot.jsonl")
+    argv = ["--rung", "lora", "--adapter", args.adapter, "--data", data,
             "--out", str(out), "--dtype", "bfloat16", "--batch-size", str(args.batch_size),
             "--prompt-style", args.prompt_style]
     if args.limit:
@@ -201,6 +248,48 @@ def cmd_eval(args: argparse.Namespace) -> None:
     box["peak_current_bytes"] = max(box.get("peak_current_bytes", 0), prev.get("peak_current_bytes", 0))
     (out / "memory.json").write_text(json.dumps(box, indent=1) + "\n")
     print(json.dumps(box))
+
+
+def cmd_valdiag(args: argparse.Namespace) -> None:
+    """Every val (2023) challenge and lateral play: the buckets where minimal leaned
+    worse on eval. Diagnosis uses val text only; test-season text is not read."""
+    recs = [r for r in read_jsonl(Path(args.processed) / "val.jsonl") if r["bucket"] in ("challenge", "lateral")]
+    recs.sort(key=lambda r: (r["game_id"], r["play_id"]))
+    path = DATA / "val_challenge_lateral.jsonl"
+    with open(path, "w", encoding="utf-8") as f:
+        for r in recs:
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+    info = {"n": len(recs), "sha256": sha256(path),
+            "by_bucket": {b: sum(r["bucket"] == b for r in recs) for b in ("challenge", "lateral")}}
+    RESULTS.mkdir(parents=True, exist_ok=True)
+    (RESULTS / "val_diag_manifest.json").write_text(json.dumps(info, indent=1) + "\n")
+    print(info)
+
+
+def valdiag_report(n_boot: int, seed: int) -> dict | None:
+    dirs = {s: RUN / "extra" / f"valdiag_{s}" for s in STYLES}
+    if not all((d / "result.json").exists() for d in dirs.values()):
+        return None
+    records = read_jsonl(DATA / "val_challenge_lateral.jsonl")
+    t, sc = {}, {}
+    for s, d in dirs.items():
+        t[s], sc[s], _ = stat_table(d / "predictions.jsonl", records)
+    out: dict = {"paired_minimal_minus_full": paired(t["minimal"], t["full"], n_boot, seed), "buckets": {}}
+    for b in ("challenge", "lateral"):
+        idx = [i for i, r in enumerate(records) if r["bucket"] == b]
+        out["buckets"][b] = {
+            "n": len(idx),
+            "full_exact": sum(sc["full"][i].exact for i in idx),
+            "minimal_exact": sum(sc["minimal"][i].exact for i in idx),
+            "minimal_right_full_wrong": sum(sc["minimal"][i].exact and not sc["full"][i].exact for i in idx),
+            "full_right_minimal_wrong": sum(sc["full"][i].exact and not sc["minimal"][i].exact for i in idx),
+            # Challenge plays whose text contains REVERSED: the one rule the full system
+            # prompt states that the labels alone must otherwise teach.
+            "reversed_n": sum("REVERSED" in records[i]["desc"] for i in idx),
+            "reversed_full_exact": sum(sc["full"][i].exact for i in idx if "REVERSED" in records[i]["desc"]),
+            "reversed_minimal_exact": sum(sc["minimal"][i].exact for i in idx if "REVERSED" in records[i]["desc"]),
+        }
+    return out
 
 
 # --------------------------------------------------------------------------- report
@@ -266,7 +355,7 @@ def train_summary(train_dir: Path, max_step: int | None = None) -> dict:
     # Sum of step times over the logged windows (log_every steps each, step_time_s is per step).
     log_every = starts[0]["config"]["log_every"] if starts else 5
     out["sum_step_time_h"] = sum(step_t) * log_every / 3600
-    val = [r for r in rows if r["event"] == "val"]
+    val = [r for r in rows if r["event"] == "eval"]
     out["val_loss"] = {r["step"]: r.get("val_loss") for r in val}
     cb = [r for r in rows if r["event"] == "val_callback"]
     out["val_gen"] = {r["step"]: {k: v for k, v in r.items() if k.startswith("val_exact_match")} for r in cb}
@@ -328,33 +417,46 @@ def cmd_report(args: argparse.Namespace) -> None:
                         "mean_output_tokens": statistics.mean(r["usage"]["output_tokens"] for r in rows)}
     summary["eval_tokens"] = tok_use
 
-    # Timing control: the full-prompt adapter rerun on the first plays, same machine state.
+    # Timing control: both adapters on the same first plays, run back to back, so
+    # thermal state and memory pressure are as similar as a laptop allows. The full
+    # 1,014-play runs are not comparable on speed: the pilot's ran on a shared
+    # machine and the minimal run slowed as the machine heated (see the write-up).
     timing = {}
-    ctrl = RUN / "eval" / "lora_full_timing"
-    if (ctrl / "result.json").exists():
-        c_rows = read_jsonl(ctrl / "predictions.jsonl")
-        n = len(c_rows)
-        m_rows = read_jsonl(arms["minimal"] / "predictions.jsonl")[:n]
-        f_rows = read_jsonl(arms["full"] / "predictions.jsonl")
-        f_by = {r["key"]: r for r in f_rows}
+    ctrl_f, ctrl_m = RUN / "eval" / "lora_full_timing", RUN / "eval" / "lora_minimal_timing"
+    if (ctrl_f / "result.json").exists() and (ctrl_m / "result.json").exists():
+        cf, cm = read_jsonl(ctrl_f / "predictions.jsonl"), read_jsonl(ctrl_m / "predictions.jsonl")
+        f_by = {r["key"]: r for r in read_jsonl(arms["full"] / "predictions.jsonl")}
+        m_by = {r["key"]: r for r in read_jsonl(arms["minimal"] / "predictions.jsonl")}
 
         def pps(rows):
             return len(rows) / sum(r["latency_s"] / r["batch_size"] for r in rows)
 
+        def mem_of(d):
+            return json.loads((d / "memory.json").read_text()) if (d / "memory.json").exists() else None
+
         timing = {
-            "n_plays": n,
-            "full_rerun_plays_per_sec": pps(c_rows),
-            "minimal_plays_per_sec_same_plays": pps(m_rows),
-            "full_pilot_plays_per_sec_same_plays": pps([f_by[r["key"]] for r in c_rows]),
-            "full_rerun_identical_raw_to_pilot": sum(1 for r in c_rows if r["raw"] == f_by[r["key"]]["raw"]),
-            "memory_full_rerun": json.loads((ctrl / "memory.json").read_text()) if (ctrl / "memory.json").exists() else None,
+            "n_plays": len(cf),
+            "full_plays_per_sec": pps(cf),
+            "minimal_plays_per_sec": pps(cm),
+            "full_mean_input_tokens": statistics.mean(r["usage"]["input_tokens"] for r in cf),
+            "minimal_mean_input_tokens": statistics.mean(r["usage"]["input_tokens"] for r in cm),
+            "full_mean_output_tokens": statistics.mean(r["usage"]["output_tokens"] for r in cf),
+            "minimal_mean_output_tokens": statistics.mean(r["usage"]["output_tokens"] for r in cm),
+            "full_pilot_plays_per_sec_same_plays": pps([f_by[r["key"]] for r in cf]),
+            "minimal_main_run_plays_per_sec_same_plays": pps([m_by[r["key"]] for r in cm]),
+            "full_rerun_identical_raw_to_pilot": sum(1 for r in cf if r["raw"] == f_by[r["key"]]["raw"]),
+            "minimal_rerun_identical_raw_to_main_run": sum(1 for r in cm if r["raw"] == m_by[r["key"]]["raw"]),
+            "memory_full": mem_of(ctrl_f),
+            "memory_minimal": mem_of(ctrl_m),
         }
     summary["eval_timing_control"] = timing
     mem = arms["minimal"] / "memory.json"
     summary["eval_memory_minimal"] = json.loads(mem.read_text()) if mem.exists() else None
 
+    summary["val_diag"] = valdiag_report(args.n_boot, args.seed)
+
     # Training.
-    summary["train"] = {"minimal": train_summary(RUN / "train"), "full": train_summary(PILOT_RESULTS / "train")}
+    summary["train"] ={"minimal": train_summary(RUN / "train"), "full": train_summary(PILOT_RESULTS / "train")}
     probe = RUN / "full_probe"
     if (probe / "metrics.jsonl").exists():
         # Same examples in the same order (same seed), uncontended machine: a fair
@@ -365,7 +467,7 @@ def cmd_report(args: argparse.Namespace) -> None:
 
     # Copy artifacts.
     RESULTS.mkdir(parents=True, exist_ok=True)
-    for name in ("lora_minimal", "lora_full_timing"):
+    for name in ("lora_minimal", "lora_full_timing", "lora_minimal_timing"):
         src = RUN / "eval" / name
         if not (src / "result.json").exists():
             continue
@@ -380,6 +482,13 @@ def cmd_report(args: argparse.Namespace) -> None:
                 shutil.copyfileobj(fi, fo)
         else:
             shutil.copy2(p, dst / "predictions.jsonl")
+    for d in sorted((RUN / "extra").glob("*")) if (RUN / "extra").exists() else []:
+        if (d / "result.json").exists():
+            dst = RESULTS / "extra" / d.name
+            dst.mkdir(parents=True, exist_ok=True)
+            for f in ("result.json", "predictions.jsonl", "memory.json"):
+                if (d / f).exists():
+                    shutil.copy2(d / f, dst / f)
     tdst = RESULTS / "train"
     tdst.mkdir(parents=True, exist_ok=True)
     for f in ("metrics.jsonl", "run_spec.json", "run_meta.json", "result.json"):
@@ -418,8 +527,8 @@ def cmd_report(args: argparse.Namespace) -> None:
         f = summary["arms"]["full"]["overall"][m]
         mm = summary["arms"]["minimal"]["overall"][m]
         print(f"{m}: full {f['point']:.4f} minimal {mm['point']:.4f} diff {d['point']:+.4f} [{d['lo']:+.4f}, {d['hi']:+.4f}]")
-    print(json.dumps({"eval_tokens": tok_use, "timing": timing, "eval_memory_minimal": summary["eval_memory_minimal"]},
-                     indent=1, default=float))
+    print(json.dumps({"eval_tokens": tok_use, "timing": timing, "eval_memory_minimal": summary["eval_memory_minimal"],
+                      "val_diag": summary["val_diag"]}, indent=1, default=float))
     for arm, t in summary["train"].items():
         print(arm, {k: v for k, v in t.items() if k not in ("val_loss", "val_gen")})
         print("  val_loss", t["val_loss"])
@@ -442,7 +551,16 @@ def main(argv: list[str] | None = None) -> None:
     e.add_argument("--prompt-style", required=True, choices=STYLES)
     e.add_argument("--batch-size", type=int, default=16)
     e.add_argument("--limit", type=int, default=None)
+    e.add_argument("--data", default=None, help="another JSONL (e.g. the val diagnostic); output goes to extra/")
     e.set_defaults(fn=cmd_eval)
+    g = sub.add_parser("gpu_projection")
+    g.add_argument("--processed", default=str(DATA_PROCESSED))
+    g.add_argument("--micro-batch", type=int, default=16)
+    g.add_argument("--n-shuffles", type=int, default=3)
+    g.set_defaults(fn=cmd_gpu_projection)
+    vd = sub.add_parser("valdiag")
+    vd.add_argument("--processed", default=str(DATA_PROCESSED))
+    vd.set_defaults(fn=cmd_valdiag)
     r = sub.add_parser("report")
     r.add_argument("--n-boot", type=int, default=2000)
     r.add_argument("--seed", type=int, default=0)
