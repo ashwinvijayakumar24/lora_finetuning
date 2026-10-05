@@ -22,7 +22,12 @@ Two traps this module guards against, each with a test in tests/test_collate.py:
   into the system header unless `date_string` is passed. Unpinned, the prompt a
   model was trained on would differ from the prompt it is served with on any
   other day. We always pass playparse.prompt.CHAT_DATE_STRING, the same
-  constant the eval harness uses.
+  constant the eval harness uses. This holds for both prompt styles: with
+  prompt_style="minimal" there is no system message, but the template still
+  writes a system header with the date.
+
+prompt_style ("full" or "minimal", see playparse.prompt.PROMPT_STYLES) selects the
+messages. It defaults to "full", the prompt every earlier result used.
 """
 from __future__ import annotations
 
@@ -31,7 +36,7 @@ from typing import Any, Iterable, Literal, Mapping, Sequence
 
 import torch
 
-from playparse.prompt import CHAT_DATE_STRING, build_messages
+from playparse.prompt import CHAT_DATE_STRING, DEFAULT_PROMPT_STYLE, build_messages
 
 IGNORE_INDEX = -100
 
@@ -104,10 +109,11 @@ def render_prompt(
     posteam: str | None,
     desc: str,
     date_string: str = CHAT_DATE_STRING,
+    prompt_style: str = DEFAULT_PROMPT_STYLE,
 ) -> str:
     """The exact prompt string (chat template + assistant header) for one play."""
     return tokenizer.apply_chat_template(
-        build_messages(posteam, desc),
+        build_messages(posteam, desc, style=prompt_style),
         tokenize=False,
         add_generation_prompt=True,
         date_string=date_string,
@@ -119,9 +125,10 @@ def encode_prompt(
     posteam: str | None,
     desc: str,
     date_string: str = CHAT_DATE_STRING,
+    prompt_style: str = DEFAULT_PROMPT_STYLE,
 ) -> list[int]:
     """Prompt token ids, with exactly one BOS. Used by training *and* generation."""
-    text = render_prompt(tokenizer, posteam, desc, date_string)
+    text = render_prompt(tokenizer, posteam, desc, date_string, prompt_style)
     # add_special_tokens=False: the template already wrote <|begin_of_text|>.
     ids = list(tokenizer(text, add_special_tokens=False)["input_ids"])
     _check_single_bos(tokenizer, ids)
@@ -178,6 +185,7 @@ def encode_record(
     max_len: int | None = None,
     mask_prompt: bool = True,
     date_string: str = CHAT_DATE_STRING,
+    prompt_style: str = DEFAULT_PROMPT_STYLE,
 ) -> EncodedExample:
     """Encode one dataset record ({"posteam", "desc", "label", ...}).
 
@@ -186,7 +194,7 @@ def encode_record(
     ids and generates completion ids one by one, so no BPE merge can ever cross the
     prompt/completion boundary. Raises OverLengthError if the result exceeds max_len.
     """
-    p_ids = encode_prompt(tokenizer, record.get("posteam"), record["desc"], date_string)
+    p_ids = encode_prompt(tokenizer, record.get("posteam"), record["desc"], date_string, prompt_style)
     c_ids = list(tokenizer(record["label"], add_special_tokens=False)["input_ids"])
     c_ids.append(end_of_turn_id(tokenizer))
     meta = {k: record[k] for k in ("game_id", "play_id", "bucket") if k in record}
@@ -215,6 +223,7 @@ def encode_records(
     mask_prompt: bool = True,
     on_overlength: Literal["raise", "drop"] = "raise",
     date_string: str = CHAT_DATE_STRING,
+    prompt_style: str = DEFAULT_PROMPT_STYLE,
 ) -> tuple[list[EncodedExample], EncodeReport]:
     """Encode many records. Over-length examples raise by default.
 
@@ -228,7 +237,7 @@ def encode_records(
     n = 0
     for rec in records:
         n += 1
-        ex = encode_record(rec, tokenizer, None, mask_prompt, date_string)
+        ex = encode_record(rec, tokenizer, None, mask_prompt, date_string, prompt_style)
         if max_len is not None and len(ex) > max_len:
             info = {**ex.meta, "n_tokens": len(ex), "n_prompt": ex.n_prompt, "n_completion": ex.n_completion}
             if on_overlength == "raise":

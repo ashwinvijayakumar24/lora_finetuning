@@ -1,0 +1,233 @@
+{
+ "train_pilot": {
+  "full": {
+   "n": 2400,
+   "prompt_tokens": {
+    "mean": 275.7,
+    "p50": 268,
+    "p99": 363,
+    "max": 521,
+    "sum": 661740
+   },
+   "completion_tokens": {
+    "mean": 35.1,
+    "p50": 27,
+    "p99": 91,
+    "max": 106,
+    "sum": 84283
+   },
+   "total_tokens": {
+    "mean": 310.8,
+    "p50": 307,
+    "p99": 422,
+    "max": 595,
+    "sum": 746023
+   },
+   "padded_to_64_tokens": {
+    "mean": 348.2,
+    "p50": 320,
+    "p99": 448,
+    "max": 640,
+    "sum": 835584
+   },
+   "fixed_template_tokens": 221,
+   "prompt_share": 0.887,
+   "completion_share": 0.113,
+   "padding_overhead": 0.1201
+  },
+  "minimal": {
+   "n": 2400,
+   "prompt_tokens": {
+    "mean": 89.7,
+    "p50": 82,
+    "p99": 177,
+    "max": 335,
+    "sum": 215340
+   },
+   "completion_tokens": {
+    "mean": 35.1,
+    "p50": 27,
+    "p99": 91,
+    "max": 106,
+    "sum": 84283
+   },
+   "total_tokens": {
+    "mean": 124.8,
+    "p50": 121,
+    "p99": 236,
+    "max": 409,
+    "sum": 299623
+   },
+   "padded_to_64_tokens": {
+    "mean": 159.7,
+    "p50": 128,
+    "p99": 256,
+    "max": 448,
+    "sum": 383232
+   },
+   "fixed_template_tokens": 35,
+   "prompt_share": 0.7187,
+   "completion_share": 0.2813,
+   "padding_overhead": 0.279
+  },
+  "minimal_over_full": {
+   "total_tokens": 0.4016,
+   "padded_to_64_tokens": 0.4586,
+   "prompt_tokens": 0.3254
+  }
+ },
+ "eval_pilot": {
+  "full": {
+   "n": 1014,
+   "prompt_tokens": {
+    "mean": 280.8,
+    "p50": 279,
+    "p99": 362,
+    "max": 460,
+    "sum": 284752
+   },
+   "completion_tokens": {
+    "mean": 31.8,
+    "p50": 26,
+    "p99": 91,
+    "max": 106,
+    "sum": 32228
+   },
+   "total_tokens": {
+    "mean": 312.6,
+    "p50": 309,
+    "p99": 412,
+    "max": 495,
+    "sum": 316980
+   },
+   "padded_to_64_tokens": {
+    "mean": 344.7,
+    "p50": 320,
+    "p99": 448,
+    "max": 512,
+    "sum": 349568
+   },
+   "fixed_template_tokens": 221,
+   "prompt_share": 0.8983,
+   "completion_share": 0.1017,
+   "padding_overhead": 0.1028
+  },
+  "minimal": {
+   "n": 1014,
+   "prompt_tokens": {
+    "mean": 94.8,
+    "p50": 93,
+    "p99": 176,
+    "max": 274,
+    "sum": 96148
+   },
+   "completion_tokens": {
+    "mean": 31.8,
+    "p50": 26,
+    "p99": 91,
+    "max": 106,
+    "sum": 32228
+   },
+   "total_tokens": {
+    "mean": 126.6,
+    "p50": 123,
+    "p99": 226,
+    "max": 309,
+    "sum": 128376
+   },
+   "padded_to_64_tokens": {
+    "mean": 157.7,
+    "p50": 128,
+    "p99": 256,
+    "max": 320,
+    "sum": 159872
+   },
+   "fixed_template_tokens": 35,
+   "prompt_share": 0.749,
+   "completion_share": 0.251,
+   "padding_overhead": 0.2453
+  },
+  "minimal_over_full": {
+   "total_tokens": 0.405,
+   "padded_to_64_tokens": 0.4573,
+   "prompt_tokens": 0.3377
+  }
+ },
+ "train_full": {
+  "full": {
+   "n": 294016,
+   "prompt_tokens": {
+    "mean": 266.3,
+    "p50": 264,
+    "p99": 312,
+    "max": 521,
+    "sum": 78282871
+   },
+   "completion_tokens": {
+    "mean": 32.6,
+    "p50": 27,
+    "p99": 89,
+    "max": 106,
+    "sum": 9574430
+   },
+   "total_tokens": {
+    "mean": 298.8,
+    "p50": 291,
+    "p99": 361,
+    "max": 595,
+    "sum": 87857301
+   },
+   "padded_to_64_tokens": {
+    "mean": 340.5,
+    "p50": 320,
+    "p99": 384,
+    "max": 640,
+    "sum": 100103296
+   },
+   "fixed_template_tokens": 221,
+   "prompt_share": 0.891,
+   "completion_share": 0.109,
+   "padding_overhead": 0.1394
+  },
+  "minimal": {
+   "n": 294016,
+   "prompt_tokens": {
+    "mean": 80.3,
+    "p50": 78,
+    "p99": 126,
+    "max": 335,
+    "sum": 23595895
+   },
+   "completion_tokens": {
+    "mean": 32.6,
+    "p50": 27,
+    "p99": 89,
+    "max": 106,
+    "sum": 9574430
+   },
+   "total_tokens": {
+    "mean": 112.8,
+    "p50": 105,
+    "p99": 175,
+    "max": 409,
+    "sum": 33170325
+   },
+   "padded_to_64_tokens": {
+    "mean": 150.4,
+    "p50": 128,
+    "p99": 192,
+    "max": 448,
+    "sum": 44227712
+   },
+   "fixed_template_tokens": 35,
+   "prompt_share": 0.7114,
+   "completion_share": 0.2886,
+   "padding_overhead": 0.3334
+  },
+  "minimal_over_full": {
+   "total_tokens": 0.3775,
+   "padded_to_64_tokens": 0.4418,
+   "prompt_tokens": 0.3014
+  }
+ }
+}

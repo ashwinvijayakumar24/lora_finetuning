@@ -1,0 +1,18 @@
+{
+ "n": 294016,
+ "system_prompt_tokens": 186,
+ "micro_batch": 16,
+ "n_shuffles": 3,
+ "full": {
+  "real_tokens": 87857301,
+  "batch_padded_tokens_mean": 102021989.33333333,
+  "padding_overhead": 0.16122380464810004
+ },
+ "minimal": {
+  "real_tokens": 33170325,
+  "batch_padded_tokens_mean": 47335013.333333336,
+  "padding_overhead": 0.4270289282162094
+ },
+ "minimal_over_full_real": 0.37754773504822325,
+ "minimal_over_full_batch_padded": 0.46396873500159946
+}

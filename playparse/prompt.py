@@ -33,8 +33,38 @@ def render_user(posteam: str | None, desc: str) -> str:
     return f"posteam: {posteam or 'UNK'}\ndesc: {desc}"
 
 
-def build_messages(posteam: str | None, desc: str, system: str = SYSTEM_PROMPT) -> list[dict[str, str]]:
-    return [
-        {"role": "system", "content": system},
-        {"role": "user", "content": render_user(posteam, desc)},
-    ]
+# Prompt styles. "full" is the frozen prompt every result up to P3 used. "minimal"
+# drops the system message entirely: a fine-tuned adapter learns the task and the
+# JSON format from its labels, so the 186-token instruction may be dead weight that
+# every training step and every served request pays for (docs/benchmarks/
+# p3-prompt-ablation.md). With no system message the Llama 3.2 template still writes
+# its own system header ("Cutting Knowledge Date ... Today Date ..."), so the date
+# must stay pinned with CHAT_DATE_STRING in both styles.
+PROMPT_STYLES = ("full", "minimal")
+DEFAULT_PROMPT_STYLE = "full"
+
+
+def check_prompt_style(style: str) -> str:
+    if style not in PROMPT_STYLES:
+        raise ValueError(f"unknown prompt style {style!r}; expected one of {PROMPT_STYLES}")
+    return style
+
+
+def build_messages(
+    posteam: str | None,
+    desc: str,
+    system: str = SYSTEM_PROMPT,
+    style: str = DEFAULT_PROMPT_STYLE,
+) -> list[dict[str, str]]:
+    """Chat messages for one play.
+
+    style="full": [system, user] with `system` (default SYSTEM_PROMPT).
+    style="minimal": [user] only. A custom `system` is an error here, since it
+    would be silently dropped.
+    """
+    user = {"role": "user", "content": render_user(posteam, desc)}
+    if check_prompt_style(style) == "minimal":
+        if system != SYSTEM_PROMPT:
+            raise ValueError("style='minimal' sends no system message; do not pass `system`")
+        return [user]
+    return [{"role": "system", "content": system}, user]

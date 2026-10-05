@@ -64,6 +64,16 @@ class DataSpec:
     # >0: val loss on a seeded, bucket-proportional sample of this many val records
     # (seed = gen_eval_seed) instead of the head of the file, which is a few games.
     val_loss_examples: int = 0
+    # Prompt style for every encoded example and the generation val callback:
+    # "full" (system prompt, the default every earlier run used) or "minimal" (no
+    # system message). See playparse.prompt.PROMPT_STYLES. An adapter must be
+    # evaluated with the style it was trained with (eval: --prompt-style).
+    prompt_style: str = "full"
+
+    def __post_init__(self) -> None:
+        from playparse.prompt import check_prompt_style
+
+        check_prompt_style(self.prompt_style)
 
 
 @dataclass

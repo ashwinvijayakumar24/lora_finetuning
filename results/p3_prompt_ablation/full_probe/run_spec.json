@@ -1,0 +1,76 @@
+{
+  "model": {
+    "weights": null,
+    "dtype": "auto",
+    "gradient_checkpointing": false,
+    "attn_implementation": "sdpa"
+  },
+  "lora": {
+    "impl": "playparse",
+    "r": 16,
+    "alpha": 32,
+    "dropout": 0.05,
+    "targets": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ]
+  },
+  "data": {
+    "train": "runs/p3_prompt_ablation/data/train_pilot.jsonl",
+    "val": null,
+    "max_len": 768,
+    "mask_prompt": true,
+    "on_overlength": "raise",
+    "limit_train": null,
+    "train_sample": 0,
+    "train_sample_seed": 0,
+    "limit_val": null,
+    "val_loss_examples": 200,
+    "prompt_style": "full"
+  },
+  "train": {
+    "output_dir": "runs/p3_prompt_ablation/full_probe",
+    "seed": 0,
+    "lr": 0.0002,
+    "weight_decay": 0.0,
+    "adam_betas": [
+      0.9,
+      0.999
+    ],
+    "adam_eps": 1e-08,
+    "max_grad_norm": 1.0,
+    "max_steps": 30,
+    "epochs": null,
+    "warmup_steps": 0,
+    "warmup_ratio": 0.03,
+    "min_lr_ratio": 0.1,
+    "micro_batch_size": 1,
+    "grad_accum_steps": 8,
+    "shuffle": true,
+    "pad_to_multiple_of": 64,
+    "log_every": 5,
+    "eval_every": 75,
+    "eval_batch_size": 8,
+    "eval_max_examples": null,
+    "gen_every": 100,
+    "save_every": 1000,
+    "keep_last_checkpoints": 2,
+    "save_final": false,
+    "save_best": false,
+    "early_stop_metric": "val_exact_match",
+    "early_stop_mode": "max",
+    "early_stop_patience": null,
+    "device": "auto",
+    "autocast": "auto",
+    "deterministic": false
+  },
+  "gen_eval_examples": 0,
+  "gen_eval_seed": 0,
+  "gen_eval_strategy": "balanced",
+  "gen_max_new_tokens": 128
+}

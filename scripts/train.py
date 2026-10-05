@@ -97,13 +97,15 @@ def main(argv: list[str] | None = None) -> int:
         train_recs = nested_sample(train_recs, spec.data.train_sample, spec.data.train_sample_seed)
     val_recs = read_jsonl(spec.data.val, spec.data.limit_val) if spec.data.val else []
     train_ex, train_rep = encode_records(train_recs, tok, spec.data.max_len, spec.data.mask_prompt,
-                                         spec.data.on_overlength)
+                                         spec.data.on_overlength, prompt_style=spec.data.prompt_style)
     val_loss_recs = val_recs
     if spec.data.val_loss_examples and val_recs:
         val_loss_recs = stratified_subset(val_recs, spec.data.val_loss_examples, spec.gen_eval_seed, "proportional")
     val_ex, val_rep = encode_records(val_loss_recs, tok, spec.data.max_len, spec.data.mask_prompt,
-                                     spec.data.on_overlength) if val_loss_recs else ([], None)
-    print(f"encoded {train_rep.n_kept}/{train_rep.n_records} train (max {train_rep.max_tokens}, "
+                                     spec.data.on_overlength, prompt_style=spec.data.prompt_style
+                                     ) if val_loss_recs else ([], None)
+    print(f"encoded {train_rep.n_kept}/{train_rep.n_records} train, prompt style {spec.data.prompt_style} "
+          f"(max {train_rep.max_tokens}, "
           f"mean {train_rep.mean_tokens:.0f} tokens, {len(train_rep.over_length)} over length) "
           f"and {len(val_ex)} val in {time.time() - t0:.1f}s", flush=True)
 
@@ -128,7 +130,7 @@ def main(argv: list[str] | None = None) -> int:
     if gen_recs:
         cb = harness_val_callback(tok, gen_recs, population=val_recs, max_new_tokens=spec.gen_max_new_tokens,
                                   batch_size=spec.train.eval_batch_size or 16, autocast=spec.train.autocast,
-                                  predictions_dir=out / "val_predictions")
+                                  predictions_dir=out / "val_predictions", prompt_style=spec.data.prompt_style)
         print(f"generation eval: {len(gen_recs)} val plays every {spec.train.gen_every} steps, "
               f"buckets {dict(sorted(Counter(r['bucket'] for r in gen_recs).items()))}", flush=True)
 

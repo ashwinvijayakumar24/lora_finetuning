@@ -1,0 +1,6 @@
+{
+ "peak_driver_bytes": 9593044992,
+ "peak_current_bytes": 3760860672,
+ "wall_s": 325.12721014022827,
+ "note": "peak of torch.mps driver/current allocated memory, polled every 0.25 s during this process (model load + eval); this invocation's wall time includes model load and any resumed rows"
+}

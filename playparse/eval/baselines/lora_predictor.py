@@ -40,6 +40,25 @@ def adapter_fingerprint(adapter_dir: str | Path) -> dict[str, Any]:
     }
 
 
+def trained_prompt_style(adapter_dir: str | Path) -> str | None:
+    """The prompt style an adapter was trained with, if its run directory says so.
+
+    scripts/train.py writes <output_dir>/run_spec.json and saves adapters under
+    <output_dir>/checkpoints/step_N/adapter. A run_spec without data.prompt_style
+    predates the option and was trained with "full". Returns None when no
+    run_spec.json is found (an adapter copied elsewhere).
+    """
+    d = Path(adapter_dir).resolve()
+    cands = [d.parent / "run_spec.json"]
+    if len(d.parents) > 2:
+        cands.append(d.parents[2] / "run_spec.json")
+    for cand in cands:
+        if cand.is_file():
+            spec = json.loads(cand.read_text())
+            return (spec.get("data") or {}).get("prompt_style", "full")
+    return None
+
+
 class LoRAPredictor(HFPredictor):
     """HFPredictor (zero-shot prompt) with a playparse/PEFT LoRA adapter applied."""
 
@@ -54,6 +73,13 @@ class LoRAPredictor(HFPredictor):
             raise FileNotFoundError(f"{self.adapter_dir} is not a PEFT adapter directory")
         self.merge = merge
         self.fingerprint = adapter_fingerprint(self.adapter_dir)
+        # An adapter scored on a prompt it was not trained on still produces output,
+        # just worse; refuse that when the run directory records the style.
+        trained = trained_prompt_style(self.adapter_dir)
+        style = kw.get("prompt_style", "full")
+        if trained is not None and trained != style:
+            raise ValueError(f"{self.adapter_dir} was trained with prompt_style={trained!r}, "
+                             f"not {style!r}; pass --prompt-style {trained}")
         super().__init__(weights, name=name or "lora", examples_fn=None, examples_id=None, **kw)
         # Adapters stay fp32 (as trained); LoRALinear casts its input and output.
         load_adapter(self.model, self.adapter_dir, adapter_dtype=torch.float32)
