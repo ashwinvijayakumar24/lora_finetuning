@@ -13,6 +13,8 @@ LoRA implementation choice (RunSpec.lora.impl):
 """
 from __future__ import annotations
 
+import shutil
+
 import json
 import os
 from dataclasses import asdict, dataclass, field
@@ -38,7 +40,7 @@ class ModelSpec:
 
 @dataclass
 class LoRASpec:
-    impl: str = "playparse"  # playparse | peft | auto
+    impl: str = "playparse"  # playparse | peft | auto | full (R7: no LoRA, every weight trains)
     r: int = 16
     alpha: float = 32
     dropout: float = 0.05
@@ -172,7 +174,47 @@ def apply_lora(
         model = inject_lora(model, cfg)  # adapters in fp32 on a bf16 base
         save_fn, load_fn = playparse_adapter_io(cfg, getattr(getattr(model, "config", None), "_name_or_path", None))
         return model, save_fn, load_fn, impl
+    if impl == "full":
+        save_fn, load_fn = full_finetune_io(model)
+        return model, save_fn, load_fn, impl
     raise ValueError(f"unknown LoRA impl {spec.impl!r}")
+
+
+def full_finetune_io(model: nn.Module) -> tuple[Callable[[nn.Module, Path], None], Callable[[nn.Module, Path], None]]:
+    """Make every weight trainable (rung R7) and return save_fn/load_fn for full checkpoints.
+
+    AdamW updates on bf16 weights lose small steps to rounding, so full fine-tuning
+    requires fp32 weights (bf16 autocast still runs the matmuls in bf16 on CUDA).
+    That is ~16 bytes/param of training state (18.4 GiB for the 1B model, see P0),
+    which is why this mode is for the H100, not the laptop.
+    """
+    bad = {p.dtype for p in model.parameters() if p.dtype != torch.float32}
+    if bad:
+        raise ValueError(f"full fine-tuning needs fp32 weights (set model.dtype: fp32); found {sorted(map(str, bad))}")
+    for p in model.parameters():
+        p.requires_grad_(True)
+
+    def save_fn(m: nn.Module, path: Path) -> None:
+        # A loadable HF checkpoint dir; tokenizer files are copied from the base so
+        # the eval CLI can load it with --rung r1 --weights <dir>.
+        path = Path(path)
+        m.save_pretrained(str(path), safe_serialization=True)
+        base = Path(getattr(getattr(m, "config", None), "_name_or_path", "") or "")
+        for name in ("tokenizer.json", "tokenizer_config.json", "special_tokens_map.json", "generation_config.json"):
+            if (base / name).is_file() and not (path / name).exists():
+                shutil.copy2(base / name, path / name)
+
+    def load_fn(m: nn.Module, path: Path) -> None:
+        from safetensors.torch import load_file
+
+        state = load_file(str(Path(path) / "model.safetensors"))
+        res = m.load_state_dict(state, strict=False)
+        # Tied embeddings: lm_head.weight is not saved separately.
+        missing = [k for k in res.missing_keys if k != "lm_head.weight"]
+        if missing or res.unexpected_keys:
+            raise KeyError(f"checkpoint mismatch: missing={missing[:5]} unexpected={res.unexpected_keys[:5]}")
+
+    return save_fn, load_fn
 
 
 def playparse_adapter_io(

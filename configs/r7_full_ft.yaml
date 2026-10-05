@@ -1,0 +1,50 @@
+# Rung R7: full fine-tune of Llama 3.2 1B on the same data and schedule as R5 (PRD section 7).
+#   sbatch scripts/slurm/train_h100.sbatch configs/r7_full_ft.yaml runs/r7_full_ft
+model:
+  weights: null            # null -> $PLAYPARSE_WEIGHTS (or the repo default); set a path to override
+  dtype: fp32              # full FT needs fp32 master weights; bf16 autocast runs the matmuls
+  gradient_checkpointing: true   # activations dominate once optimizer state is 18 GiB
+  attn_implementation: sdpa
+lora:
+  impl: full               # R7: every weight trains (needs fp32 weights; ~18.4 GiB training state)
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  targets: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+data:
+  train: data/processed/train.jsonl
+  val: data/processed/val.jsonl
+  max_len: 640            # longest train example is 595 tokens (a lateral); 512 raised on 6 plays
+  mask_prompt: true
+  on_overlength: raise
+  val_loss_examples: 2000  # bucket-proportional val sample for val loss (not the head of the file)
+  train_sample: 0          # >0: nested seeded sample of train (data-size curve)
+  train_sample_seed: 0
+train:
+  output_dir: runs/r7_full_ft
+  seed: 0
+  lr: 2.0e-5               # full FT uses ~10x lower LR than LoRA
+  weight_decay: 0.0
+  max_grad_norm: 1.0
+  epochs: 2
+  warmup_ratio: 0.03
+  min_lr_ratio: 0.1
+  micro_batch_size: 16     # effective batch 64 = 16 x 4
+  grad_accum_steps: 4
+  log_every: 10
+  eval_every: 250
+  eval_max_examples: 2000
+  eval_batch_size: 32
+  gen_every: 500
+  save_every: 500
+  keep_last_checkpoints: 2
+  save_best: true
+  early_stop_metric: val_exact_match   # on the bucket-balanced gen subset; or val_exact_match_natural, val_exact_match/<bucket>
+  early_stop_mode: max
+  early_stop_patience: 4
+  device: auto
+  autocast: auto
+gen_eval_examples: 500     # bucket-stratified val subset decoded at every gen_every
+gen_eval_seed: 0
+gen_eval_strategy: balanced
+gen_max_new_tokens: 160
