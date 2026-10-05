@@ -18,7 +18,7 @@ from typing import Any, Mapping, Sequence
 import torch
 from torch import nn
 
-from playparse.prompt import CHAT_DATE_STRING
+from playparse.prompt import CHAT_DATE_STRING, DEFAULT_PROMPT_STYLE
 from playparse.train.collate import encode_prompt, pad_token_id, stop_token_ids
 from playparse.train.loop import autocast_context
 
@@ -135,9 +135,13 @@ def generate_for_records(
     batch_size: int = 16,
     autocast: str = "auto",
     date_string: str = CHAT_DATE_STRING,
+    prompt_style: str = DEFAULT_PROMPT_STYLE,
 ) -> list[str]:
-    """Raw completion strings for dataset records, using the exact training prompt."""
-    prompts = [encode_prompt(tokenizer, r.get("posteam"), r["desc"], date_string) for r in records]
+    """Raw completion strings for dataset records, using the exact training prompt.
+
+    prompt_style must be the style the model was trained with (RunSpec.data.prompt_style).
+    """
+    prompts = [encode_prompt(tokenizer, r.get("posteam"), r["desc"], date_string, prompt_style) for r in records]
     gens = greedy_generate(model, tokenizer, prompts, max_new_tokens=max_new_tokens, batch_size=batch_size,
                            autocast=autocast)
     return [g.text for g in gens]

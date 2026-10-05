@@ -134,6 +134,7 @@ def harness_val_callback(
     batch_size: int = 16,
     autocast: str = "auto",
     predictions_dir: str | Path | None = None,
+    prompt_style: str = "full",
 ) -> Callable[[nn.Module, int], dict]:
     """A `val_callback` for `playparse.train.loop.train`.
 
@@ -141,6 +142,8 @@ def harness_val_callback(
     population    the full val records, used only for bucket shares
                   (val_exact_match_natural); defaults to `records`
     predictions_dir  if set, each call writes step_<N>.jsonl with raw outputs
+    prompt_style  the prompt style the model is trained with (RunSpec.data.prompt_style);
+                  validation must decode with the training prompt
     """
     from playparse.train.generate import generate_for_records
 
@@ -151,7 +154,7 @@ def harness_val_callback(
 
     def cb(model: nn.Module, step: int) -> dict:
         texts = generate_for_records(model, tokenizer, records, max_new_tokens=max_new_tokens,
-                                     batch_size=batch_size, autocast=autocast)
+                                     batch_size=batch_size, autocast=autocast, prompt_style=prompt_style)
         metrics = score_generations(records, texts, shares)
         metrics["val_gen_sample"] = texts[0] if texts else ""
         if predictions_dir is not None:

@@ -6,6 +6,7 @@
     python -m playparse.eval.run --rung r3 --data ... --train data/processed/train.jsonl --out ...
     python -m playparse.eval.run --rung r4 --model <claude model id> --data ... --out ...
     python -m playparse.eval.run --rung lora --adapter runs/r5/best --data ... --out ... [--merge]
+    python -m playparse.eval.run --rung lora --adapter ... --prompt-style minimal ...  # adapter trained without a system prompt
 
 Re-running the same command resumes from `<out>/predictions.jsonl`.
 """
@@ -26,7 +27,7 @@ def build_predictor(args: argparse.Namespace):
 
         return RegexPredictor()
     hf_kw = dict(batch_size=args.batch_size, max_new_tokens=args.max_new_tokens, device=args.device,
-                 dtype=args.dtype)
+                 dtype=args.dtype, prompt_style=args.prompt_style)
     if rung == "lora":
         if not args.adapter:
             sys.exit("--adapter <PEFT adapter dir> is required for --rung lora")
@@ -54,6 +55,8 @@ def build_predictor(args: argparse.Namespace):
             sys.exit("--model <claude model id> is required for r4 (model choice is deferred)")
         from playparse.eval.baselines.frontier import make_r4
 
+        if args.prompt_style != "full":
+            sys.exit("--prompt-style applies to the local HF rungs (r1-r3, lora), not r4")
         return make_r4(args.model)
     sys.exit(f"unknown rung {rung}")
 
@@ -76,6 +79,9 @@ def main(argv: list[str] | None = None) -> None:
                     help="model dtype for HF rungs (default: fp32 on cpu, bf16 on cuda, fp16 on mps)")
     ap.add_argument("--adapter", default=None, help="PEFT-format adapter directory for --rung lora")
     ap.add_argument("--merge", action="store_true", help="--rung lora: merge the adapter into the base first")
+    ap.add_argument("--prompt-style", default="full", choices=["full", "minimal"],
+                    help="HF rungs: 'full' = the shared system prompt (default); 'minimal' = no system message. "
+                         "Must match the style a LoRA adapter was trained with (data.prompt_style)")
     ap.add_argument("--train", default=None, help="train JSONL for the r3 retrieval index")
     ap.add_argument("--index-size", type=int, default=None, help="subsample the r3 index")
     ap.add_argument("--k", type=int, default=8)

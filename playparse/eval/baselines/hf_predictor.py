@@ -17,6 +17,12 @@ p1-eval-generation-config-sampling.md):
   `date_string` is passed, so the prompt would change every day.
 - The checkpoint's generation_config.json defaults to sampling (temperature 0.6), so
   greedy decoding has to be requested explicitly.
+
+`prompt_style` ("full" by default, or "minimal" = no system message; see
+`playparse.prompt.PROMPT_STYLES`) must match the style an adapter was trained with.
+A non-default style is recorded in `config()`, so it changes the config hash; the
+"full" config is unchanged from before the option existed, so earlier results and
+their resumable prediction caches keep their hashes.
 """
 from __future__ import annotations
 
@@ -26,7 +32,13 @@ from pathlib import Path
 from typing import Any
 
 from playparse.eval.harness import Prediction
-from playparse.prompt import CHAT_DATE_STRING, SYSTEM_PROMPT, build_messages
+from playparse.prompt import (
+    CHAT_DATE_STRING,
+    DEFAULT_PROMPT_STYLE,
+    SYSTEM_PROMPT,
+    build_messages,
+    check_prompt_style,
+)
 
 FEWSHOT_R2_PATH = Path(__file__).with_name("fewshot_r2.json")
 
@@ -46,16 +58,17 @@ def load_fewshot(path: str | Path = FEWSHOT_R2_PATH) -> list[Example]:
 
 
 def build_fewshot_messages(
-    record: dict, examples: Sequence[Example], system: str = SYSTEM_PROMPT
+    record: dict, examples: Sequence[Example], system: str = SYSTEM_PROMPT,
+    style: str = DEFAULT_PROMPT_STYLE,
 ) -> list[dict[str, str]]:
-    """System prompt, then (user play, assistant label) pairs, then the real play."""
-    query = build_messages(record.get("posteam"), record["desc"], system)
-    msgs = [query[0]]
+    """System prompt (style "full" only), then (user play, assistant label) pairs,
+    then the real play."""
+    query = build_messages(record.get("posteam"), record["desc"], system, style)
+    msgs = query[:-1]  # the system message, or nothing for style "minimal"
     for ex in examples:
-        ex_msgs = build_messages(ex.get("posteam"), ex["desc"], system)
-        msgs.append(ex_msgs[1])
+        msgs.append(build_messages(ex.get("posteam"), ex["desc"], system, style)[-1])
         msgs.append({"role": "assistant", "content": ex["label"]})
-    msgs.append(query[1])
+    msgs.append(query[-1])
     return msgs
 
 
@@ -67,7 +80,8 @@ def render_chat(tokenizer, msgs: list[dict[str, str]]) -> str:
 
 
 def render_record(
-    tokenizer, record: dict, examples: Sequence[Example] = (), system: str = SYSTEM_PROMPT
+    tokenizer, record: dict, examples: Sequence[Example] = (), system: str = SYSTEM_PROMPT,
+    style: str = DEFAULT_PROMPT_STYLE,
 ) -> str:
     """The prompt text the harness sends for one record (no model needed).
 
@@ -75,7 +89,7 @@ def render_record(
     add_special_tokens=False it gives the same ids as
     `playparse.train.collate.encode_prompt` (tests/test_prompt_parity.py).
     """
-    return render_chat(tokenizer, build_fewshot_messages(record, examples, system))
+    return render_chat(tokenizer, build_fewshot_messages(record, examples, system, style))
 
 
 def pick_device(requested: str | None = None) -> str:
@@ -97,6 +111,8 @@ class HFPredictor:
     None for R1, a constant list for R2, a retriever for R3.
     """
 
+    prompt_style = DEFAULT_PROMPT_STYLE
+
     def __init__(
         self,
         weights: str | Path,
@@ -109,6 +125,7 @@ class HFPredictor:
         device: str | None = None,
         dtype: str | None = None,
         system: str = SYSTEM_PROMPT,
+        prompt_style: str = DEFAULT_PROMPT_STYLE,
     ):
         import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -120,6 +137,7 @@ class HFPredictor:
         self.batch_size = batch_size
         self.max_new_tokens = max_new_tokens
         self.system = system
+        self.prompt_style = check_prompt_style(prompt_style)
         self.device = pick_device(device)
         if dtype is None:
             dtype = "float32" if self.device == "cpu" else ("bfloat16" if self.device == "cuda" else "float16")
@@ -140,7 +158,7 @@ class HFPredictor:
     # ------------------------------------------------------------------ harness API
 
     def config(self) -> dict[str, Any]:
-        return {
+        cfg = {
             "weights": Path(self.weights).name,
             "examples": self.examples_id,
             "max_new_tokens": self.max_new_tokens,
@@ -154,10 +172,16 @@ class HFPredictor:
             "chat_date_string": CHAT_DATE_STRING,
             "system_prompt_sha": _short_sha(self.system),
         }
+        if self.prompt_style != DEFAULT_PROMPT_STYLE:
+            # Only non-default styles add keys, so every "full" config (and its
+            # hash) is byte-identical to the ones recorded before this option.
+            cfg["prompt_style"] = self.prompt_style
+            cfg["system_prompt_sha"] = None  # no system message is sent
+        return cfg
 
     def render(self, record: dict) -> str:
         examples = self.examples_fn(record) if self.examples_fn else ()
-        return render_record(self.tokenizer, record, examples, self.system)
+        return render_record(self.tokenizer, record, examples, self.system, self.prompt_style)
 
     def predict_batch(self, records: Sequence[dict]) -> list[Prediction]:
         import torch
