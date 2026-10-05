@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections import Counter
 import subprocess
 import sys
 import time
@@ -26,12 +27,13 @@ from playparse.train.build import (  # noqa: E402
     RunSpec,
     apply_lora,
     describe_device,
-    exact_match_callback,
     load_base_model,
+    nested_sample,
     read_jsonl,
 )
 from playparse.train.collate import encode_records, pad_token_id  # noqa: E402
 from playparse.train.loop import resolve_device, seed_everything, train  # noqa: E402
+from playparse.train.val_eval import harness_val_callback, stratified_subset  # noqa: E402
 
 
 def apply_overrides(d: dict, sets: list[str]) -> dict:
@@ -91,17 +93,27 @@ def main(argv: list[str] | None = None) -> int:
     tok = AutoTokenizer.from_pretrained(spec.model.weights or str(WEIGHTS))
     t0 = time.time()
     train_recs = read_jsonl(spec.data.train, spec.data.limit_train)
+    if spec.data.train_sample:
+        train_recs = nested_sample(train_recs, spec.data.train_sample, spec.data.train_sample_seed)
     val_recs = read_jsonl(spec.data.val, spec.data.limit_val) if spec.data.val else []
     train_ex, train_rep = encode_records(train_recs, tok, spec.data.max_len, spec.data.mask_prompt,
                                          spec.data.on_overlength)
-    val_ex, val_rep = encode_records(val_recs, tok, spec.data.max_len, spec.data.mask_prompt,
-                                     spec.data.on_overlength) if val_recs else ([], None)
+    val_loss_recs = val_recs
+    if spec.data.val_loss_examples and val_recs:
+        val_loss_recs = stratified_subset(val_recs, spec.data.val_loss_examples, spec.gen_eval_seed, "proportional")
+    val_ex, val_rep = encode_records(val_loss_recs, tok, spec.data.max_len, spec.data.mask_prompt,
+                                     spec.data.on_overlength) if val_loss_recs else ([], None)
     print(f"encoded {train_rep.n_kept}/{train_rep.n_records} train (max {train_rep.max_tokens}, "
           f"mean {train_rep.mean_tokens:.0f} tokens, {len(train_rep.over_length)} over length) "
           f"and {len(val_ex)} val in {time.time() - t0:.1f}s", flush=True)
 
+    gen_recs = (stratified_subset(val_recs, spec.gen_eval_examples, spec.gen_eval_seed, spec.gen_eval_strategy)
+                if spec.gen_eval_examples and val_recs else [])
     meta = {"spec": spec.to_dict(), "git_sha": git_sha(), "argv": sys.argv, **describe_device(device),
-            "train_report": vars(train_rep), "val_report": vars(val_rep) if val_rep else None}
+            "train_report": vars(train_rep), "val_report": vars(val_rep) if val_rep else None,
+            "n_train_records": len(train_recs),
+            "val_loss_keys": [f"{r.get('game_id')}#{r.get('play_id')}" for r in val_loss_recs],
+            "gen_eval_keys": [f"{r.get('game_id')}#{r.get('play_id')}" for r in gen_recs]}
     (out / "run_spec.json").write_text(json.dumps(spec.to_dict(), indent=2))
     (out / "run_meta.json").write_text(json.dumps(meta, indent=2, default=str))
     if args.dry_run:
@@ -113,9 +125,12 @@ def main(argv: list[str] | None = None) -> int:
     print(f"LoRA impl={impl}, trainable params={n_train:,}", flush=True)
 
     cb = None
-    if spec.gen_eval_examples and val_recs:
-        cb = exact_match_callback(tok, val_recs[: spec.gen_eval_examples], spec.gen_max_new_tokens,
-                                  batch_size=spec.train.eval_batch_size or 16, autocast=spec.train.autocast)
+    if gen_recs:
+        cb = harness_val_callback(tok, gen_recs, population=val_recs, max_new_tokens=spec.gen_max_new_tokens,
+                                  batch_size=spec.train.eval_batch_size or 16, autocast=spec.train.autocast,
+                                  predictions_dir=out / "val_predictions")
+        print(f"generation eval: {len(gen_recs)} val plays every {spec.train.gen_every} steps, "
+              f"buckets {dict(sorted(Counter(r['bucket'] for r in gen_recs).items()))}", flush=True)
 
     res = train(model, train_ex, val_ex or None, spec.train, pad_id=pad_token_id(tok), save_fn=save_fn,
                 load_fn=load_fn, val_callback=cb, resume_from=args.resume, log_to_stdout=True)

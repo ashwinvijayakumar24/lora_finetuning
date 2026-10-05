@@ -1,0 +1,471 @@
+{
+  "meta": {
+    "rung": "lora",
+    "predictor": "lora",
+    "config": {
+      "rung": "lora",
+      "predictor": "lora",
+      "weights": "weights",
+      "examples": null,
+      "max_new_tokens": 256,
+      "decoding": "greedy",
+      "batch_size": 16,
+      "dtype": "bfloat16",
+      "device": "mps",
+      "chat_date_string": "26 Jul 2024",
+      "system_prompt_sha": "1c95bfb711b8",
+      "adapter": "adapter",
+      "merged": false,
+      "adapter_sha256": "9a4789e5dcf05967e27808c2dc9f335d999aaf805a9f38701ce9e07d6013897e",
+      "adapter_r": 16,
+      "adapter_alpha": 32,
+      "adapter_targets": [
+        "down_proj",
+        "gate_proj",
+        "k_proj",
+        "o_proj",
+        "q_proj",
+        "up_proj",
+        "v_proj"
+      ]
+    },
+    "config_hash": "eb572750ffd7cf31",
+    "eval_file": "runs/p3_local_pilot/data/eval_pilot.jsonl",
+    "eval_sha256": "3f7df5cb275e94167412ecbafdffb11d78871c38ffdd9278c6ca443917a8d01f",
+    "eval_code_sha256": "2943f3b95f0adb87b7c445ce91af6993ab6c236e67821d8d05bbeceac65b9fee",
+    "git_sha": "15eed776a1e97982d27232ef07e260d9439c4afa",
+    "git_dirty": true,
+    "hardware": {
+      "platform": "macOS-15.6.1-arm64-arm-64bit-Mach-O",
+      "machine": "arm64",
+      "python": "3.13.7",
+      "cpu_count": 10,
+      "slurm_job_id": null,
+      "cpu": "Apple M4",
+      "ram_gb": 16.0,
+      "torch": "2.12.0",
+      "accelerator": "mps"
+    },
+    "date": "2026-10-05T01:16:10+00:00",
+    "n_boot": 1000,
+    "seed": 0,
+    "alpha": 0.05,
+    "ci_method": "percentile cluster bootstrap over games",
+    "score_fn": "ppr_points",
+    "n_resumed": 32,
+    "limit": null,
+    "data_path": "runs/p3_local_pilot/data/eval_pilot.jsonl",
+    "adapter_path": "runs/p3_local_pilot/train/checkpoints/step_0000300/adapter"
+  },
+  "overall": {
+    "n": 1014,
+    "n_games": 232,
+    "valid_rate": {
+      "point": 1.0,
+      "lo": 1.0,
+      "hi": 1.0
+    },
+    "strict_valid_rate": {
+      "point": 1.0,
+      "lo": 1.0,
+      "hi": 1.0
+    },
+    "exact_match": {
+      "point": 0.9368836291913215,
+      "lo": 0.916588606079949,
+      "hi": 0.952593348484079
+    },
+    "credit_precision": {
+      "point": 0.9307637401855817,
+      "lo": 0.905209505541347,
+      "hi": 0.9497949255924716
+    },
+    "credit_recall": {
+      "point": 0.9394812680115274,
+      "lo": 0.9158362444585783,
+      "hi": 0.9564591689395155
+    },
+    "credit_f1": {
+      "point": 0.9351021871638581,
+      "lo": 0.9104762337317993,
+      "hi": 0.9528405503696785
+    },
+    "fp_mae": {
+      "point": 0.2309734513274337,
+      "lo": 0.13473861128490547,
+      "hi": 0.346290088282504
+    }
+  },
+  "buckets": {
+    "challenge": {
+      "n": 100,
+      "n_games": 83,
+      "valid_rate": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "strict_valid_rate": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "exact_match": {
+        "point": 0.96,
+        "lo": 0.9207561481954647,
+        "hi": 1.0
+      },
+      "credit_precision": {
+        "point": 0.9575757575757575,
+        "lo": 0.9078896761133604,
+        "hi": 1.0
+      },
+      "credit_recall": {
+        "point": 0.9461077844311377,
+        "lo": 0.8852397540983606,
+        "hi": 1.0
+      },
+      "credit_f1": {
+        "point": 0.9518072289156626,
+        "lo": 0.896551724137931,
+        "hi": 1.0
+      },
+      "fp_mae": {
+        "point": NaN,
+        "lo": NaN,
+        "hi": NaN
+      }
+    },
+    "fumble": {
+      "n": 100,
+      "n_games": 74,
+      "valid_rate": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "strict_valid_rate": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "exact_match": {
+        "point": 0.76,
+        "lo": 0.6836649659863946,
+        "hi": 0.8367346938775511
+      },
+      "credit_precision": {
+        "point": 0.7479674796747967,
+        "lo": 0.6576576576576577,
+        "hi": 0.833363309352518
+      },
+      "credit_recall": {
+        "point": 0.7863247863247863,
+        "lo": 0.7037037037037037,
+        "hi": 0.8666666666666667
+      },
+      "credit_f1": {
+        "point": 0.7666666666666667,
+        "lo": 0.6810799161230197,
+        "hi": 0.8480053571428571
+      },
+      "fp_mae": {
+        "point": NaN,
+        "lo": NaN,
+        "hi": NaN
+      }
+    },
+    "interception": {
+      "n": 100,
+      "n_games": 75,
+      "valid_rate": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "strict_valid_rate": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "exact_match": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "credit_precision": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "credit_recall": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "credit_f1": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "fp_mae": {
+        "point": NaN,
+        "lo": NaN,
+        "hi": NaN
+      }
+    },
+    "lateral": {
+      "n": 29,
+      "n_games": 29,
+      "valid_rate": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "strict_valid_rate": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "exact_match": {
+        "point": 0.4827586206896552,
+        "lo": 0.3,
+        "hi": 0.6666666666666666
+      },
+      "credit_precision": {
+        "point": 0.6808510638297872,
+        "lo": 0.56817218798151,
+        "hi": 0.7948795180722891
+      },
+      "credit_recall": {
+        "point": 0.6808510638297872,
+        "lo": 0.5672664141414141,
+        "hi": 0.7875183823529411
+      },
+      "credit_f1": {
+        "point": 0.6808510638297872,
+        "lo": 0.5663538035219451,
+        "hi": 0.7924690956408589
+      },
+      "fp_mae": {
+        "point": NaN,
+        "lo": NaN,
+        "hi": NaN
+      }
+    },
+    "normal": {
+      "n": 200,
+      "n_games": 18,
+      "valid_rate": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "strict_valid_rate": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "exact_match": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "credit_precision": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "credit_recall": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "credit_f1": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "fp_mae": {
+        "point": NaN,
+        "lo": NaN,
+        "hi": NaN
+      }
+    },
+    "penalty_nullified": {
+      "n": 185,
+      "n_games": 18,
+      "valid_rate": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "strict_valid_rate": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "exact_match": {
+        "point": 0.9945945945945946,
+        "lo": 0.9812995104583889,
+        "hi": 1.0
+      },
+      "credit_precision": {
+        "point": NaN,
+        "lo": NaN,
+        "hi": NaN
+      },
+      "credit_recall": {
+        "point": NaN,
+        "lo": NaN,
+        "hi": NaN
+      },
+      "credit_f1": {
+        "point": NaN,
+        "lo": NaN,
+        "hi": NaN
+      },
+      "fp_mae": {
+        "point": NaN,
+        "lo": NaN,
+        "hi": NaN
+      }
+    },
+    "penalty_stands": {
+      "n": 100,
+      "n_games": 62,
+      "valid_rate": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "strict_valid_rate": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "exact_match": {
+        "point": 0.8,
+        "lo": 0.7303286516853933,
+        "hi": 0.8775566893424036
+      },
+      "credit_precision": {
+        "point": 0.8273809523809523,
+        "lo": 0.7572137166067802,
+        "hi": 0.9007263405255287
+      },
+      "credit_recall": {
+        "point": 0.8742138364779874,
+        "lo": 0.8136563146997929,
+        "hi": 0.931684412895593
+      },
+      "credit_f1": {
+        "point": 0.8501529051987767,
+        "lo": 0.7859126235204166,
+        "hi": 0.9140815999605678
+      },
+      "fp_mae": {
+        "point": NaN,
+        "lo": NaN,
+        "hi": NaN
+      }
+    },
+    "td": {
+      "n": 100,
+      "n_games": 28,
+      "valid_rate": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "strict_valid_rate": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "exact_match": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "credit_precision": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "credit_recall": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "credit_f1": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "fp_mae": {
+        "point": NaN,
+        "lo": NaN,
+        "hi": NaN
+      }
+    },
+    "two_point": {
+      "n": 100,
+      "n_games": 78,
+      "valid_rate": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "strict_valid_rate": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "exact_match": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "credit_precision": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "credit_recall": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "credit_f1": {
+        "point": 1.0,
+        "lo": 1.0,
+        "hi": 1.0
+      },
+      "fp_mae": {
+        "point": NaN,
+        "lo": NaN,
+        "hi": NaN
+      }
+    }
+  },
+  "latency": {
+    "p50_s": 20.463746207999066,
+    "p99_s": 36.781798834039364,
+    "mean_s": 20.977360176097022,
+    "batch_size": 16,
+    "predict_seconds": 1340.5826432957547,
+    "plays_per_sec": 0.756387534234467,
+    "note": "per-play latency = wall time of its batch"
+  },
+  "cost": {
+    "basis": "not priced",
+    "total_usd": null,
+    "usd_per_1k_plays": null,
+    "usage_totals": {
+      "input_tokens": 284752.0,
+      "output_tokens": 32436.0,
+      "hit_max_new_tokens": 0.0
+    }
+  }
+}

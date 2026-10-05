@@ -5,6 +5,7 @@
     python -m playparse.eval.run --rung r2 --data ... --out ...
     python -m playparse.eval.run --rung r3 --data ... --train data/processed/train.jsonl --out ...
     python -m playparse.eval.run --rung r4 --model <claude model id> --data ... --out ...
+    python -m playparse.eval.run --rung lora --adapter runs/r5/best --data ... --out ... [--merge]
 
 Re-running the same command resumes from `<out>/predictions.jsonl`.
 """
@@ -24,7 +25,14 @@ def build_predictor(args: argparse.Namespace):
         from playparse.eval.baselines.regex_parser import RegexPredictor
 
         return RegexPredictor()
-    hf_kw = dict(batch_size=args.batch_size, max_new_tokens=args.max_new_tokens, device=args.device)
+    hf_kw = dict(batch_size=args.batch_size, max_new_tokens=args.max_new_tokens, device=args.device,
+                 dtype=args.dtype)
+    if rung == "lora":
+        if not args.adapter:
+            sys.exit("--adapter <PEFT adapter dir> is required for --rung lora")
+        from playparse.eval.baselines.lora_predictor import make_lora
+
+        return make_lora(args.weights, args.adapter, merge=args.merge, **hf_kw)
     if rung == "r1":
         from playparse.eval.baselines.hf_predictor import make_r1
 
@@ -52,7 +60,7 @@ def build_predictor(args: argparse.Namespace):
 
 def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--rung", required=True, choices=["r0", "r1", "r2", "r3", "r4"])
+    ap.add_argument("--rung", required=True, choices=["r0", "r1", "r2", "r3", "r4", "lora"])
     ap.add_argument("--data", required=True, help="eval JSONL (one record per play)")
     ap.add_argument("--out", required=True, help="output directory for result.json + predictions.jsonl")
     ap.add_argument("--limit", type=int, default=None, help="only the first N records (smoke runs)")
@@ -64,6 +72,10 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("--batch-size", type=int, default=8)
     ap.add_argument("--max-new-tokens", type=int, default=256)
     ap.add_argument("--device", default=None)
+    ap.add_argument("--dtype", default=None, choices=["float32", "float16", "bfloat16"],
+                    help="model dtype for HF rungs (default: fp32 on cpu, bf16 on cuda, fp16 on mps)")
+    ap.add_argument("--adapter", default=None, help="PEFT-format adapter directory for --rung lora")
+    ap.add_argument("--merge", action="store_true", help="--rung lora: merge the adapter into the base first")
     ap.add_argument("--train", default=None, help="train JSONL for the r3 retrieval index")
     ap.add_argument("--index-size", type=int, default=None, help="subsample the r3 index")
     ap.add_argument("--k", type=int, default=8)
@@ -90,7 +102,8 @@ def main(argv: list[str] | None = None) -> None:
         seed=args.seed,
         resume=not args.no_resume,
         gpu_usd_per_hour=args.gpu_usd_per_hour,
-        extra_meta={"limit": args.limit, "data_path": args.data},
+        extra_meta={"limit": args.limit, "data_path": args.data,
+                    **({"adapter_path": str(args.adapter)} if args.adapter else {})},
         progress=progress,
     )
     print(file=sys.stderr)

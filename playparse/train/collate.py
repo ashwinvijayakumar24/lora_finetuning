@@ -21,7 +21,8 @@ Two traps this module guards against, each with a test in tests/test_collate.py:
 * A date inside the prompt. The Llama 3.x template writes "Today Date: <today>"
   into the system header unless `date_string` is passed. Unpinned, the prompt a
   model was trained on would differ from the prompt it is served with on any
-  other day. We always pass DEFAULT_DATE_STRING.
+  other day. We always pass playparse.prompt.CHAT_DATE_STRING, the same
+  constant the eval harness uses.
 """
 from __future__ import annotations
 
@@ -30,13 +31,9 @@ from typing import Any, Iterable, Literal, Mapping, Sequence
 
 import torch
 
-from playparse.prompt import build_messages
+from playparse.prompt import CHAT_DATE_STRING, build_messages
 
 IGNORE_INDEX = -100
-
-# The fallback date baked into the Llama 3.x chat template itself. Pinning it makes
-# the rendered prompt a pure function of (posteam, desc).
-DEFAULT_DATE_STRING = "26 Jul 2024"
 
 EOT_TOKEN = "<|eot_id|>"  # Llama 3.x end-of-turn; the chat template closes every turn with it
 PAD_TOKEN_CANDIDATES = ("<|finetune_right_pad_id|>", "<|reserved_special_token_0|>")
@@ -106,7 +103,7 @@ def render_prompt(
     tokenizer: Any,
     posteam: str | None,
     desc: str,
-    date_string: str = DEFAULT_DATE_STRING,
+    date_string: str = CHAT_DATE_STRING,
 ) -> str:
     """The exact prompt string (chat template + assistant header) for one play."""
     return tokenizer.apply_chat_template(
@@ -121,7 +118,7 @@ def encode_prompt(
     tokenizer: Any,
     posteam: str | None,
     desc: str,
-    date_string: str = DEFAULT_DATE_STRING,
+    date_string: str = CHAT_DATE_STRING,
 ) -> list[int]:
     """Prompt token ids, with exactly one BOS. Used by training *and* generation."""
     text = render_prompt(tokenizer, posteam, desc, date_string)
@@ -180,7 +177,7 @@ def encode_record(
     tokenizer: Any,
     max_len: int | None = None,
     mask_prompt: bool = True,
-    date_string: str = DEFAULT_DATE_STRING,
+    date_string: str = CHAT_DATE_STRING,
 ) -> EncodedExample:
     """Encode one dataset record ({"posteam", "desc", "label", ...}).
 
@@ -217,7 +214,7 @@ def encode_records(
     max_len: int | None = None,
     mask_prompt: bool = True,
     on_overlength: Literal["raise", "drop"] = "raise",
-    date_string: str = DEFAULT_DATE_STRING,
+    date_string: str = CHAT_DATE_STRING,
 ) -> tuple[list[EncodedExample], EncodeReport]:
     """Encode many records. Over-length examples raise by default.
 

@@ -4,8 +4,11 @@ Kept separate from the loop so the loop stays generic (any nn.Module), and so
 scripts/train.py and scripts/p2_smoke_train.py share one code path.
 
 LoRA implementation choice (RunSpec.lora.impl):
-  "peft"       Hugging Face PEFT. The reference, and the stand-in until P0 lands.
-  "playparse"  the hand-written playparse.lora (inject_lora(model, LoRAConfig)).
+  "playparse"  the default: the hand-written playparse.lora (inject_lora with a
+               LoRAConfig). Checkpoints and the best/final adapter are written by
+               playparse.lora.io.save_adapter in PEFT's on-disk format, so P5a/P5b
+               serving, vLLM, and PeftModel.from_pretrained load them unchanged.
+  "peft"       Hugging Face PEFT, kept as the reference implementation.
   "auto"       playparse if it is importable, else peft.
 """
 from __future__ import annotations
@@ -20,7 +23,7 @@ import torch
 from torch import nn
 
 from playparse.paths import WEIGHTS
-from playparse.train.loop import TrainConfig, load_trainable_safetensors, resolve_device, save_trainable_safetensors
+from playparse.train.loop import TrainConfig, resolve_device
 
 ALL_LINEAR = ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
 
@@ -35,7 +38,7 @@ class ModelSpec:
 
 @dataclass
 class LoRASpec:
-    impl: str = "auto"  # auto | peft | playparse
+    impl: str = "playparse"  # playparse | peft | auto
     r: int = 16
     alpha: float = 32
     dropout: float = 0.05
@@ -49,8 +52,16 @@ class DataSpec:
     max_len: int = 512
     mask_prompt: bool = True
     on_overlength: str = "raise"  # raise | drop
-    limit_train: int | None = None
-    limit_val: int | None = None
+    limit_train: int | None = None  # first N train records (file order; for smoke runs)
+    # >0: train on the first N of a seeded permutation of the train file. Sizes are
+    # nested (the 1k sample is inside the 5k sample), which is what a data-size
+    # curve needs. 0 = all records.
+    train_sample: int = 0
+    train_sample_seed: int = 0
+    limit_val: int | None = None  # first N val records (file order)
+    # >0: val loss on a seeded, bucket-proportional sample of this many val records
+    # (seed = gen_eval_seed) instead of the head of the file, which is a few games.
+    val_loss_examples: int = 0
 
 
 @dataclass
@@ -61,7 +72,12 @@ class RunSpec:
     lora: LoRASpec = field(default_factory=LoRASpec)
     data: DataSpec = field(default_factory=DataSpec)
     train: TrainConfig = field(default_factory=TrainConfig)
-    gen_eval_examples: int = 0  # >0: exact-match eval on this many val records at gen_every
+    # Generation eval at train.gen_every (playparse.train.val_eval.harness_val_callback):
+    # greedy-decode a fixed, seeded, bucket-stratified val subset and log exact match
+    # overall and per bucket. 0 disables it.
+    gen_eval_examples: int = 0
+    gen_eval_seed: int = 0
+    gen_eval_strategy: str = "balanced"  # balanced | proportional (see stratified_subset)
     gen_max_new_tokens: int = 160
 
     @classmethod
@@ -153,11 +169,48 @@ def apply_lora(
         from playparse.lora import LoRAConfig, inject_lora
 
         cfg = LoRAConfig(r=spec.r, alpha=spec.alpha, dropout=spec.dropout, target_modules=list(spec.targets))
-        model = inject_lora(model, cfg)
-        # Generic save/load of requires_grad params until playparse.lora's
-        # PEFT-format writer is wired in as save_fn.
-        return model, save_trainable_safetensors, load_trainable_safetensors, impl
+        model = inject_lora(model, cfg)  # adapters in fp32 on a bf16 base
+        save_fn, load_fn = playparse_adapter_io(cfg, getattr(getattr(model, "config", None), "_name_or_path", None))
+        return model, save_fn, load_fn, impl
     raise ValueError(f"unknown LoRA impl {spec.impl!r}")
+
+
+def playparse_adapter_io(
+    cfg: Any, base_model_name_or_path: str | None = None
+) -> tuple[Callable[[nn.Module, Path], None], Callable[[nn.Module, Path], None]]:
+    """save_fn/load_fn for a model already injected with playparse.lora.
+
+    save_fn writes adapter_config.json + adapter_model.safetensors (PEFT format,
+    fp32 tensors). load_fn fills the *existing* LoRA layers from such a directory
+    (used on resume, where the model is already injected), after checking that
+    the saved rank, alpha, and wrapped modules match this run, so a checkpoint from
+    a different config fails loudly instead of loading at the wrong scale.
+    """
+    from playparse.lora import load_lora_state_dict, read_adapter, save_adapter
+
+    name = str(base_model_name_or_path) if base_model_name_or_path else None
+
+    def save_fn(m: nn.Module, path: Path) -> None:
+        save_adapter(m, cfg, path, base_model_name_or_path=name)
+
+    def load_fn(m: nn.Module, path: Path) -> None:
+        saved, state = read_adapter(path)
+        if (saved.r, float(saved.alpha)) != (cfg.r, float(cfg.alpha)):
+            raise ValueError(f"{path}: adapter r={saved.r} alpha={saved.alpha} != run r={cfg.r} alpha={cfg.alpha}")
+        load_lora_state_dict(m, state)  # raises on any missing or unexpected module
+
+    return save_fn, load_fn
+
+
+def nested_sample(records: list[dict], n: int, seed: int) -> list[dict]:
+    """The first n records of a seeded permutation (nested across n for one seed)."""
+    import random
+
+    if n <= 0 or n >= len(records):
+        return list(records)
+    order = list(range(len(records)))
+    random.Random(seed).shuffle(order)
+    return [records[i] for i in order[:n]]
 
 
 def read_jsonl(path: str | os.PathLike, limit: int | None = None) -> list[dict]:
@@ -169,36 +222,6 @@ def read_jsonl(path: str | os.PathLike, limit: int | None = None) -> list[dict]:
                 if limit is not None and len(out) >= limit:
                     break
     return out
-
-
-def exact_match_callback(tokenizer: Any, records: list[dict], max_new_tokens: int = 160, batch_size: int = 16,
-                         autocast: str = "auto") -> Callable[[nn.Module, int], dict]:
-    """A val_callback that greedy-decodes records and scores exact match and parse rate.
-
-    A placeholder until the P1 eval harness owns this; it uses the same schema
-    contract (PlayLabel.from_json + matches).
-    """
-    from playparse.ffscore.schema import PlayLabel, SchemaError
-    from playparse.train.generate import generate_for_records
-
-    golds = [PlayLabel.from_json(r["label"]) for r in records]
-
-    def cb(model: nn.Module, step: int) -> dict:
-        texts = generate_for_records(model, tokenizer, records, max_new_tokens=max_new_tokens,
-                                     batch_size=batch_size, autocast=autocast)
-        parsed = em = 0
-        for t, g in zip(texts, golds):
-            try:
-                p = PlayLabel.from_json(t)
-            except SchemaError:
-                continue
-            parsed += 1
-            em += int(p.matches(g))
-        n = max(1, len(records))
-        return {"val_exact_match": em / n, "val_parse_rate": parsed / n, "val_gen_n": len(records),
-                "val_gen_sample": texts[0] if texts else ""}
-
-    return cb
 
 
 def describe_device(device: torch.device) -> dict:
@@ -214,6 +237,6 @@ def describe_device(device: torch.device) -> dict:
 
 
 __all__ = [
-    "ModelSpec", "LoRASpec", "DataSpec", "RunSpec", "load_base_model", "apply_lora", "read_jsonl",
-    "exact_match_callback", "resolve_device", "describe_device", "model_dtype",
+    "ModelSpec", "LoRASpec", "DataSpec", "RunSpec", "load_base_model", "apply_lora", "playparse_adapter_io",
+    "read_jsonl", "nested_sample", "resolve_device", "describe_device", "model_dtype",
 ]

@@ -1,5 +1,5 @@
-# Default PlayParse LoRA run (PRD section 8.4). Override fields with
-#   python scripts/train.py --config configs/train_default.yaml --set train.lr=1e-4
+# P3 sweep base: the PRD section 8.4 defaults on the 50k train subset.
+# Every sweep run is this file plus one --set override (scripts/slurm/p3_sweep.sh).
 model:
   weights: null            # null -> $PLAYPARSE_WEIGHTS (or the repo default); set a path to override
   dtype: auto              # bf16 on cuda/mps, fp32 on cpu
@@ -12,7 +12,7 @@ lora:
   dropout: 0.05
   targets: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
 data:
-  train: data/processed/train.jsonl
+  train: data/processed/train_50k.jsonl
   val: data/processed/val.jsonl
   max_len: 640            # longest train example is 595 tokens (a lateral); 512 raised on 6 plays
   mask_prompt: true
@@ -21,7 +21,7 @@ data:
   train_sample: 0          # >0: nested seeded sample of train (data-size curve)
   train_sample_seed: 0
 train:
-  output_dir: runs/default
+  output_dir: runs/sweep/base
   seed: 0
   lr: 2.0e-4
   weight_decay: 0.0
@@ -32,11 +32,11 @@ train:
   micro_batch_size: 16     # effective batch 64 = 16 x 4
   grad_accum_steps: 4
   log_every: 10
-  eval_every: 250
+  eval_every: 100
   eval_max_examples: 2000
   eval_batch_size: 32
-  gen_every: 500
-  save_every: 500
+  gen_every: 200
+  save_every: 200
   keep_last_checkpoints: 2
   save_best: true
   early_stop_metric: val_exact_match   # on the bucket-balanced gen subset; or val_exact_match_natural, val_exact_match/<bucket>

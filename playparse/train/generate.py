@@ -18,7 +18,8 @@ from typing import Any, Mapping, Sequence
 import torch
 from torch import nn
 
-from playparse.train.collate import DEFAULT_DATE_STRING, encode_prompt, pad_token_id, stop_token_ids
+from playparse.prompt import CHAT_DATE_STRING
+from playparse.train.collate import encode_prompt, pad_token_id, stop_token_ids
 from playparse.train.loop import autocast_context
 
 
@@ -133,7 +134,7 @@ def generate_for_records(
     max_new_tokens: int = 128,
     batch_size: int = 16,
     autocast: str = "auto",
-    date_string: str = DEFAULT_DATE_STRING,
+    date_string: str = CHAT_DATE_STRING,
 ) -> list[str]:
     """Raw completion strings for dataset records, using the exact training prompt."""
     prompts = [encode_prompt(tokenizer, r.get("posteam"), r["desc"], date_string) for r in records]

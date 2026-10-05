@@ -7,6 +7,13 @@ from __future__ import annotations
 
 from playparse.ffscore.schema import STAT_VOCAB
 
+# The Llama 3.x chat template writes "Today Date: <date>" into the system header and
+# uses the current day unless `date_string` is passed. Training, eval, and serving
+# all pass this one constant, so the rendered prompt is a pure function of the play
+# and an adapter is always evaluated on exactly the prompt it was trained on. The
+# value is the template's own fallback date.
+CHAT_DATE_STRING = "26 Jul 2024"
+
 SYSTEM_PROMPT = (
     "You extract fantasy-football stat credits from one NFL play-by-play description. "
     "Reply with only a JSON object: "
