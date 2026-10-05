@@ -14,7 +14,7 @@ fantasy points. nflverse data provides exact ground truth, so every number here 
 exact match, with no LLM judge involved.
 
 > **Status (2026-10-05):** everything that can run on a laptop is built, tested
-> (601 fast tests + 44 slow/GPU), and documented. The full-scale training runs and
+> (619 fast tests + 44 slow/GPU), and documented. The full-scale training runs and
 > the authoritative serving benchmarks are written and waiting on GPU access. See
 > [`docs/BLOCKERS.md`](docs/BLOCKERS.md).
 
@@ -36,9 +36,13 @@ exact match, with no LLM judge involved.
    come from a spot on the field (the fumble point, the foul spot), which the text's
    "for N yards" does not state. The full GPU run tests whether 100× more data
    teaches that arithmetic. See [`docs/benchmarks/p3-local-pilot.md`](docs/benchmarks/p3-local-pilot.md).
-4. **89% of training tokens are prompt.** The system prompt is 71% of every
-   example. A fine-tuned adapter may not need it, which would cut training and
-   serving cost several-fold. This is queued as an ablation.
+4. **The adapter does not need the system prompt.** 89% of training tokens were
+   prompt, and the 186-token system prompt was most of it. An adapter trained with
+   no system message matches the full-prompt adapter (93.2% vs 93.7%, paired
+   difference −0.5 points [−1.5, +0.4]) with 60% fewer tokens per example, 2.8×
+   faster training steps, and 1.75× faster eval. All GPU configs now use the
+   minimal prompt, with one full-prompt control in the sweep. See
+   [`docs/benchmarks/p3-prompt-ablation.md`](docs/benchmarks/p3-prompt-ablation.md).
 5. **Multi-LoRA batching works on our own serving layer.** Mixed-adapter batches are
    token-identical to running each request alone. The gather-based kernel stays flat
    as the number of distinct adapters grows, while the simple loop grows 10×.
@@ -85,7 +89,7 @@ scripts/fetch_data.sh                                   # nflverse raw data → 
 .venv/bin/python -m pytest -q                           # fast suite (slow/GPU tests are opt-in)
 .venv/bin/python -m playparse.eval.run --rung r0 --data data/processed/test.jsonl --out results/r0_test
 .venv/bin/python scripts/train.py --config configs/train_default.yaml --set train.output_dir=runs/r5
-.venv/bin/python -m playparse.eval.run --rung lora --adapter runs/r5/best --data data/processed/eval_lite.jsonl --out results/r5
+.venv/bin/python -m playparse.eval.run --rung lora --adapter runs/r5/best --prompt-style minimal --data data/processed/eval_lite.jsonl --out results/r5
 ```
 
 `PLAYPARSE_WEIGHTS` points at the HF-format Llama 3.2 1B Instruct weights (default:

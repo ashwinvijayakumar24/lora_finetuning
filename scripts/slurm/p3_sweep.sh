@@ -10,11 +10,13 @@
 #   SUBMIT=1 bash scripts/slurm/p3_sweep.sh rank   # submit one group
 #   SUBMIT=1 bash scripts/slurm/p3_sweep.sh all
 #
-# Groups: r5 rank alpha targets dropout lr datasize all
+# Groups: r5 rank alpha targets dropout lr prompt datasize all
+# All runs use prompt_style: minimal (see docs/benchmarks/p3-prompt-ablation.md)
+# except the one full-prompt control in the 'prompt' group.
 # Resubmitting the same command resumes any run that already has checkpoints.
 # After training, score the best adapter of each run with the eval harness:
 #   python -m playparse.eval.run --rung lora --adapter runs/sweep/<name>/best \
-#       --data data/processed/eval_lite.jsonl --out results/p3_sweep/<name>
+#       --prompt-style minimal --data data/processed/eval_lite.jsonl --out results/p3_sweep/<name>
 # (the frozen test set is scored once, for the final R5 only).
 # ---------------------------------------------------------------------------
 set -euo pipefail
@@ -69,6 +71,12 @@ if want dropout; then
     for d in 0.0 0.1; do  # 0.05 is the base run
         run "dropout_${d}" "$BASE" "lora.dropout=$d"
     done
+fi
+
+# Full-prompt control: the minimal-prompt finding came from one seed at 1% of
+# the data, so the sweep re-checks it at 50k.
+if want prompt; then
+    run prompt_full_r16 "$BASE" data.prompt_style=full
 fi
 
 if want lr; then

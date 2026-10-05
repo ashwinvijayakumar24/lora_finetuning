@@ -16,6 +16,7 @@ data:
   val: data/processed/val.jsonl
   max_len: 640            # longest train example is 595 tokens (a lateral); 512 raised on 6 plays
   mask_prompt: true
+  prompt_style: minimal    # no system prompt: same quality, ~half the GPU hours (docs/benchmarks/p3-prompt-ablation.md); eval with --prompt-style minimal
   on_overlength: raise
   val_loss_examples: 2000  # bucket-proportional val sample for val loss (not the head of the file)
   train_sample: 0          # >0: nested seeded sample of train (data-size curve)

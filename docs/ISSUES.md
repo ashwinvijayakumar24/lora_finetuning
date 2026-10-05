@@ -78,3 +78,5 @@ Documented, labels unchanged:
 - 6 train plays exceed 512 tokens, so the first full H100 run would have crashed at startup. Fixed: `max_len` 640. [p3-default-max-len-too-short](issues/p3-default-max-len-too-short.md)
 - The pilot's per-bucket allocation ignored caps (caught by a test; no effect on the real pilot data). [p3-pilot-allocation-ignored-caps](issues/p3-pilot-allocation-ignored-caps.md)
 - Two agents' real-model jobs overlapped on the laptop GPU, distorting both timings. [p3-shared-mps-contention](issues/p3-shared-mps-contention.md)
+- With no system message, the Llama template still renders a dated 35-token header, so the date pin stays necessary. [p3-minimal-prompt-keeps-template-header](issues/p3-minimal-prompt-keeps-template-header.md)
+- Scoring an adapter with a prompt style it wasn't trained on would silently score lower and look like a weaker adapter. Fixed: `LoRAPredictor` refuses a mismatch. [p3-prompt-style-mismatch-is-silent](issues/p3-prompt-style-mismatch-is-silent.md)

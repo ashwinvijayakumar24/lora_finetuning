@@ -44,7 +44,7 @@ def test_sweep_commands_resolve_to_valid_specs():
         name = Path(outdir).name
         names.append(name)
         specs[name] = spec
-    assert len(names) == len(set(names)) == 25  # 1 R5 + 5 rank + 5 alpha + 4 targets + 2 dropout + 4 lr + 4 data size
+    assert len(names) == len(set(names)) == 26  # 1 R5 + 5 rank + 5 alpha + 4 targets + 2 dropout + 4 lr + 1 prompt control + 4 data size
     assert specs["rank_r64"].lora.r == 64 and specs["rank_r64"].lora.alpha == 128
     assert specs["targets_qv_r16"].lora.targets == ["q_proj", "v_proj"]
     assert specs["lr_1.0e-3"].train.lr == pytest.approx(1e-3)
