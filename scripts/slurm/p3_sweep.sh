@@ -26,12 +26,27 @@ BASE=configs/p3_sweep_50k.yaml
 SBATCH=scripts/slurm/train_h100.sbatch
 OUT=${OUT:-runs/sweep}
 
-run() {  # run NAME CONFIG [--set overrides...]
+run() {  # run NAME CONFIG [overrides...]
+    # DEPENDENCY=afterok:<gate> makes the run wait for the GPU gate.
+    # EVAL=1 also queues an eval of the run's best checkpoint on eval_lite once
+    # training succeeds (afterok on the training job).
     local name=$1 config=$2
     shift 2
-    local cmd=(sbatch --job-name "pp-$name" "$SBATCH" "$config" "$OUT/$name" "$@")
+    local dep=()
+    [[ -n "${DEPENDENCY:-}" ]] && dep=(--dependency "$DEPENDENCY")
+    local cmd=(sbatch --parsable --job-name "pp-$name" ${dep[@]+"${dep[@]}"} "$SBATCH" "$config" "$OUT/$name" "$@")
     printf "%q " "${cmd[@]}"; echo   # copy-pasteable (quotes preserved)
-    if [[ "${SUBMIT:-0}" == "1" ]]; then "${cmd[@]}"; fi
+    if [[ "${SUBMIT:-0}" == "1" ]]; then
+        local jid
+        jid=$("${cmd[@]}")
+        echo "  -> train job $jid"
+        if [[ "${EVAL:-0}" == "1" ]]; then
+            local ejid
+            ejid=$(sbatch --parsable --job-name "pp-eval-$name" --dependency "afterok:$jid" \
+                scripts/slurm/eval.sbatch "$OUT/$name/best" data/processed/eval_lite.jsonl "results/p3_sweep/$name")
+            echo "  -> eval job $ejid"
+        fi
+    fi
 }
 
 want() { [[ "$GROUP" == "all" || "$GROUP" == "$1" ]]; }

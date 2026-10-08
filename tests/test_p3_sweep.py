@@ -37,8 +37,9 @@ def test_sweep_commands_resolve_to_valid_specs():
     names, specs = [], {}
     for line in out:
         argv = shlex.split(line)
-        assert argv[0] == "sbatch" and argv[3] == "scripts/slurm/train_h100.sbatch"
-        config, outdir, sets = argv[4], argv[5], argv[6:]
+        i = argv.index("scripts/slurm/train_h100.sbatch")
+        assert argv[0] == "sbatch"
+        config, outdir, sets = argv[i + 1], argv[i + 2], argv[i + 3:]
         raw = yaml.safe_load((REPO / config).read_text())
         spec = RunSpec.from_dict(train.apply_overrides(raw, sets))
         name = Path(outdir).name
