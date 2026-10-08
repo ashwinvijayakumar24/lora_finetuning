@@ -19,9 +19,9 @@
 # L7 factor 2) are fixed in scripts/p5b_bench.py BEFORE this runs.
 #
 #SBATCH --job-name=p5b_bench
-#SBATCH --account=<PLACEHOLDER_ACCOUNT>
-#SBATCH --qos=<PLACEHOLDER_QOS>
-#SBATCH --partition=<PLACEHOLDER_PARTITION e.g. gpu-h100>
+#SBATCH --account=paceship-simpliearn
+#SBATCH --qos=inferno
+#SBATCH --partition=gpu-h100
 #SBATCH --gres=gpu:h100:1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=96G
@@ -37,13 +37,13 @@ nvidia-smi --query-gpu=name,compute_cap,memory.total,driver_version --format=csv
 
 module load cuda/12.9.1
 module load anaconda3
-conda activate "${CONDA_ENV:-playparse}"
+conda activate "${CONDA_ENV:-llm}"
 
 cd "${SLURM_SUBMIT_DIR}"
 export HF_HUB_OFFLINE=1
-export PLAYPARSE_WEIGHTS="${PLAYPARSE_WEIGHTS:-$HOME/<PLACEHOLDER_STORAGE>/llm_inference_engine/weights}"
-export PLAYPARSE_ENGINE_DIR="${PLAYPARSE_ENGINE_DIR:-$HOME/<PLACEHOLDER_STORAGE>/llm_inference_engine}"
-export PLAYPARSE_SERVING_DIR="${PLAYPARSE_SERVING_DIR:-$HOME/<PLACEHOLDER_STORAGE>/llm_serving_layer}"
+export PLAYPARSE_WEIGHTS="${PLAYPARSE_WEIGHTS:-$HOME/ps-simpliearn-0/llm_inference_engine/weights}"
+export PLAYPARSE_ENGINE_DIR="${PLAYPARSE_ENGINE_DIR:-$HOME/ps-simpliearn-0/llm_inference_engine}"
+export PLAYPARSE_SERVING_DIR="${PLAYPARSE_SERVING_DIR:-$HOME/ps-simpliearn-0/llm_serving_layer}"
 export PLAYPARSE_TEST_DEVICE=cuda:0
 
 python3 - <<'PREFLIGHT'

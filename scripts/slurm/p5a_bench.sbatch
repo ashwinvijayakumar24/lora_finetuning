@@ -18,9 +18,9 @@
 # scripts/p5a_bench.py BEFORE this runs; do not change it after seeing results.
 #
 #SBATCH --job-name=p5a_bench
-#SBATCH --account=<PLACEHOLDER_ACCOUNT>
-#SBATCH --qos=<PLACEHOLDER_QOS>
-#SBATCH --partition=<PLACEHOLDER_PARTITION e.g. gpu-h100>
+#SBATCH --account=paceship-simpliearn
+#SBATCH --qos=inferno
+#SBATCH --partition=gpu-h100
 #SBATCH --gres=gpu:h100:1
 # PACE enforces a max 8:1 CPU:GPU ratio on gpu-h100.
 #SBATCH --cpus-per-task=8
@@ -37,13 +37,13 @@ nvidia-smi --query-gpu=name,compute_cap,memory.total,driver_version --format=csv
 
 module load cuda/12.9.1
 module load anaconda3
-conda activate "${CONDA_ENV:-playparse}"
+conda activate "${CONDA_ENV:-llm}"
 
 cd "${SLURM_SUBMIT_DIR}"
 export HF_HUB_OFFLINE=1
 # Both must point at shared copies on the cluster (paths below are examples).
-export PLAYPARSE_WEIGHTS="${PLAYPARSE_WEIGHTS:-$HOME/<PLACEHOLDER_STORAGE>/llm_inference_engine/weights}"
-export PLAYPARSE_ENGINE_DIR="${PLAYPARSE_ENGINE_DIR:-$HOME/<PLACEHOLDER_STORAGE>/llm_inference_engine}"
+export PLAYPARSE_WEIGHTS="${PLAYPARSE_WEIGHTS:-$HOME/ps-simpliearn-0/llm_inference_engine/weights}"
+export PLAYPARSE_ENGINE_DIR="${PLAYPARSE_ENGINE_DIR:-$HOME/ps-simpliearn-0/llm_inference_engine}"
 
 python3 - <<'PREFLIGHT'
 import sys, torch

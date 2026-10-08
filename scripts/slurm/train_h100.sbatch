@@ -1,28 +1,27 @@
 #!/bin/bash
 # ---------------------------------------------------------------------------
-# PlayParse: one LoRA training run on a single H100 (Georgia Tech PACE Phoenix).
+# PlayParse: one training run on a single GPU (Georgia Tech PACE Phoenix).
 #
-# TEMPLATE. Before the first submit, replace every line marked  >>> FILL IN <<<.
-#   - account:  your PACE charge account (e.g. gts-<pi-username>);  `pace-quota` lists them
-#   - qos:      "inferno" (paid, preemptible=no) or "embers" (free, preemptible) on Phoenix
-#   - paths:    REPO / VENV / PLAYPARSE_WEIGHTS / PLAYPARSE_PROCESSED_DIR
-# Check partition and GPU names against current PACE docs: `sinfo -o "%P %G"`.
+# QOS embers is free but preemptible; the job resumes from its latest checkpoint
+# when Slurm requeues it (preemption or the 2-hour limit), so a run longer than
+# one allocation simply spans several. Any of H100 / H200 / A100 / L40S will do
+# for training (quality does not depend on the GPU; the GPU is logged).
+# A short --time makes the job a backfill candidate on a busy cluster.
 #
 # Submit:
-#   sbatch scripts/slurm/train_h100.sbatch configs/train_default.yaml runs/r5 [--set k=v ...]
-# Resume after preemption or timeout (same command; it resumes if checkpoints exist):
-#   sbatch scripts/slurm/train_h100.sbatch configs/train_default.yaml runs/r5
+#   sbatch scripts/slurm/train_h100.sbatch configs/train_default.yaml runs/r5 [k=v ...]
 # ---------------------------------------------------------------------------
 #SBATCH --job-name=playparse-train
-#SBATCH --account=REPLACE_ME_ACCOUNT          # >>> FILL IN <<<
-#SBATCH --qos=REPLACE_ME_QOS                  # >>> FILL IN <<< (inferno | embers)
+#SBATCH --account=paceship-simpliearn
+#SBATCH --qos=embers
+#SBATCH --partition=gpu-h100,gpu-h200,gpu-a100,gpu-l40s
+#SBATCH --gres=gpu:1
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
-#SBATCH --gres=gpu:H100:1                     # >>> CHECK <<< GPU type string on Phoenix
 #SBATCH --mem=64G
-#SBATCH --time=08:00:00
-#SBATCH --output=slurm-%x-%j.out
+#SBATCH --time=02:00:00
+#SBATCH --output=logs/%x-%j.out
 #SBATCH --signal=B:USR1@300                   # warn 5 min before the time limit
 #SBATCH --requeue                             # allow requeue (embers preemption)
 
@@ -33,21 +32,23 @@ OUTPUT_DIR=${2:?usage: sbatch train_h100.sbatch CONFIG OUTPUT_DIR [--set k=v ...
 shift 2
 EXTRA=("$@")
 
-REPO=${REPO:-$HOME/llm_finetuning}                                    # >>> FILL IN <<<
-VENV=${VENV:-$REPO/.venv}                                             # >>> FILL IN <<<
-export PLAYPARSE_WEIGHTS=${PLAYPARSE_WEIGHTS:-$HOME/scratch/llama-3.2-1b-instruct}   # >>> FILL IN <<<
-export PLAYPARSE_PROCESSED_DIR=${PLAYPARSE_PROCESSED_DIR:-$REPO/data/processed}     # >>> FILL IN <<<
+STORE=$HOME/ps-simpliearn-0
+REPO=${REPO:-$STORE/llm_finetuning}
+export PLAYPARSE_WEIGHTS=${PLAYPARSE_WEIGHTS:-$STORE/llm_inference_engine/weights}
+export PLAYPARSE_PROCESSED_DIR=${PLAYPARSE_PROCESSED_DIR:-$REPO/data/processed}
+export PLAYPARSE_ENGINE_DIR=${PLAYPARSE_ENGINE_DIR:-$STORE/llm_inference_engine}
 
 # Keep Hugging Face from reaching the network or filling $HOME on compute nodes.
 export HF_HUB_OFFLINE=1
-export HF_HOME=${HF_HOME:-$HOME/scratch/hf_home}
+export HF_HOME=${HF_HOME:-$STORE/.hf_cache}
 export TOKENIZERS_PARALLELISM=false
 export PYTHONUNBUFFERED=1
 
-# module load cuda/12.x    # >>> CHECK <<< usually unnecessary with pip-installed torch wheels
+module load cuda/12.9.1
+module load anaconda3
+conda activate "${CONDA_ENV:-llm}"
 
 cd "$REPO"
-source "$VENV/bin/activate"
 
 echo "job $SLURM_JOB_ID on $(hostname) at $(date -Is)"
 echo "git sha: $(git rev-parse HEAD 2>/dev/null || echo unknown)"
@@ -65,5 +66,5 @@ fi
 trap 'echo "USR1: requeueing"; scontrol requeue "$SLURM_JOB_ID"; exit 0' USR1
 
 python scripts/train.py --config "$CONFIG" "${RESUME[@]}" \
-    --set "train.output_dir=\"$OUTPUT_DIR\"" train.device=cuda "${EXTRA[@]}" &
+    --set "train.output_dir=\"$OUTPUT_DIR\"" train.device=cuda ${EXTRA[@]+"${EXTRA[@]}"} &
 wait $!
