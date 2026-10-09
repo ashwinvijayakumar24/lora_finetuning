@@ -86,3 +86,8 @@ Documented, labels unchanged:
 - The first gate ran the real-model serving test on the node's CPU (the device helper only knew MPS and CPU); on x86 fp16, v1 diverged from the single-request reference while v2 matched. Fixed: CUDA preferred. Open: confirm the x86 fp16 divergence is a near-tie. [pace-gate-cpu-fallback-and-x86-fp16](issues/pace-gate-cpu-fallback-and-x86-fp16.md)
 - The job scripts never passed `--prompt-style minimal`, so the eval guard refused every minimal-prompt adapter. Caught by the second gate before any training run reached its eval. Fixed in the gate, training, and eval jobs; both eval paths re-checked locally. (Commit `ba7599c`.)
 - `embers` caps queued jobs per user at 50, and an SSH drop cut one submission short. Fixed: eval runs inside each training job, and `submit_all.sh` runs under `nohup` on the login node.
+
+## T3b — spot decomposition
+
+- A touchdown spot `"<defteam> 0"` named a team the input often omits, so the pilot model wrote a safety. Fixed: `"OPP 0"`, before the GPU run. [t3b-goal-line-team-unseen](issues/t3b-goal-line-team-unseen.md)
+- Official fumble and lateral yardage rules, measured from the line of scrimmage (found while building R0 + LOS). [t3b-official-fumble-yardage-conventions](issues/t3b-official-fumble-yardage-conventions.md)

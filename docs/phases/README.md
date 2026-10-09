@@ -15,3 +15,4 @@ order to follow the project.
 | P5a | [P5a.md](P5a.md) | Done locally; H100 timing pending | LoRA in the from-scratch engine, merged and unmerged |
 | P5b | [P5b.md](P5b.md) | Done locally; H100 benchmarks pending | Multi-LoRA batching, adapter pool, adapter-keyed prefix cache |
 | P6 | [P6-registry.md](P6-registry.md) | Built | Adapter registry with per-bucket eval gate and rollback |
+| T3b | [T3b.md](T3b.md) | Pilot done; GPU run queued | Let the model read field spots and code do the arithmetic (PRD §17) |
