@@ -57,8 +57,9 @@ measured on the laptop; the authoritative GPU run is still pending.
 | T1 | Fine-tuning beats prompting at 1B | **Earned (pilot)**: 93.7% vs 0.0% (R1); R2 16.7% on a 108-play slice | [p3-local-pilot](docs/benchmarks/p3-local-pilot.md) |
 | T2 | A 1B adapter matches the frontier model | Pending: needs API key (B2) | — |
 | T3 | ML beats the regex on the hard buckets | **Not earned (frozen test set, 37,859 plays)**: R5 99.54% [99.47, 99.61] vs regex 99.79% [99.75, 99.84]; paired −0.25 [−0.32, −0.19] (R5 alone right on 30 plays, regex alone on 126). R5 wins only penalty_nullified (+0.43). Follow-up T3b (spots, PRD §17) pre-registered and running. | [r5_vs_r0_paired.json](results/test/r5_vs_r0_paired.json) |
+| T3b | Spot decomposition beats the regex (pre-registered, PRD §17) | **Not earned**: 99.73% vs regex 99.79% and regex + LOS 99.90% on the frozen test set. But it beats R5 by +0.18 [+0.12, +0.25] and fixes penalty_stands (93.5 → 100) | [t3b-test](docs/benchmarks/t3b-test.md) |
 | T4 | QLoRA costs little quality | Pending (B3; needs CUDA) | — |
-| T5 | LoRA matches full fine-tuning | Pending (B3); `configs/r7_full_ft.yaml` ready | — |
+| T5 | LoRA matches full fine-tuning | **LoRA beat it**: R5 98.5% vs full fine-tune (R7) 97.35% on eval_lite, paired +1.18 [+0.43, +2.12] for LoRA. Caveats: one run each; the full fine-tune's LR (2e-5) was a standard default, not tuned | [benchmarks](docs/BENCHMARKS.md) |
 | T6 | Filtering recovers distillation quality | Pending (B2); pipeline built and tested | [P4 pipeline](docs/phases/P4-distill-pipeline.md) |
 | T7 | Fine-tuning causes little forgetting | Pending (after R5) | — |
 | L1 | Merged adapter adds no latency | **Earned (H100)**: merged r=16 −0.07% vs base, inside base-vs-base noise | [p5a CUDA bench](results/p5a/bench_cuda_20261008_224151.json) |
