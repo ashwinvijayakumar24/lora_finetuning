@@ -1,0 +1,23 @@
+{
+ "purpose": "T3b local pilot: the P3 pilot plays with schema-v2 fields",
+ "files": {
+  "train_pilot.jsonl": {
+   "n": 2400,
+   "sha256": "006528ff19b31368f148120fb00f609e207f863922fc19c4dae6b73de08a0f2e",
+   "matches_p3_manifest": true
+  },
+  "train_pilot_v2.jsonl": {
+   "n": 2400,
+   "sha256": "bdc24f7c9cab3b9bb2e9edfd87641c6e9e8ba05abbdcf123371c6fc46b7155f2"
+  },
+  "eval_pilot.jsonl": {
+   "n": 1014,
+   "sha256": "3f7df5cb275e94167412ecbafdffb11d78871c38ffdd9278c6ca443917a8d01f",
+   "matches_p3_manifest": true
+  },
+  "eval_pilot_v2.jsonl": {
+   "n": 1014,
+   "sha256": "07c4b60fba3d2b9b8f2e3cd17bcdd200d3b0d5b632d4860d1941e69ebf8f77fc"
+  }
+ }
+}
