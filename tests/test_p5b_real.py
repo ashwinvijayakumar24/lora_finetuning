@@ -66,6 +66,8 @@ def _device() -> str:
     env = os.environ.get("PLAYPARSE_TEST_DEVICE")
     if env:
         return env
+    if torch.cuda.is_available():
+        return "cuda:0"
     return "mps" if torch.backends.mps.is_available() else "cpu"
 
 

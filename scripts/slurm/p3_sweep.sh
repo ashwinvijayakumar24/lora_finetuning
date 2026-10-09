@@ -28,8 +28,9 @@ OUT=${OUT:-runs/sweep}
 
 run() {  # run NAME CONFIG [overrides...]
     # DEPENDENCY=afterok:<gate> makes the run wait for the GPU gate.
-    # EVAL=1 also queues an eval of the run's best checkpoint on eval_lite once
-    # training succeeds (afterok on the training job).
+    # Each training job scores its best checkpoint on eval_lite at the end of its
+    # final allocation (see train_h100.sbatch). EVAL=1 instead queues a separate
+    # eval job (afterok), which doubles the job count.
     local name=$1 config=$2
     shift 2
     local dep=()

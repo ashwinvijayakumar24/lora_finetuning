@@ -65,6 +65,27 @@ fi
 # Anything after the last save_every boundary is recomputed, so keep save_every modest.
 trap 'echo "USR1: requeueing"; scontrol requeue "$SLURM_JOB_ID"; exit 0' USR1
 
-python scripts/train.py --config "$CONFIG" "${RESUME[@]}" \
+python scripts/train.py --config "$CONFIG" ${RESUME[@]+"${RESUME[@]}"} \
     --set "train.output_dir=\"$OUTPUT_DIR\"" train.device=cuda ${EXTRA[@]+"${EXTRA[@]}"} &
 wait $!
+
+# Score the best checkpoint on eval_lite in the same allocation (POST_EVAL=0 to skip).
+# Doing it here instead of in a dependent job halves the number of queued jobs,
+# which matters under the per-user submit limit on embers.
+if [[ "${POST_EVAL:-1}" == "1" ]]; then
+    EVAL_OUT=${EVAL_OUT:-results/eval_lite/$(basename "$OUTPUT_DIR")}
+    # The best checkpoint exists only once a generation eval has run; very short
+    # runs (the 1k data-size point) end first, so fall back to the final checkpoint.
+    SRC="$OUTPUT_DIR/best"
+    [[ -d "$SRC" ]] || SRC=$(ls -d "$OUTPUT_DIR"/checkpoints/step_*/adapter | sort | tail -1)
+    echo "post-eval of $SRC"
+    IMPL=$(python -c "import json,sys; print(json.load(open(sys.argv[1]))['lora']['impl'])" "$OUTPUT_DIR/run_spec.json")
+    if [[ "$IMPL" == "full" ]]; then
+        STYLE=$(python -c "import json,sys; print(json.load(open(sys.argv[1]))['data'].get('prompt_style','full'))" "$OUTPUT_DIR/run_spec.json")
+        python -m playparse.eval.run --rung r1 --weights "$SRC" --prompt-style "$STYLE" \
+            --data data/processed/eval_lite.jsonl --out "$EVAL_OUT" --device cuda --batch-size 32
+    else
+        python -m playparse.eval.run --rung lora --adapter "$SRC" \
+            --data data/processed/eval_lite.jsonl --out "$EVAL_OUT" --device cuda --batch-size 32
+    fi
+fi
