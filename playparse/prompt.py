@@ -33,6 +33,11 @@ def render_user(posteam: str | None, desc: str) -> str:
     return f"posteam: {posteam or 'UNK'}\ndesc: {desc}"
 
 
+def render_user_v2(posteam: str | None, los: str | None, desc: str) -> str:
+    """The T3b user turn: v1's plus the line of scrimmage (nflverse `yrdln`, desc spelling)."""
+    return f"posteam: {posteam or 'UNK'}\nlos: {los or 'UNK'}\ndesc: {desc}"
+
+
 # Prompt styles. "full" is the frozen prompt every result up to P3 used. "minimal"
 # drops the system message entirely: a fine-tuned adapter learns the task and the
 # JSON format from its labels, so the 186-token instruction may be dead weight that
@@ -40,8 +45,15 @@ def render_user(posteam: str | None, desc: str) -> str:
 # p3-prompt-ablation.md). With no system message the Llama 3.2 template still writes
 # its own system header ("Cutting Knowledge Date ... Today Date ..."), so the date
 # must stay pinned with CHAT_DATE_STRING in both styles.
-PROMPT_STYLES = ("full", "minimal")
+#
+# "minimal_v2" (T3b, docs/phases/T3b.md) is "minimal" plus a `los:` line in the user
+# turn, and it is the only style whose completion is a schema-v2 label (field spots
+# instead of yards, playparse.ffscore.schema_v2). The style fixes the output schema,
+# so an adapter can never be trained on one schema and scored on the other.
+PROMPT_STYLES = ("full", "minimal", "minimal_v2")
 DEFAULT_PROMPT_STYLE = "full"
+STYLE_SCHEMA = {"full": "v1", "minimal": "v1", "minimal_v2": "v2"}
+SCHEMAS = ("v1", "v2")
 
 
 def check_prompt_style(style: str) -> str:
@@ -50,21 +62,45 @@ def check_prompt_style(style: str) -> str:
     return style
 
 
+def schema_of_style(style: str) -> str:
+    """The output schema ("v1" or "v2") an adapter trained with `style` emits."""
+    return STYLE_SCHEMA[check_prompt_style(style)]
+
+
+def check_style_schema(style: str, schema: str | None) -> str:
+    """Return the style's schema; raise if an explicitly given `schema` disagrees."""
+    expected = schema_of_style(style)
+    if schema is not None and schema != expected:
+        if schema not in SCHEMAS:
+            raise ValueError(f"unknown schema {schema!r}; expected one of {SCHEMAS}")
+        raise ValueError(f"prompt style {style!r} produces schema {expected!r}, not {schema!r} "
+                         f"(schema v2 goes with prompt style 'minimal_v2')")
+    return expected
+
+
 def build_messages(
     posteam: str | None,
     desc: str,
     system: str = SYSTEM_PROMPT,
     style: str = DEFAULT_PROMPT_STYLE,
+    los: str | None = None,
 ) -> list[dict[str, str]]:
     """Chat messages for one play.
 
     style="full": [system, user] with `system` (default SYSTEM_PROMPT).
     style="minimal": [user] only. A custom `system` is an error here, since it
     would be silently dropped.
+    style="minimal_v2": [user] only, with the line of scrimmage `los` in it.
+    `los` is ignored by the v1 styles, so v2 data files render exactly as before
+    under "full" and "minimal".
     """
-    user = {"role": "user", "content": render_user(posteam, desc)}
-    if check_prompt_style(style) == "minimal":
+    check_prompt_style(style)
+    if style == "minimal_v2":
+        user = {"role": "user", "content": render_user_v2(posteam, los, desc)}
+    else:
+        user = {"role": "user", "content": render_user(posteam, desc)}
+    if style in ("minimal", "minimal_v2"):
         if system != SYSTEM_PROMPT:
-            raise ValueError("style='minimal' sends no system message; do not pass `system`")
+            raise ValueError(f"style={style!r} sends no system message; do not pass `system`")
         return [user]
     return [{"role": "system", "content": system}, user]

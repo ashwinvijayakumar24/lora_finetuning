@@ -40,6 +40,31 @@ def adapter_fingerprint(adapter_dir: str | Path) -> dict[str, Any]:
     }
 
 
+def _run_spec(adapter_dir: str | Path) -> dict | None:
+    d = Path(adapter_dir).resolve()
+    cands = [d.parent / "run_spec.json"]
+    if len(d.parents) > 2:
+        cands.append(d.parents[2] / "run_spec.json")
+    for cand in cands:
+        if cand.is_file():
+            return json.loads(cand.read_text())
+    return None
+
+
+def trained_schema(adapter_dir: str | Path) -> str | None:
+    """The output schema an adapter was trained on ("v1"/"v2"), from its run_spec.json.
+
+    Runs from before T3b have no data.schema: their style decides (all v1).
+    """
+    from playparse.prompt import schema_of_style
+
+    spec = _run_spec(adapter_dir)
+    if spec is None:
+        return None
+    data = spec.get("data") or {}
+    return data.get("schema") or schema_of_style(data.get("prompt_style", "full"))
+
+
 def trained_prompt_style(adapter_dir: str | Path) -> str | None:
     """The prompt style an adapter was trained with, if its run directory says so.
 
@@ -80,6 +105,12 @@ class LoRAPredictor(HFPredictor):
         if trained is not None and trained != style:
             raise ValueError(f"{self.adapter_dir} was trained with prompt_style={trained!r}, "
                              f"not {style!r}; pass --prompt-style {trained}")
+        from playparse.prompt import schema_of_style
+
+        schema = trained_schema(self.adapter_dir)
+        if schema is not None and schema != schema_of_style(style):
+            raise ValueError(f"{self.adapter_dir} was trained on schema {schema!r}; prompt style {style!r} "
+                             f"decodes schema {schema_of_style(style)!r}")
         super().__init__(weights, name=name or "lora", examples_fn=None, examples_id=None, **kw)
         # Adapters stay fp32 (as trained); LoRALinear casts its input and output.
         load_adapter(self.model, self.adapter_dir, adapter_dtype=torch.float32)

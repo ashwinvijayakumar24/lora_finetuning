@@ -19,7 +19,7 @@ import torch
 from torch import nn
 
 from playparse.prompt import CHAT_DATE_STRING, DEFAULT_PROMPT_STYLE
-from playparse.train.collate import encode_prompt, pad_token_id, stop_token_ids
+from playparse.train.collate import encode_prompt, pad_token_id, record_los, stop_token_ids
 from playparse.train.loop import autocast_context
 
 
@@ -141,7 +141,8 @@ def generate_for_records(
 
     prompt_style must be the style the model was trained with (RunSpec.data.prompt_style).
     """
-    prompts = [encode_prompt(tokenizer, r.get("posteam"), r["desc"], date_string, prompt_style) for r in records]
+    prompts = [encode_prompt(tokenizer, r.get("posteam"), r["desc"], date_string, prompt_style,
+                             record_los(r, prompt_style)) for r in records]
     gens = greedy_generate(model, tokenizer, prompts, max_new_tokens=max_new_tokens, batch_size=batch_size,
                            autocast=autocast)
     return [g.text for g in gens]

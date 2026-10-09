@@ -83,11 +83,21 @@ if [[ "${POST_EVAL:-1}" == "1" ]]; then
     # The eval CLI refuses to score an adapter with a prompt style it was not
     # trained on, so pass the training run's style explicitly.
     STYLE=$(python -c "import json,sys; print(json.load(open(sys.argv[1]))['data'].get('prompt_style','full'))" "$OUTPUT_DIR/run_spec.json")
-    if [[ "$IMPL" == "full" ]]; then
-        python -m playparse.eval.run --rung r1 --weights "$SRC" --prompt-style "$STYLE" \
-            --data data/processed/eval_lite.jsonl --out "$EVAL_OUT" --device cuda --batch-size 32
+    # T3b: a schema-v2 run (field spots) is scored on the v2 copy of eval_lite (same
+    # plays and v1 labels, plus the line of scrimmage), with its outputs converted to
+    # v1 before scoring. Pre-T3b run specs have no data.schema and stay on v1.
+    SCHEMA=$(python -c "import json,sys; d=json.load(open(sys.argv[1]))['data']; print(d.get('schema') or 'v1')" "$OUTPUT_DIR/run_spec.json")
+    if [[ "$SCHEMA" == "v2" ]]; then
+        EVAL_DATA=${EVAL_DATA:-data/processed_v2/eval_lite.jsonl}
     else
-        python -m playparse.eval.run --rung lora --adapter "$SRC" --prompt-style "$STYLE" \
-            --data data/processed/eval_lite.jsonl --out "$EVAL_OUT" --device cuda --batch-size 32
+        EVAL_DATA=${EVAL_DATA:-data/processed/eval_lite.jsonl}
+    fi
+    echo "post-eval: style=$STYLE schema=$SCHEMA data=$EVAL_DATA"
+    if [[ "$IMPL" == "full" ]]; then
+        python -m playparse.eval.run --rung r1 --weights "$SRC" --prompt-style "$STYLE" --schema "$SCHEMA" \
+            --data "$EVAL_DATA" --out "$EVAL_OUT" --device cuda --batch-size 32
+    else
+        python -m playparse.eval.run --rung lora --adapter "$SRC" --prompt-style "$STYLE" --schema "$SCHEMA" \
+            --data "$EVAL_DATA" --out "$EVAL_OUT" --device cuda --batch-size 32
     fi
 fi
