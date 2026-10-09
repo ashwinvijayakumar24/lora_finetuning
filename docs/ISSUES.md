@@ -80,3 +80,9 @@ Documented, labels unchanged:
 - Two agents' real-model jobs overlapped on the laptop GPU, distorting both timings. [p3-shared-mps-contention](issues/p3-shared-mps-contention.md)
 - With no system message, the Llama template still renders a dated 35-token header, so the date pin stays necessary. [p3-minimal-prompt-keeps-template-header](issues/p3-minimal-prompt-keeps-template-header.md)
 - Scoring an adapter with a prompt style it wasn't trained on would silently score lower and look like a weaker adapter. Fixed: `LoRAPredictor` refuses a mismatch. [p3-prompt-style-mismatch-is-silent](issues/p3-prompt-style-mismatch-is-silent.md)
+
+## PACE runs
+
+- The first gate ran the real-model serving test on the node's CPU (the device helper only knew MPS and CPU); on x86 fp16, v1 diverged from the single-request reference while v2 matched. Fixed: CUDA preferred. Open: confirm the x86 fp16 divergence is a near-tie. [pace-gate-cpu-fallback-and-x86-fp16](issues/pace-gate-cpu-fallback-and-x86-fp16.md)
+- The job scripts never passed `--prompt-style minimal`, so the eval guard refused every minimal-prompt adapter. Caught by the second gate before any training run reached its eval. Fixed in the gate, training, and eval jobs; both eval paths re-checked locally. (Commit `ba7599c`.)
+- `embers` caps queued jobs per user at 50, and an SSH drop cut one submission short. Fixed: eval runs inside each training job, and `submit_all.sh` runs under `nohup` on the login node.

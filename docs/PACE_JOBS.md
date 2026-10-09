@@ -10,6 +10,16 @@ Every job depends on the gate (`afterok`). Each training job scores its best (or
 
 Not yet submitted: the R5 test-set eval (after R5 finishes), QLoRA (R6, not built), and the vLLM comparison (L7, needs a separate `vllm` env).
 
+**Outcome:** gate 13905062 (A100 80GB PCIe) passed all 24 GPU/slow tests and the 40-step training smoke, then failed at its final eval step: the jobs did not pass `--prompt-style minimal`, and the eval CLI's guard refused the minimal-prompt adapter. Every training job's post-eval had the same bug, so the gate saved all 27 runs from failing at the very end. The dependents below were cancelled.
+
+Measured on the A100 in the smoke: **~11.7k tokens/s, 0.62 s per 64-example step** (minimal prompt, micro-batch 16 × accumulation 4). That projects R5 (2 epochs over 294k plays, ~9,200 steps) at about 1.6 h of training, and each 50k sweep run at about 16 min plus its generation evals.
+
+## Round 3 (2026-10-08, commit `ba7599c`)
+
+Same plan as round 2, submitted by `scripts/slurm/submit_all.sh` under `nohup`. Gate 13906063; sweep 13906064–13906089; R7 13906090; P5a bench 13906091; P5b bench 13906092.
+
+### Round 2 jobs (cancelled)
+
 | Job ID | Name | QOS | State at submit | Reason |
 |---|---|---|---|---|
 | 13905062 | playparse-gate | embers | RUNNING | None |
