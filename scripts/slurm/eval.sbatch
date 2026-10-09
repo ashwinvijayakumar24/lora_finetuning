@@ -21,7 +21,8 @@ source scripts/slurm/_env.sh
 if [[ "$ADAPTER" == "-" ]]; then
     python -m playparse.eval.run --data "$DATA" --out "$OUT" --device cuda --batch-size 32 "$@"
 else
-    # The eval CLI reads the prompt style from the run's run_spec.json and refuses a mismatch.
+    # The eval CLI refuses a prompt-style mismatch: pass --prompt-style minimal for runs
+    # trained with the minimal prompt (all GPU configs).
     python -m playparse.eval.run --rung lora --adapter "$ADAPTER" --data "$DATA" --out "$OUT" \
         --device cuda --batch-size 32 "$@"
 fi

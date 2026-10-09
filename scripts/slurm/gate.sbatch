@@ -19,7 +19,7 @@ python scripts/train.py --config configs/train_default.yaml \
     --set 'train.output_dir="runs/gate_smoke"' train.device=cuda train.max_steps=40 train.epochs=null \
           train.eval_every=1000 train.gen_every=1000 train.save_every=1000 data.train_sample=5000 \
     2>&1 | tee "results/gate/smoke_${SLURM_JOB_ID}.txt"
-python -m playparse.eval.run --rung lora --adapter "$(ls -d runs/gate_smoke/checkpoints/step_*/adapter | sort | tail -1)" --data data/processed/eval_lite.jsonl --limit 64 \
+python -m playparse.eval.run --rung lora --adapter "$(ls -d runs/gate_smoke/checkpoints/step_*/adapter | sort | tail -1)" --prompt-style minimal --data data/processed/eval_lite.jsonl --limit 64 \
     --out "results/gate/eval_smoke_${SLURM_JOB_ID}" --device cuda --batch-size 32 --no-resume
 cp runs/gate_smoke/metrics.jsonl "results/gate/smoke_metrics_${SLURM_JOB_ID}.jsonl"
 echo GATE_OK

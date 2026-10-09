@@ -80,12 +80,14 @@ if [[ "${POST_EVAL:-1}" == "1" ]]; then
     [[ -d "$SRC" ]] || SRC=$(ls -d "$OUTPUT_DIR"/checkpoints/step_*/adapter | sort | tail -1)
     echo "post-eval of $SRC"
     IMPL=$(python -c "import json,sys; print(json.load(open(sys.argv[1]))['lora']['impl'])" "$OUTPUT_DIR/run_spec.json")
+    # The eval CLI refuses to score an adapter with a prompt style it was not
+    # trained on, so pass the training run's style explicitly.
+    STYLE=$(python -c "import json,sys; print(json.load(open(sys.argv[1]))['data'].get('prompt_style','full'))" "$OUTPUT_DIR/run_spec.json")
     if [[ "$IMPL" == "full" ]]; then
-        STYLE=$(python -c "import json,sys; print(json.load(open(sys.argv[1]))['data'].get('prompt_style','full'))" "$OUTPUT_DIR/run_spec.json")
         python -m playparse.eval.run --rung r1 --weights "$SRC" --prompt-style "$STYLE" \
             --data data/processed/eval_lite.jsonl --out "$EVAL_OUT" --device cuda --batch-size 32
     else
-        python -m playparse.eval.run --rung lora --adapter "$SRC" \
+        python -m playparse.eval.run --rung lora --adapter "$SRC" --prompt-style "$STYLE" \
             --data data/processed/eval_lite.jsonl --out "$EVAL_OUT" --device cuda --batch-size 32
     fi
 fi
