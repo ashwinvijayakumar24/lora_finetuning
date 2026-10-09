@@ -1,0 +1,9 @@
+{
+  "step": 1563,
+  "train_loss": 0.00011597768547879138,
+  "val_loss": 0.0006958287974711792,
+  "best_metric": 0.934,
+  "best_step": 1200,
+  "stopped_early": false,
+  "last_checkpoint": "runs/sweep/alpha_r16_a16/checkpoints/step_0001563"
+}

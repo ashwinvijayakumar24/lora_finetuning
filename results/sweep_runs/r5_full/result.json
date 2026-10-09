@@ -1,0 +1,9 @@
+{
+  "step": 7000,
+  "train_loss": 7.502510453815813e-06,
+  "val_loss": 0.0004673022050555029,
+  "best_metric": 0.95,
+  "best_step": 5000,
+  "stopped_early": true,
+  "last_checkpoint": "runs/sweep/r5_full/checkpoints/step_0007000"
+}
