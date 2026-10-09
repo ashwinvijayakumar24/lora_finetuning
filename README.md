@@ -56,7 +56,7 @@ measured on the laptop; the authoritative GPU run is still pending.
 |---|---|---|---|
 | T1 | Fine-tuning beats prompting at 1B | **Earned (pilot)**: 93.7% vs 0.0% (R1); R2 16.7% on a 108-play slice | [p3-local-pilot](docs/benchmarks/p3-local-pilot.md) |
 | T2 | A 1B adapter matches the frontier model | Pending: needs API key (B2) | — |
-| T3 | ML beats the regex on the hard buckets | **Trending not earned at full scale**: R5 (all 294k plays) 98.5% vs regex 99.1% on eval_lite, paired −0.61 [−1.09, −0.27]; test-set eval running. Follow-up T3b (spots, PRD §17) pre-registered and queued. | [p3-sweep](docs/benchmarks/p3-sweep.md) |
+| T3 | ML beats the regex on the hard buckets | **Not earned (frozen test set, 37,859 plays)**: R5 99.54% [99.47, 99.61] vs regex 99.79% [99.75, 99.84]; paired −0.25 [−0.32, −0.19] (R5 alone right on 30 plays, regex alone on 126). R5 wins only penalty_nullified (+0.43). Follow-up T3b (spots, PRD §17) pre-registered and running. | [r5_vs_r0_paired.json](results/test/r5_vs_r0_paired.json) |
 | T4 | QLoRA costs little quality | Pending (B3; needs CUDA) | — |
 | T5 | LoRA matches full fine-tuning | Pending (B3); `configs/r7_full_ft.yaml` ready | — |
 | T6 | Filtering recovers distillation quality | Pending (B2); pipeline built and tested | [P4 pipeline](docs/phases/P4-distill-pipeline.md) |
