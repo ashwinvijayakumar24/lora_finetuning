@@ -17,3 +17,4 @@ registry/adapters/
 registry/.lock
 registry/**/.*.tmp
 data/processed/
+data/processed_v2/
