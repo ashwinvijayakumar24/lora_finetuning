@@ -1,0 +1,131 @@
+{
+  "meta": {
+    "host": "atl1-1-03-008-27-0.pace.gatech.edu",
+    "platform": "Linux-5.14.0-687.49.1.el9_8.x86_64-x86_64-with-glibc2.34",
+    "torch": "2.12.0+cu130",
+    "git_sha": "ba7599ccc5e103a2174507621a486c4fb0a98459",
+    "adapter": {
+      "r": 8,
+      "lora_alpha": 16,
+      "b_std": 0.01,
+      "seed": 0,
+      "targets": "q,k,v,o,gate,up,down"
+    },
+    "prompt": "Parse this play: J.Hurts pass short right to A.Brown for 14 yards (C.Gardner-Johnson).",
+    "n_layers": 16,
+    "label": "local, Apple M4; fp32 rows are the authoritative oracle"
+  },
+  "results": {
+    "cpu_fp32": {
+      "base_vs_hf_max_abs": 6.959185891997066e-05,
+      "unmerged_vs_peft_max_abs": 7.333843685630725e-05,
+      "merged_vs_peft_max_abs": 8.176432061191008e-05,
+      "merged_vs_unmerged_max_abs": 2.0945446746356566e-05,
+      "greedy_tokens": 16,
+      "greedy_peft": [
+        1271,
+        4820,
+        420,
+        1514,
+        11,
+        1095,
+        596,
+        1464,
+        433,
+        1523,
+        1139,
+        1202,
+        6956,
+        1473,
+        16,
+        13
+      ]
+    },
+    "cpu_fp16": {
+      "merged_vs_unmerged_max_abs": 0.12890625,
+      "merged_greedy": [
+        1271,
+        4820,
+        420,
+        1514,
+        11,
+        1095,
+        596,
+        1464,
+        433,
+        1523,
+        1139,
+        1202,
+        6956,
+        1473,
+        16,
+        13
+      ],
+      "unmerged_greedy": [
+        1271,
+        4820,
+        420,
+        1514,
+        11,
+        1095,
+        596,
+        1464,
+        433,
+        1523,
+        1139,
+        1202,
+        6956,
+        1473,
+        16,
+        13
+      ],
+      "merged_vs_peft_max_abs": 0.10497665405273438,
+      "unmerged_vs_peft_max_abs": 0.1393594741821289,
+      "base_vs_hf_max_abs": 0.10310554504394531,
+      "greedy_agreement_with_fp32_peft": "16/16"
+    },
+    "cuda_fp16": {
+      "merged_vs_unmerged_max_abs": 0.140625,
+      "merged_greedy": [
+        1271,
+        4820,
+        420,
+        1514,
+        11,
+        1095,
+        596,
+        1464,
+        433,
+        1523,
+        1139,
+        1202,
+        6956,
+        1473,
+        16,
+        13
+      ],
+      "unmerged_greedy": [
+        1271,
+        4820,
+        420,
+        1514,
+        11,
+        1095,
+        596,
+        1464,
+        433,
+        1523,
+        1139,
+        1202,
+        6956,
+        1473,
+        16,
+        13
+      ],
+      "merged_vs_peft_max_abs": 0.08133649826049805,
+      "unmerged_vs_peft_max_abs": 0.10724782943725586,
+      "base_vs_hf_max_abs": 0.09140223264694214,
+      "greedy_agreement_with_fp32_peft": "16/16"
+    }
+  }
+}

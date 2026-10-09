@@ -1,0 +1,19 @@
+encoded 5000/5000 train, prompt style minimal (max 345, mean 113 tokens, 0 over length) and 2000 val in 2.9s
+Loading weights:   0%|          | 0/146 [00:00<?, ?it/s]Loading weights: 100%|██████████| 146/146 [00:00<00:00, 16428.39it/s]
+LoRA impl=playparse, trainable params=11,272,192
+generation eval: 500 val plays every 1000 steps, buckets {'challenge': 61, 'fumble': 61, 'interception': 61, 'lateral': 16, 'normal': 61, 'penalty_nullified': 60, 'penalty_stands': 60, 'td': 60, 'two_point': 60}
+step 10/40 loss 0.8128 lr 1.82e-04 tok/s 10923 mem 18.32GiB
+step 20/40 loss 0.0265 lr 1.21e-04 tok/s 11935 mem 18.32GiB
+step 30/40 loss 0.0143 lr 5.31e-05 tok/s 11813 mem 18.32GiB
+step 40/40 loss 0.0106 lr 2.03e-05 tok/s 11636 mem 18.32GiB
+step 40 val_loss 0.0086
+[transformers] Ignoring clean_up_tokenization_spaces=True for BPE tokenizer TokenizersBackend. The clean_up_tokenization post-processing step is designed for WordPiece tokenizers and is destructive for BPE (it strips spaces before punctuation). Set clean_up_tokenization_spaces=False to suppress this warning, or set clean_up_tokenization_spaces_for_bpe_even_though_it_will_corrupt_output=True to force cleanup anyway.
+{
+  "step": 40,
+  "train_loss": 0.007622015915981913,
+  "val_loss": 0.008587510496542739,
+  "best_metric": 0.636,
+  "best_step": 40,
+  "stopped_early": false,
+  "last_checkpoint": "runs/gate_smoke/checkpoints/step_0000040"
+}

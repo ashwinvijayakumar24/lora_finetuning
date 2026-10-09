@@ -1,0 +1,6 @@
+.ssssssssss.ssssssssss......................                             [100%]
+=========================== short test summary info ============================
+SKIPPED [10] tests/test_crosscheck.py:65: raw data not present under /storage/project/ps-simpliearn-0/avijayakumar41/llm_finetuning/data/raw
+SKIPPED [10] tests/test_load_pbp.py:47: raw data not present under /storage/project/ps-simpliearn-0/avijayakumar41/llm_finetuning/data/raw
+24 passed, 20 skipped, 619 deselected in 1150.67s (0:19:10)
+sys:1: DeprecationWarning: builtin type swigvarlink has no __module__ attribute

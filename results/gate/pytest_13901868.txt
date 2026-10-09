@@ -1,0 +1,35 @@
+.ssssssssss.ssssssssss....F............F....                             [100%]
+=================================== FAILURES ===================================
+_________________________ test_adapter_is_not_vacuous __________________________
+
+hf_refs = {'ad_greedy': [1271, 4820, 420, 1514, 11, 1095, ...], 'ad_logits': array([[  2.9230933,   3.7546537,   7.398879 , ...,...p/pytest-of-avijayakumar41/pytest-0/p5a_real0/adapter_r8'), 'base_greedy': [1271, 4820, 420, 1514, 11, 1095, ...], ...}
+
+    def test_adapter_is_not_vacuous(hf_refs):
+        assert _maxabs(hf_refs["ad_logits"], hf_refs["base_logits"]) > 0.5
+>       assert hf_refs["ad_greedy"] != hf_refs["base_greedy"], "adapter should change the greedy text"
+E       AssertionError: adapter should change the greedy text
+E       assert [1271, 4820, 420, 1514, 11, 1095, ...] != [1271, 4820, 420, 1514, 11, 1095, ...]
+
+tests/test_p5a_real_oracle.py:227: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+Loading weights:   0%|          | 0/146 [00:00<?, ?it/s]Loading weights:  33%|███▎      | 48/146 [00:00<00:00, 472.26it/s]Loading weights:  87%|████████▋ | 127/146 [00:00<00:00, 657.51it/s]Loading weights: 100%|██████████| 146/146 [00:00<00:00, 653.98it/s]
+____________________ test_real_mixed_batch_equals_solo[v1] _____________________
+
+real_results = {'base_differs': {'c': True}, 'batched': {'v1': {'a': [264, 502, 1217, 315, 279, 5452, ...], 'a2': [264, 6908, 8571, 3..., 264, 11670, 3187, 315, ...], 'c': [12366, 627, 3923, 374, 279, 7928, ...], ...}}, 'device': 'cpu', 'layers': 16, ...}
+kernel = 'v1'
+
+    @pytest.mark.slow
+    @pytest.mark.parametrize("kernel", ["v1", "v2"])
+    def test_real_mixed_batch_equals_solo(real_results, kernel):
+        _, bad = _compare(real_results["solo"], real_results["batched"][kernel])
+>       assert not bad, f"[{real_results['device']}] batched != solo:\n  " + "\n  ".join(bad)
+E       AssertionError: [cpu] batched != solo:
+E           a (r8): batched [264, 502, 1217, 315, 279, 5452, 13, 358, 1097, 3411, 369, 264] != solo [264, 220, 1758, 4771, 6418, 5333, 889, 706, 1027, 25051, 1063, 4819] (first diff at 1)
+E       assert not ['a (r8): batched [264, 502, 1217, 315, 279, 5452, 13, 358, 1097, 3411, 369, 264] != solo [264, 220, 1758, 4771, 6418, 5333, 889, 706, 1027, 25051, 1063, 4819] (first diff at 1)']
+
+tests/test_p5b_real.py:173: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_p5a_real_oracle.py::test_adapter_is_not_vacuous - Assertion...
+FAILED tests/test_p5b_real.py::test_real_mixed_batch_equals_solo[v1] - Assert...
+2 failed, 22 passed, 20 skipped, 619 deselected in 867.97s (0:14:27)
+sys:1: DeprecationWarning: builtin type swigvarlink has no __module__ attribute

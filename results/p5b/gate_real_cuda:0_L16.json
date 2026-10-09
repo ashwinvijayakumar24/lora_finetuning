@@ -1,0 +1,123 @@
+{
+  "metadata": {
+    "label": "CUDA run",
+    "timestamp_utc": "2026-10-09T02:41:19+00:00",
+    "host": "atl1-1-03-008-32-0.pace.gatech.edu",
+    "platform": "Linux-5.14.0-687.49.1.el9_8.x86_64-x86_64-with-glibc2.34",
+    "python": "3.11.15",
+    "torch": "2.12.0+cu130",
+    "device": "cuda:0",
+    "playparse_git_sha": "ba7599ccc5e103a2174507621a486c4fb0a98459",
+    "playparse_git_dirty": true,
+    "engine_dir": "/storage/project/ps-simpliearn-0/avijayakumar41/llm_inference_engine",
+    "engine_git_sha": "291ef53843415d442e4b06b2848d61bb937d0749",
+    "serving_layer_dir": "/storage/project/ps-simpliearn-0/avijayakumar41/llm_serving_layer",
+    "serving_layer_git_sha": "e7c681fee3fa4be3dcee752b5f6808bbdb319942",
+    "serving_layer_vendored_engine_sha": "a3d0ab80f41d8ad834a385fa81744574e31b2eed",
+    "slurm_job_id": "13906092",
+    "settings": {
+      "layers": 16,
+      "n_new": 12,
+      "block": 16
+    },
+    "gpu": "NVIDIA H100 80GB HBM3",
+    "gpu_mem_gb": 79.2222900390625,
+    "cuda": "13.0"
+  },
+  "device": "cuda:0",
+  "layers": 16,
+  "n_new": 12,
+  "mix": {
+    "a": "r8",
+    "b": null,
+    "c": "r64",
+    "d": "r16",
+    "a2": "r64",
+    "c2": null
+  },
+  "secs": {
+    "v1": 0.7215165930101648,
+    "v2": 0.5168374190106988
+  },
+  "base_differs_from_adapter": {
+    "c": true
+  },
+  "kernels": {
+    "v1": [
+      {
+        "request": "a",
+        "adapter": "r8",
+        "equal": true,
+        "first_divergence": null
+      },
+      {
+        "request": "b",
+        "adapter": null,
+        "equal": true,
+        "first_divergence": null
+      },
+      {
+        "request": "c",
+        "adapter": "r64",
+        "equal": true,
+        "first_divergence": null
+      },
+      {
+        "request": "d",
+        "adapter": "r16",
+        "equal": true,
+        "first_divergence": null
+      },
+      {
+        "request": "a2",
+        "adapter": "r64",
+        "equal": true,
+        "first_divergence": null
+      },
+      {
+        "request": "c2",
+        "adapter": null,
+        "equal": true,
+        "first_divergence": null
+      }
+    ],
+    "v2": [
+      {
+        "request": "a",
+        "adapter": "r8",
+        "equal": true,
+        "first_divergence": null
+      },
+      {
+        "request": "b",
+        "adapter": null,
+        "equal": true,
+        "first_divergence": null
+      },
+      {
+        "request": "c",
+        "adapter": "r64",
+        "equal": true,
+        "first_divergence": null
+      },
+      {
+        "request": "d",
+        "adapter": "r16",
+        "equal": true,
+        "first_divergence": null
+      },
+      {
+        "request": "a2",
+        "adapter": "r64",
+        "equal": true,
+        "first_divergence": null
+      },
+      {
+        "request": "c2",
+        "adapter": null,
+        "equal": true,
+        "first_divergence": null
+      }
+    ]
+  }
+}
