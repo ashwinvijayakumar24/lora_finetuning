@@ -25,6 +25,7 @@ from playparse.ffscore.spots import (
     ("PHI 1", "PHI", 99),    # backed up at the own 1
     ("DAL 1", "PHI", 1),     # first and goal at the 1
     ("DAL 0", "PHI", 0),     # the opponent's goal line: a touchdown
+    ("OPP 0", "PHI", 0),     # ... in its canonical, team-free spelling
     ("PHI 0", "PHI", 100),   # the offense's own goal line: a safety
     ("PHI 49", "PHI", 51),
     ("DAL 49", "PHI", 49),
@@ -35,7 +36,7 @@ def test_spot_to_yardline100(spot, posteam, expected):
 
 @pytest.mark.parametrize("y,expected", [
     (70, "PHI 30"), (22, "DAL 22"), (50, "50"), (99, "PHI 1"), (1, "DAL 1"),
-    (0, "DAL 0"), (100, "PHI 0"), (51, "PHI 49"), (49, "DAL 49"),
+    (0, "OPP 0"), (100, "PHI 0"), (51, "PHI 49"), (49, "DAL 49"),
 ])
 def test_yardline100_to_spot_is_the_inverse(y, expected):
     assert yardline100_to_spot(y, "PHI", "DAL") == expected
@@ -74,7 +75,8 @@ def test_any_other_team_is_the_opponent():
 def test_advance():
     assert advance("NYG 28", 3, "DAL", "NYG") == "NYG 25"      # spot foul: credited to the foul spot
     assert advance("BAL 48", 9, "BAL", "CIN") == "CIN 43"      # across midfield
-    assert advance("ATL 19", 19, "MIN", "ATL") == "ATL 0"      # touchdown
+    assert advance("ATL 19", 19, "MIN", "ATL") == "OPP 0"      # touchdown
+    assert advance("MIN 25", 75, "MIN", "ATL") == "OPP 0"      # ... even when ATL is never named
     assert advance("BUF 2", -2, "BUF", "NE") == "BUF 0"        # safety
     assert advance("50", 0, "BUF", "NYJ") == MIDFIELD
     with pytest.raises(SpotError):

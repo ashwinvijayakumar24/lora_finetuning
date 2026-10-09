@@ -5,11 +5,17 @@ A *spot* is a place on the field, written the way nflverse's `desc` writes it:
     "DAL 22"   22 yards from DAL's own goal line, on DAL's half
     "50"       midfield (desc writes "to 50"; nflverse's `yrdln` column writes
                "MID 50", and a few 2015-2016 descs write "PIT 50"; all three parse)
-    "DAL 0"    DAL's goal line. desc uses this form for the goal line too
-               ("INTERCEPTED by 47-N.Gerry at PHI 0"). A touchdown ends at the
-               defense's goal line, a safety at the offense's.
+    "PHI 0"    PHI's goal line. desc uses this form for a goal line too
+               ("INTERCEPTED by 47-N.Gerry at PHI 0"). A safety ends at the
+               offense's own goal line, "<posteam> 0".
+    "OPP 0"    the opponent's goal line: where a touchdown ends. Canonical form.
+               "OPP" is not a team; like any team other than posteam it reads as
+               the opponent. A touchdown run from the offense's own half often
+               never names the defense, and a model asked for "<defteam> 0" there
+               wrote "<posteam> 0" (a safety) instead; see
+               docs/issues/t3b-goal-line-team-unseen.md. "DAL 0" still parses.
 
-Only the canonical forms are produced: "<TEAM> N" for N in 0..49 and "50" for
+Only the canonical forms are produced: "<TEAM> N" for N in 0..49, "OPP 0", and "50" for
 midfield. The team is any 2-3 capital letters. Arithmetic needs only to know whether
 a spot is on the offense's half, so every team other than `posteam` counts as the
 opponent. That keeps the functions independent of team-name tables (desc and
@@ -28,6 +34,7 @@ from __future__ import annotations
 import re
 
 MIDFIELD = "50"
+OPP_GOAL_LINE = "OPP 0"
 
 _SPOT = re.compile(r"^(?:(?P<team>[A-Z]{2,3}) )?(?P<n>\d{1,2})$")
 
@@ -73,7 +80,8 @@ def spot_to_yardline100(spot: str, posteam: str) -> int:
 def yardline100_to_spot(yardline_100: int, posteam: str, defteam: str) -> str:
     """Inverse of `spot_to_yardline100`: the canonical spot for a distance to the goal.
 
-    `defteam` names the opponent's half (and its goal line, yardline_100 == 0).
+    `defteam` names the opponent's half; its goal line (yardline_100 == 0) is
+    written "OPP 0", which needs no team name.
     """
     if not isinstance(yardline_100, int) or isinstance(yardline_100, bool):
         raise SpotError(f"yardline_100 must be an int: {yardline_100!r}")
@@ -83,6 +91,8 @@ def yardline100_to_spot(yardline_100: int, posteam: str, defteam: str) -> str:
         raise SpotError(f"need two different teams, got {posteam!r} and {defteam!r}")
     if yardline_100 == 50:
         return MIDFIELD
+    if yardline_100 == 0:
+        return OPP_GOAL_LINE
     if yardline_100 < 50:
         return f"{defteam} {yardline_100}"
     return f"{posteam} {100 - yardline_100}"
@@ -102,6 +112,6 @@ def advance(from_spot: str, yards: int, posteam: str, defteam: str) -> str:
 
 
 __all__ = [
-    "MIDFIELD", "SpotError", "parse_spot", "canonical_spot", "spot_to_yardline100",
+    "MIDFIELD", "OPP_GOAL_LINE", "SpotError", "parse_spot", "canonical_spot", "spot_to_yardline100",
     "yardline100_to_spot", "yards_between", "advance",
 ]

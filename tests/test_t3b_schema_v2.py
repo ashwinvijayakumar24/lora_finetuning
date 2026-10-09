@@ -155,8 +155,8 @@ EXPECTED_V2 = {
     "spot_foul": PlayLabelV2(False, (Y("T.Pollard", "rush_yds", "NYG 25"),)),
     # "to CAR 8 for -7 yards. FUMBLES ... RECOVERED by LA-50-S.Ebukam at CAR 10": to the recovery spot
     "fumble_backward": PlayLabelV2(False, (Y("C.Newton", "rush_yds", "CAR 10"), N("C.Newton", "fumble_lost"))),
-    # "left end for 19 yards, TOUCHDOWN" from ATL 19: the defense's goal line
-    "rush_td": PlayLabelV2(False, (Y("D.Cook", "rush_yds", "ATL 0"), N("D.Cook", "rush_td"))),
+    # "left end for 19 yards, TOUCHDOWN" from ATL 19: the opponent's goal line, "OPP 0"
+    "rush_td": PlayLabelV2(False, (Y("D.Cook", "rush_yds", "OPP 0"), N("D.Cook", "rush_td"))),
     # LOS "MID 50" -> "50"; "ran ob at NYJ 38 for 12 yards"
     "midfield_los": PlayLabelV2(False, (
         Y("J.Allen", "pass_yds", "NYJ 38"), N("D.Singletary", "rec"), Y("D.Singletary", "rec_yds", "NYJ 38"))),
@@ -188,6 +188,7 @@ def test_literal_spots():
     desc = CASES["spot_foul"]["row"]["desc"]
     assert spot_in_desc("NYG 25", desc) and spot_in_desc("NYG 23", desc) and not spot_in_desc("NYG 2", desc)
     assert literal_kind("NYG 25", desc) == "literal"
+    assert literal_kind("OPP 0", CASES["rush_td"]["row"]["desc"]) == "goal_line"
     assert literal_kind("ATL 0", CASES["rush_td"]["row"]["desc"]) == "goal_line"
     assert literal_kind("NYG 24", desc) == "computed"
     assert spot_in_desc("50", "to 50 for 3 yards") and not spot_in_desc("50", "for 50 yards")

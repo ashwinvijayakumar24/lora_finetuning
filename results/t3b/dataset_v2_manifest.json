@@ -1,6 +1,6 @@
 {
   "dataset": "playparse-v2-spots (T3b)",
-  "builder_hash": "ee7192104df5e7dec2ef3b8a3bd8138b9f246f8b3caf92ab002b3cfb2f284afb",
+  "builder_hash": "c8550a7276bbffd664bdcc3df0b0e7eb50a3435c77348a2b2a846cb7d59bfc71",
   "record_keys": [
     "game_id",
     "play_id",
@@ -29,28 +29,28 @@
   "files": {
     "train.jsonl": {
       "rows": 294016,
-      "bytes": 150690235,
-      "sha256": "037d53f565427391b554c4a8474d17ce96a0017eb91bf970124774732f14fb88"
+      "bytes": 150694715,
+      "sha256": "afe99a7dd66128b4f1dd4ca51b811e1a3aaa28101055cd0944e9bd43d52be54c"
     },
     "val.jsonl": {
       "rows": 38102,
-      "bytes": 19463436,
-      "sha256": "9adc8e1625a6763bbcf1c7b82cb27f9391c5ccdceb2468283fc44e6aab3c9159"
+      "bytes": 19463921,
+      "sha256": "a8dbc469553127b6884513abeb866820a5ec8265125df4ab73c95fb195b26005"
     },
     "test.jsonl": {
       "rows": 37859,
-      "bytes": 19388341,
-      "sha256": "85327093aa38b9562e65377c74151c0acbb889b1f14c6b557f0264d28aa2c4bf"
+      "bytes": 19388898,
+      "sha256": "18a33e4e7bbfba745a93dbf4b005d126fb450265a0abc8fa8b9166c111f656d2"
     },
     "train_50k.jsonl": {
       "rows": 50000,
-      "bytes": 25655382,
-      "sha256": "c5f40a6f164e7fb0768cc16ee44c41f8fa23b17de66d466d1b1a5445b3a16d87"
+      "bytes": 25656196,
+      "sha256": "f95d623591be0163bccc9711957bebc906abbf31e26cd01a38bd3046549319d3"
     },
     "eval_lite.jsonl": {
       "rows": 2795,
-      "bytes": 1535050,
-      "sha256": "4e1d3481092868904e01b7da576fa464bfc21822badcad964ab34b840126893d"
+      "bytes": 1535099,
+      "sha256": "ccee6505341afbc9754be15ec4ceb38b3de434a835b35fe61f119e3dbea9b6f2"
     }
   },
   "round_trip": {
@@ -103,10 +103,10 @@
   "literal_spots": {
     "train:challenge": {
       "yardage_credits": 2921,
-      "to_literal": 2346,
-      "to_goal_line": 573,
+      "to_literal": 2343,
+      "to_goal_line": 576,
       "to_computed": 2,
-      "to_literal_rate": 0.8031496062992126,
+      "to_literal_rate": 0.8021225607668606,
       "to_literal_or_goal_rate": 0.9993153029784321,
       "plays": 1714,
       "plays_no_computed_spot_rate": 0.9994165694282381,
@@ -114,10 +114,10 @@
     },
     "train:fumble": {
       "yardage_credits": 2629,
-      "to_literal": 2600,
-      "to_goal_line": 29,
+      "to_literal": 2598,
+      "to_goal_line": 31,
       "to_computed": 0,
-      "to_literal_rate": 0.9889691898060099,
+      "to_literal_rate": 0.9882084442753899,
       "to_literal_or_goal_rate": 1.0,
       "plays": 1751,
       "plays_no_computed_spot_rate": 1.0,
@@ -149,10 +149,10 @@
     },
     "train:penalty_stands": {
       "yardage_credits": 8193,
-      "to_literal": 7403,
-      "to_goal_line": 788,
+      "to_literal": 7400,
+      "to_goal_line": 791,
       "to_computed": 2,
-      "to_literal_rate": 0.9035762236055169,
+      "to_literal_rate": 0.9032100573660442,
       "to_literal_or_goal_rate": 0.9997558891736849,
       "plays": 5234,
       "plays_no_computed_spot_rate": 0.99980894153611,
@@ -160,10 +160,10 @@
     },
     "train:td": {
       "yardage_credits": 15939,
-      "to_literal": 8,
-      "to_goal_line": 15931,
+      "to_literal": 0,
+      "to_goal_line": 15939,
       "to_computed": 0,
-      "to_literal_rate": 0.0005019135453918063,
+      "to_literal_rate": 0.0,
       "to_literal_or_goal_rate": 1.0,
       "plays": 9742,
       "plays_no_computed_spot_rate": 1.0,

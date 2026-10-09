@@ -28,8 +28,8 @@ Rules
    it. The passer's `pass_yds` (the whole gain) still runs from the line of
    scrimmage. If the player is both the previous carrier and the lateral taker
    (one merged v1 credit), the merged credit starts at the line of scrimmage.
-4. **Goal lines** are "<TEAM> 0": a touchdown ends at "<defteam> 0", a safety at
-   "<posteam> 0".
+4. **Goal lines**: a touchdown ends at "OPP 0" (the opponent's goal line, no team
+   name needed), a safety at "<posteam> 0".
 5. A spot that would land off the field (a data error) cannot be written; that
    play is reported as a round-trip exception rather than silently changed.
 """
