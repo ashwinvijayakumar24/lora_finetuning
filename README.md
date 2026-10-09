@@ -56,14 +56,14 @@ measured on the laptop; the authoritative GPU run is still pending.
 |---|---|---|---|
 | T1 | Fine-tuning beats prompting at 1B | **Earned (pilot)**: 93.7% vs 0.0% (R1); R2 16.7% on a 108-play slice | [p3-local-pilot](docs/benchmarks/p3-local-pilot.md) |
 | T2 | A 1B adapter matches the frontier model | Pending: needs API key (B2) | — |
-| T3 | ML beats the regex on the hard buckets | **Not earned at pilot scale** (−3.9 points overall, paired CI [−5.5, −2.6]). Full-scale run pending (B3). | [p3-local-pilot](docs/benchmarks/p3-local-pilot.md) |
+| T3 | ML beats the regex on the hard buckets | **Trending not earned at full scale**: R5 (all 294k plays) 98.5% vs regex 99.1% on eval_lite, paired −0.61 [−1.09, −0.27]; test-set eval running. Follow-up T3b (spots, PRD §17) pre-registered and queued. | [p3-sweep](docs/benchmarks/p3-sweep.md) |
 | T4 | QLoRA costs little quality | Pending (B3; needs CUDA) | — |
 | T5 | LoRA matches full fine-tuning | Pending (B3); `configs/r7_full_ft.yaml` ready | — |
 | T6 | Filtering recovers distillation quality | Pending (B2); pipeline built and tested | [P4 pipeline](docs/phases/P4-distill-pipeline.md) |
 | T7 | Fine-tuning causes little forgetting | Pending (after R5) | — |
-| L1 | Merged adapter adds no latency | Unresolved locally (below the ±10% noise floor); H100 job ready | [p5a-local](docs/benchmarks/p5a-local.md) |
-| L2 | Merged equals unmerged | **Earned (local)**: identical greedy tokens on all five paths | [p5a-local](docs/benchmarks/p5a-local.md) |
-| L3 | Unmerged overhead is small at low rank | Unresolved locally; H100 job ready | [p5a-local](docs/benchmarks/p5a-local.md), [p5b-local](docs/benchmarks/p5b-local.md) |
+| L1 | Merged adapter adds no latency | **Earned (H100)**: merged r=16 −0.07% vs base, inside base-vs-base noise | [p5a CUDA bench](results/p5a/bench_cuda_20261008_224151.json) |
+| L2 | Merged equals unmerged | **Earned (local + H100)**: identical greedy tokens on all paths | [p5a-local](docs/benchmarks/p5a-local.md) |
+| L3 | Unmerged overhead is small at low rank | **Not earned (H100)**: ~30% decode overhead vs the ≤15% threshold, flat across r=8/16/64 — the cost is kernel launches, not FLOPs (the case for merging or a fused kernel) | [p5a CUDA bench](results/p5a/bench_cuda_20261008_224151.json) |
 | L4 | Multi-LoRA scales with N | Indicative locally (v2 met the latency target for 100% of requests at N=256 where v1 met it for 0%, single sample); H100 job ready | [p5b-local](docs/benchmarks/p5b-local.md) |
 | L5 | Adapters beat one merged model per tenant | Computed from measured bytes: 31 merged copies vs 3,319 r=16 adapters on 80 GB | [p5b-local](docs/benchmarks/p5b-local.md) |
 | L6 | Prefix cache is adapter-safe | **Earned (local)**, with a fault-injection test that catches the bug | [p5b-local](docs/benchmarks/p5b-local.md) |

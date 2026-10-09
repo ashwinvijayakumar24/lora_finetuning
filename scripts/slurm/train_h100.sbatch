@@ -55,6 +55,10 @@ echo "git sha: $(git rev-parse HEAD 2>/dev/null || echo unknown)"
 nvidia-smi --query-gpu=name,memory.total,driver_version --format=csv
 python -c "import torch; print('torch', torch.__version__, 'cuda', torch.version.cuda, torch.cuda.get_device_name(0))"
 
+# PACE can route a generic gpu:1 request to V100s, which lack bf16. Fail fast there
+# rather than train in an unsupported precision.
+python -c "import sys, torch; sys.exit(0 if torch.cuda.is_bf16_supported() else 'GPU lacks bf16: ' + torch.cuda.get_device_name(0))"
+
 RESUME=()
 if compgen -G "$OUTPUT_DIR/checkpoints/step_*/trainer_state.pt" > /dev/null; then
     echo "found checkpoints in $OUTPUT_DIR, resuming from the latest"
