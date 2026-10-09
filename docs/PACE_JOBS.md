@@ -1,60 +1,44 @@
 # PACE job ledger
 
-Submitted 2026-10-08 from commit `2d4eafd`. Every job depends on the gate (`afterok`); each sweep training job has its own eval job that runs on `afterok` of that training job.
+## Round 1 (2026-10-08, commit `2d4eafd`): gate failed, nothing else ran
 
-Not yet submitted (embers per-user submit limit hit): the eval of the last sweep job, R7 (`configs/r7_full_ft.yaml`) and its eval, the R5 test-set eval, QLoRA (R6, not built), and the vLLM comparison (needs a `vllm` env).
+Gate 13901868 failed 2 real-model tests (it tested serving on the node's CPU; see `docs/issues/pace-gate-cpu-fallback-and-x86-fp16.md`). Its 49 dependents were cancelled.
+
+## Round 2 (2026-10-08, commit `3f73c69`)
+
+Every job depends on the gate (`afterok`). Each training job scores its best (or final) checkpoint on `eval_lite` at the end of its last allocation, writing to `results/eval_lite/<run>/`. Training and eval use the free, preemptible `embers` QOS; the two serving benchmarks use `inferno` on an H100.
+
+Not yet submitted: the R5 test-set eval (after R5 finishes), QLoRA (R6, not built), and the vLLM comparison (L7, needs a separate `vllm` env).
 
 | Job ID | Name | QOS | State at submit | Reason |
 |---|---|---|---|---|
-| 13901868 | playparse-gate | embers | PENDING | Priority |
-| 13901869 | pp-r5_full | embers | PENDING | Dependency |
-| 13901870 | pp-eval-r5_full | embers | PENDING | Dependency |
-| 13901871 | pp-rank_r2 | embers | PENDING | Dependency |
-| 13901872 | pp-eval-rank_r2 | embers | PENDING | Dependency |
-| 13901873 | pp-rank_r4 | embers | PENDING | Dependency |
-| 13901874 | pp-eval-rank_r4 | embers | PENDING | Dependency |
-| 13901875 | pp-rank_r8 | embers | PENDING | Dependency |
-| 13901876 | pp-eval-rank_r8 | embers | PENDING | Dependency |
-| 13901877 | pp-rank_r16 | embers | PENDING | Dependency |
-| 13901878 | pp-eval-rank_r16 | embers | PENDING | Dependency |
-| 13901879 | pp-rank_r64 | embers | PENDING | Dependency |
-| 13901880 | pp-eval-rank_r64 | embers | PENDING | Dependency |
-| 13901881 | pp-alpha_r16_a16 | embers | PENDING | Dependency |
-| 13901882 | pp-eval-alpha_r16_a16 | embers | PENDING | Dependency |
-| 13901883 | pp-alpha_fixed16_r2 | embers | PENDING | Dependency |
-| 13901884 | pp-eval-alpha_fixed16_r2 | embers | PENDING | Dependency |
-| 13901885 | pp-alpha_fixed16_r4 | embers | PENDING | Dependency |
-| 13901886 | pp-eval-alpha_fixed16_r4 | embers | PENDING | Dependency |
-| 13901887 | pp-alpha_fixed16_r8 | embers | PENDING | Dependency |
-| 13901888 | pp-eval-alpha_fixed16_r8 | embers | PENDING | Dependency |
-| 13901889 | pp-alpha_fixed16_r64 | embers | PENDING | Dependency |
-| 13901890 | pp-eval-alpha_fixed16_r64 | embers | PENDING | Dependency |
-| 13901891 | pp-targets_qv_r16 | embers | PENDING | Dependency |
-| 13901892 | pp-eval-targets_qv_r16 | embers | PENDING | Dependency |
-| 13901893 | pp-targets_qkvo_r16 | embers | PENDING | Dependency |
-| 13901894 | pp-eval-targets_qkvo_r16 | embers | PENDING | Dependency |
-| 13901895 | pp-targets_qv_matched_r106 | embers | PENDING | Dependency |
-| 13901896 | pp-eval-targets_qv_matched_r106 | embers | PENDING | Dependency |
-| 13901897 | pp-targets_qkvo_matched_r53 | embers | PENDING | Dependency |
-| 13901898 | pp-eval-targets_qkvo_matched_r53 | embers | PENDING | Dependency |
-| 13901899 | pp-dropout_0.0 | embers | PENDING | Dependency |
-| 13901900 | pp-eval-dropout_0.0 | embers | PENDING | Dependency |
-| 13901901 | pp-dropout_0.1 | embers | PENDING | Dependency |
-| 13901902 | pp-eval-dropout_0.1 | embers | PENDING | Dependency |
-| 13901903 | pp-prompt_full_r16 | embers | PENDING | Dependency |
-| 13901904 | pp-eval-prompt_full_r16 | embers | PENDING | Dependency |
-| 13901905 | pp-lr_5.0e-5 | embers | PENDING | Dependency |
-| 13901906 | pp-eval-lr_5.0e-5 | embers | PENDING | Dependency |
-| 13901907 | pp-lr_1.0e-4 | embers | PENDING | Dependency |
-| 13901908 | pp-eval-lr_1.0e-4 | embers | PENDING | Dependency |
-| 13901909 | pp-lr_5.0e-4 | embers | PENDING | Dependency |
-| 13901910 | pp-eval-lr_5.0e-4 | embers | PENDING | Dependency |
-| 13901911 | pp-lr_1.0e-3 | embers | PENDING | Dependency |
-| 13901912 | pp-eval-lr_1.0e-3 | embers | PENDING | Dependency |
-| 13901913 | pp-datasize_1000 | embers | PENDING | Dependency |
-| 13901914 | pp-eval-datasize_1000 | embers | PENDING | Dependency |
-| 13901915 | pp-datasize_5000 | embers | PENDING | Dependency |
-| 13901916 | pp-eval-datasize_5000 | embers | PENDING | Dependency |
-| 13901917 | pp-datasize_20000 | embers | PENDING | Dependency |
-| 13901918 | p5a_bench | inferno | PENDING | Dependency |
-| 13901927 | p5b_bench | inferno | PENDING | Dependency |
+| 13905062 | playparse-gate | embers | RUNNING | None |
+| 13905070 | pp-r5_full | embers | PENDING | Dependency |
+| 13905076 | pp-rank_r2 | embers | PENDING | Dependency |
+| 13905084 | pp-rank_r4 | embers | PENDING | Dependency |
+| 13905606 | pp-rank_r8 | embers | PENDING | Dependency |
+| 13905613 | pp-rank_r16 | embers | PENDING | Dependency |
+| 13905644 | pp-rank_r64 | embers | PENDING | Dependency |
+| 13905659 | pp-alpha_r16_a16 | embers | PENDING | Dependency |
+| 13905663 | pp-alpha_fixed16_r2 | embers | PENDING | Dependency |
+| 13905664 | pp-alpha_fixed16_r4 | embers | PENDING | Dependency |
+| 13905665 | pp-alpha_fixed16_r8 | embers | PENDING | Dependency |
+| 13905666 | pp-alpha_fixed16_r64 | embers | PENDING | Dependency |
+| 13905667 | pp-targets_qv_r16 | embers | PENDING | Dependency |
+| 13905668 | pp-targets_qkvo_r16 | embers | PENDING | Dependency |
+| 13905669 | pp-targets_qv_matched_r106 | embers | PENDING | Dependency |
+| 13905670 | pp-targets_qkvo_matched_r53 | embers | PENDING | Dependency |
+| 13905671 | pp-dropout_0.0 | embers | PENDING | Dependency |
+| 13905672 | pp-dropout_0.1 | embers | PENDING | Dependency |
+| 13905673 | pp-prompt_full_r16 | embers | PENDING | Dependency |
+| 13905674 | pp-lr_5.0e-5 | embers | PENDING | Dependency |
+| 13905675 | pp-lr_1.0e-4 | embers | PENDING | Dependency |
+| 13905676 | pp-lr_5.0e-4 | embers | PENDING | Dependency |
+| 13905677 | pp-lr_1.0e-3 | embers | PENDING | Dependency |
+| 13905678 | pp-datasize_1000 | embers | PENDING | Dependency |
+| 13905679 | pp-datasize_5000 | embers | PENDING | Dependency |
+| 13905680 | pp-datasize_20000 | embers | PENDING | Dependency |
+| 13905681 | pp-datasize_100000 | embers | PENDING | Dependency |
+| 13905682 | pp-r7_full_ft | embers | PENDING | Dependency |
+| 13905683 | p5a_bench | inferno | PENDING | Dependency |
+| 13905684 | p5b_bench | inferno | PENDING | Dependency |
