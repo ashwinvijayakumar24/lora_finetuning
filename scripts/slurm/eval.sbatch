@@ -5,6 +5,11 @@
 #   sbatch scripts/slurm/eval.sbatch runs/r5/best data/processed/eval_lite.jsonl results/r5_eval_lite
 # A run trained with impl=full is scored with: --rung r1 --weights <dir> (pass as extra args
 # after setting ADAPTER_DIR to "-").
+# T3b (schema v2, field spots): score the v2 file and pass the style and schema, e.g.
+#   sbatch scripts/slurm/eval.sbatch runs/t3b_spots/best data/processed_v2/test.jsonl results/t3b_test \
+#       --prompt-style minimal_v2 --schema v2
+# and the R0 + line-of-scrimmage arm (CPU-only, but runs fine here):
+#   sbatch scripts/slurm/eval.sbatch - data/processed_v2/test.jsonl results/r0los_test --rung r0los
 #SBATCH --job-name=playparse-eval
 #SBATCH --account=paceship-simpliearn
 #SBATCH --qos=embers

@@ -1,0 +1,59 @@
+# T3b (PRD section 17, pre-registered): R5's recipe with schema v2 (field spots).
+# Identical to configs/train_default.yaml (all 294k train plays, minimal prompt, r=16,
+# alpha=32, all-linear, lr 2e-4, 2 epochs, early stop on val) except:
+#   data.train / data.val   the v2 files (python -m playparse.data.build_dataset_v2)
+#   data.prompt_style       minimal_v2 = minimal + a "los:" line (line of scrimmage)
+#   data.schema             v2: completions are label_v2 (spots); val/eval convert to v1
+#   train.output_dir
+# tests/test_t3b_plumbing.py::test_t3b_config_is_r5_plus_v2 pins the "identical" part.
+#   sbatch scripts/slurm/train_h100.sbatch configs/t3b_spots.yaml runs/t3b_spots
+model:
+  weights: null            # null -> $PLAYPARSE_WEIGHTS (or the repo default); set a path to override
+  dtype: auto              # bf16 on cuda/mps, fp32 on cpu
+  gradient_checkpointing: false
+  attn_implementation: sdpa
+lora:
+  impl: playparse          # hand-written playparse.lora; adapters saved in PEFT format (peft = reference)
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  targets: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+data:
+  train: data/processed_v2/train.jsonl
+  val: data/processed_v2/val.jsonl
+  max_len: 640            # longest train example is 595 tokens (a lateral); 512 raised on 6 plays
+  mask_prompt: true
+  prompt_style: minimal_v2 # minimal + the line of scrimmage; eval with --prompt-style minimal_v2 --schema v2
+  schema: v2               # output field spots; code computes the yards (playparse.ffscore.schema_v2)
+  on_overlength: raise
+  val_loss_examples: 2000  # bucket-proportional val sample for val loss (not the head of the file)
+  train_sample: 0          # >0: nested seeded sample of train (data-size curve)
+  train_sample_seed: 0
+train:
+  output_dir: runs/t3b_spots
+  seed: 0
+  lr: 2.0e-4
+  weight_decay: 0.0
+  max_grad_norm: 1.0
+  epochs: 2
+  warmup_ratio: 0.03
+  min_lr_ratio: 0.1
+  micro_batch_size: 16     # effective batch 64 = 16 x 4
+  grad_accum_steps: 4
+  log_every: 10
+  eval_every: 250
+  eval_max_examples: 2000
+  eval_batch_size: 32
+  gen_every: 500
+  save_every: 500
+  keep_last_checkpoints: 2
+  save_best: true
+  early_stop_metric: val_exact_match   # on the bucket-balanced gen subset; or val_exact_match_natural, val_exact_match/<bucket>
+  early_stop_mode: max
+  early_stop_patience: 4
+  device: auto
+  autocast: auto
+gen_eval_examples: 500     # bucket-stratified val subset decoded at every gen_every
+gen_eval_seed: 0
+gen_eval_strategy: balanced
+gen_max_new_tokens: 160

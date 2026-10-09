@@ -102,4 +102,4 @@ def test_callback_drives_early_stopping_and_best_adapter(tmp_path, monkeypatch):
 
 
 def test_module_exports():
-    assert set(val_eval.__all__) == {"stratified_subset", "score_generations", "harness_val_callback"}
+    assert set(val_eval.__all__) == {"stratified_subset", "score_generations", "as_v1_texts", "harness_val_callback"}

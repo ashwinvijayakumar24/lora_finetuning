@@ -69,11 +69,18 @@ class DataSpec:
     # system message). See playparse.prompt.PROMPT_STYLES. An adapter must be
     # evaluated with the style it was trained with (eval: --prompt-style).
     prompt_style: str = "full"
+    # Output schema: "v1" (yards) or "v2" (T3b: field spots, playparse.ffscore.schema_v2;
+    # needs the data/processed_v2 files). It must agree with prompt_style: v2 goes with
+    # "minimal_v2" and only with it, so a mismatch fails here instead of training on one
+    # target format and validating on another. None (old run_spec.json files) = the
+    # style's schema.
+    schema: str | None = None
 
     def __post_init__(self) -> None:
-        from playparse.prompt import check_prompt_style
+        from playparse.prompt import check_prompt_style, check_style_schema
 
         check_prompt_style(self.prompt_style)
+        self.schema = check_style_schema(self.prompt_style, self.schema)
 
 
 @dataclass

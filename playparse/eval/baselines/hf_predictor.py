@@ -18,8 +18,11 @@ p1-eval-generation-config-sampling.md):
 - The checkpoint's generation_config.json defaults to sampling (temperature 0.6), so
   greedy decoding has to be requested explicitly.
 
-`prompt_style` ("full" by default, or "minimal" = no system message; see
+`prompt_style` ("full" by default, "minimal" = no system message, or "minimal_v2" =
+minimal plus the line of scrimmage, whose outputs are schema-v2 field spots; see
 `playparse.prompt.PROMPT_STYLES`) must match the style an adapter was trained with.
+A schema-v2 output is converted to the v1 label it stands for before the harness
+sees it (`HFPredictor._to_v1`), so metrics keep their v1 meaning.
 A non-default style is recorded in `config()`, so it changes the config hash; the
 "full" config is unchanged from before the option existed, so earlier results and
 their resumable prediction caches keep their hashes.
@@ -38,6 +41,7 @@ from playparse.prompt import (
     SYSTEM_PROMPT,
     build_messages,
     check_prompt_style,
+    schema_of_style,
 )
 
 FEWSHOT_R2_PATH = Path(__file__).with_name("fewshot_r2.json")
@@ -63,13 +67,21 @@ def build_fewshot_messages(
 ) -> list[dict[str, str]]:
     """System prompt (style "full" only), then (user play, assistant label) pairs,
     then the real play."""
-    query = build_messages(record.get("posteam"), record["desc"], system, style)
+    query = build_messages(record.get("posteam"), record["desc"], system, style, los=_los(record, style))
     msgs = query[:-1]  # the system message, or nothing for style "minimal"
     for ex in examples:
-        msgs.append(build_messages(ex.get("posteam"), ex["desc"], system, style)[-1])
+        msgs.append(build_messages(ex.get("posteam"), ex["desc"], system, style, los=_los(ex, style))[-1])
         msgs.append({"role": "assistant", "content": ex["label"]})
     msgs.append(query[-1])
     return msgs
+
+
+def _los(record: dict, style: str) -> str | None:
+    """The record's line of scrimmage; a schema-v2 style refuses a record without one."""
+    if schema_of_style(style) == "v2" and "los" not in record:
+        raise KeyError(f"prompt style {style!r} needs records with a 'los' field: score a v2 data file "
+                       "(data/processed_v2/*.jsonl)")
+    return record.get("los")
 
 
 def render_chat(tokenizer, msgs: list[dict[str, str]]) -> str:
@@ -155,6 +167,11 @@ class HFPredictor:
         gc = self.model.generation_config
         self.eos_ids = gc.eos_token_id if isinstance(gc.eos_token_id, list) else [gc.eos_token_id]
 
+    @property
+    def schema(self) -> str:
+        """"v2" for prompt style minimal_v2: outputs are field spots, converted to v1 text."""
+        return schema_of_style(self.prompt_style)
+
     # ------------------------------------------------------------------ harness API
 
     def config(self) -> dict[str, Any]:
@@ -177,6 +194,8 @@ class HFPredictor:
             # hash) is byte-identical to the ones recorded before this option.
             cfg["prompt_style"] = self.prompt_style
             cfg["system_prompt_sha"] = None  # no system message is sent
+        if self.schema != "v1":
+            cfg["schema"] = self.schema
         return cfg
 
     def render(self, record: dict) -> str:
@@ -212,17 +231,31 @@ class HFPredictor:
                     n_out = j + (1 if tok in self.eos_ids else 0)
                     break
             text = self.tokenizer.decode(row[:n_out], skip_special_tokens=True)
-            results.append(
-                Prediction(
-                    text,
-                    {
-                        "input_tokens": int(in_counts[i]),
-                        "output_tokens": int(n_out),
-                        "hit_max_new_tokens": int(n_out >= self.max_new_tokens),
-                    },
-                )
-            )
+            usage = {
+                "input_tokens": int(in_counts[i]),
+                "output_tokens": int(n_out),
+                "hit_max_new_tokens": int(n_out >= self.max_new_tokens),
+            }
+            if self.schema == "v2":
+                text, usage = self._to_v1(records[i], text, usage)
+            results.append(Prediction(text, usage))
         return results
+
+    @staticmethod
+    def _to_v1(record: dict, raw: str, usage: dict) -> tuple[str, dict]:
+        """A schema-v2 output as the v1 text the unchanged harness scores.
+
+        The model's own text is kept in usage["raw_v2"] (non-numeric, so it is stored
+        in predictions.jsonl but never summed). An output that is not valid v2 becomes
+        text with no JSON object, so it scores as invalid, never as a lucky v1 label.
+        """
+        from playparse.ffscore.schema_v2 import v2_text_to_v1_text
+
+        text, err = v2_text_to_v1_text(raw, record.get("los"), record.get("posteam"))
+        usage = {**usage, "raw_v2": raw}
+        if err is not None:
+            usage["v2_error"] = err
+        return text, usage
 
 
 def _short_sha(s: str) -> str:

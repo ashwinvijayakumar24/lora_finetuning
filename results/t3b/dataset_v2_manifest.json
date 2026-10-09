@@ -1,0 +1,242 @@
+{
+  "dataset": "playparse-v2-spots (T3b)",
+  "builder_hash": "c8550a7276bbffd664bdcc3df0b0e7eb50a3435c77348a2b2a846cb7d59bfc71",
+  "record_keys": [
+    "game_id",
+    "play_id",
+    "season",
+    "week",
+    "season_type",
+    "posteam",
+    "desc",
+    "bucket",
+    "label",
+    "los",
+    "label_v2"
+  ],
+  "v1_inputs_sha256": {
+    "train.jsonl": "57e3949a336f0689c87d37b45a00a7eb380193d687f74c67dc3081c13acb8187",
+    "val.jsonl": "ff783df4b7bbc4e9d2d530ab1fb5904339070f5c62342aab30f4971299672361",
+    "test.jsonl": "13d0d714f5abc9e3e8869e6dfab87f6becaf25ba2d15e1f281af68299553038c",
+    "train_50k.jsonl": "fae9974741b91d4d5c0d983bddc3646d44c8df4ffb8079e20f8cff011b5c3d4b",
+    "eval_lite.jsonl": "78081c8134e0f8c977160baf30d89226815dd6188847114653802d561b9e12c8"
+  },
+  "frozen_eval_v1": {
+    "file": "test.jsonl",
+    "sha256": "13d0d714f5abc9e3e8869e6dfab87f6becaf25ba2d15e1f281af68299553038c",
+    "note": "v1 test.jsonl, read only; v2 test.jsonl carries the same plays and labels"
+  },
+  "files": {
+    "train.jsonl": {
+      "rows": 294016,
+      "bytes": 150694715,
+      "sha256": "afe99a7dd66128b4f1dd4ca51b811e1a3aaa28101055cd0944e9bd43d52be54c"
+    },
+    "val.jsonl": {
+      "rows": 38102,
+      "bytes": 19463921,
+      "sha256": "a8dbc469553127b6884513abeb866820a5ec8265125df4ab73c95fb195b26005"
+    },
+    "test.jsonl": {
+      "rows": 37859,
+      "bytes": 19388898,
+      "sha256": "18a33e4e7bbfba745a93dbf4b005d126fb450265a0abc8fa8b9166c111f656d2"
+    },
+    "train_50k.jsonl": {
+      "rows": 50000,
+      "bytes": 25656196,
+      "sha256": "f95d623591be0163bccc9711957bebc906abbf31e26cd01a38bd3046549319d3"
+    },
+    "eval_lite.jsonl": {
+      "rows": 2795,
+      "bytes": 1535099,
+      "sha256": "ccee6505341afbc9754be15ec4ceb38b3de434a835b35fe61f119e3dbea9b6f2"
+    }
+  },
+  "round_trip": {
+    "train": {
+      "plays": 294016,
+      "round_trip_ok": 294016,
+      "rate": 1.0,
+      "plays_with_from": 66,
+      "los_missing": 0,
+      "exceptions": [],
+      "n_exceptions": 0
+    },
+    "val": {
+      "plays": 38102,
+      "round_trip_ok": 38102,
+      "rate": 1.0,
+      "plays_with_from": 8,
+      "los_missing": 0,
+      "exceptions": [],
+      "n_exceptions": 0
+    },
+    "test": {
+      "plays": 37859,
+      "round_trip_ok": 37859,
+      "rate": 1.0,
+      "plays_with_from": 20,
+      "los_missing": 0,
+      "exceptions": [],
+      "n_exceptions": 0
+    },
+    "subset:train_50k": {
+      "plays": 50000,
+      "round_trip_ok": 50000,
+      "rate": 1.0,
+      "plays_with_from": 6,
+      "los_missing": 0,
+      "exceptions": [],
+      "n_exceptions": 0
+    },
+    "subset:eval_lite": {
+      "plays": 2795,
+      "round_trip_ok": 2795,
+      "rate": 1.0,
+      "plays_with_from": 20,
+      "los_missing": 0,
+      "exceptions": [],
+      "n_exceptions": 0
+    }
+  },
+  "literal_spots": {
+    "train:challenge": {
+      "yardage_credits": 2921,
+      "to_literal": 2343,
+      "to_goal_line": 576,
+      "to_computed": 2,
+      "to_literal_rate": 0.8021225607668606,
+      "to_literal_or_goal_rate": 0.9993153029784321,
+      "plays": 1714,
+      "plays_no_computed_spot_rate": 0.9994165694282381,
+      "from_spots": {}
+    },
+    "train:fumble": {
+      "yardage_credits": 2629,
+      "to_literal": 2598,
+      "to_goal_line": 31,
+      "to_computed": 0,
+      "to_literal_rate": 0.9882084442753899,
+      "to_literal_or_goal_rate": 1.0,
+      "plays": 1751,
+      "plays_no_computed_spot_rate": 1.0,
+      "from_spots": {}
+    },
+    "train:lateral": {
+      "yardage_credits": 311,
+      "to_literal": 293,
+      "to_goal_line": 5,
+      "to_computed": 13,
+      "to_literal_rate": 0.9421221864951769,
+      "to_literal_or_goal_rate": 0.9581993569131833,
+      "plays": 140,
+      "plays_no_computed_spot_rate": 0.9071428571428571,
+      "from_spots": {
+        "literal": 66
+      }
+    },
+    "train:normal": {
+      "yardage_credits": 261941,
+      "to_literal": 261839,
+      "to_goal_line": 27,
+      "to_computed": 75,
+      "to_literal_rate": 0.9996105993334377,
+      "to_literal_or_goal_rate": 0.9997136759804689,
+      "plays": 178310,
+      "plays_no_computed_spot_rate": 0.9996747237956368,
+      "from_spots": {}
+    },
+    "train:penalty_stands": {
+      "yardage_credits": 8193,
+      "to_literal": 7400,
+      "to_goal_line": 791,
+      "to_computed": 2,
+      "to_literal_rate": 0.9032100573660442,
+      "to_literal_or_goal_rate": 0.9997558891736849,
+      "plays": 5234,
+      "plays_no_computed_spot_rate": 0.99980894153611,
+      "from_spots": {}
+    },
+    "train:td": {
+      "yardage_credits": 15939,
+      "to_literal": 0,
+      "to_goal_line": 15939,
+      "to_computed": 0,
+      "to_literal_rate": 0.0,
+      "to_literal_or_goal_rate": 1.0,
+      "plays": 9742,
+      "plays_no_computed_spot_rate": 1.0,
+      "from_spots": {}
+    },
+    "val:challenge": {
+      "yardage_credits": 324,
+      "to_literal": 282,
+      "to_goal_line": 42,
+      "to_computed": 0,
+      "to_literal_rate": 0.8703703703703703,
+      "to_literal_or_goal_rate": 1.0,
+      "plays": 191,
+      "plays_no_computed_spot_rate": 1.0,
+      "from_spots": {}
+    },
+    "val:fumble": {
+      "yardage_credits": 360,
+      "to_literal": 360,
+      "to_goal_line": 0,
+      "to_computed": 0,
+      "to_literal_rate": 1.0,
+      "to_literal_or_goal_rate": 1.0,
+      "plays": 233,
+      "plays_no_computed_spot_rate": 1.0,
+      "from_spots": {}
+    },
+    "val:lateral": {
+      "yardage_credits": 32,
+      "to_literal": 30,
+      "to_goal_line": 0,
+      "to_computed": 2,
+      "to_literal_rate": 0.9375,
+      "to_literal_or_goal_rate": 0.9375,
+      "plays": 14,
+      "plays_no_computed_spot_rate": 0.8571428571428571,
+      "from_spots": {
+        "literal": 8
+      }
+    },
+    "val:normal": {
+      "yardage_credits": 34322,
+      "to_literal": 34319,
+      "to_goal_line": 3,
+      "to_computed": 0,
+      "to_literal_rate": 0.9999125925062642,
+      "to_literal_or_goal_rate": 1.0,
+      "plays": 23491,
+      "plays_no_computed_spot_rate": 1.0,
+      "from_spots": {}
+    },
+    "val:penalty_stands": {
+      "yardage_credits": 975,
+      "to_literal": 864,
+      "to_goal_line": 111,
+      "to_computed": 0,
+      "to_literal_rate": 0.8861538461538462,
+      "to_literal_or_goal_rate": 1.0,
+      "plays": 633,
+      "plays_no_computed_spot_rate": 1.0,
+      "from_spots": {}
+    },
+    "val:td": {
+      "yardage_credits": 1941,
+      "to_literal": 0,
+      "to_goal_line": 1941,
+      "to_computed": 0,
+      "to_literal_rate": 0.0,
+      "to_literal_or_goal_rate": 1.0,
+      "plays": 1205,
+      "plays_no_computed_spot_rate": 1.0,
+      "from_spots": {}
+    }
+  },
+  "literal_spots_note": "train and val only. to_literal: the ground-truth `to` spot is printed in desc; to_goal_line: an unprinted goal line (touchdown/safety); to_computed: neither (the model must compute it from the line of scrimmage and a stated gain)."
+}

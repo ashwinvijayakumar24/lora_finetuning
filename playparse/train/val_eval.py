@@ -125,6 +125,18 @@ def score_generations(
     return out
 
 
+def as_v1_texts(records: Sequence[Mapping[str, Any]], texts: Sequence[str], prompt_style: str) -> list[str]:
+    """Raw generations as text the v1 scorer reads: unchanged for a v1 style, converted
+    with `schema_v2.v2_text_to_v1_text` (using each record's los and posteam) for v2."""
+    from playparse.prompt import schema_of_style
+
+    if schema_of_style(prompt_style) != "v2":
+        return list(texts)
+    from playparse.ffscore.schema_v2 import v2_text_to_v1_text
+
+    return [v2_text_to_v1_text(t, r.get("los"), r.get("posteam"))[0] for r, t in zip(records, texts, strict=True)]
+
+
 def harness_val_callback(
     tokenizer: Any,
     records: Sequence[Mapping[str, Any]],
@@ -155,18 +167,24 @@ def harness_val_callback(
     def cb(model: nn.Module, step: int) -> dict:
         texts = generate_for_records(model, tokenizer, records, max_new_tokens=max_new_tokens,
                                      batch_size=batch_size, autocast=autocast, prompt_style=prompt_style)
-        metrics = score_generations(records, texts, shares)
+        # A schema-v2 model writes spots; score the v1 label they convert to, with
+        # the same v1 metrics (an unconvertible output counts as invalid).
+        scored = as_v1_texts(records, texts, prompt_style)
+        metrics = score_generations(records, scored, shares)
         metrics["val_gen_sample"] = texts[0] if texts else ""
         if predictions_dir is not None:
             d = Path(predictions_dir)
             d.mkdir(parents=True, exist_ok=True)
             with open(d / f"step_{step:07d}.jsonl", "w", encoding="utf-8") as f:
-                for r, t in zip(records, texts):
-                    f.write(json.dumps({"game_id": r.get("game_id"), "play_id": r.get("play_id"),
-                                        "bucket": r["bucket"], "raw": t, "gold": r["label"]}) + "\n")
+                for r, t, v1 in zip(records, texts, scored):
+                    row = {"game_id": r.get("game_id"), "play_id": r.get("play_id"),
+                           "bucket": r["bucket"], "raw": t, "gold": r["label"]}
+                    if v1 is not t:
+                        row["as_v1"] = v1
+                    f.write(json.dumps(row) + "\n")
         return metrics
 
     return cb
 
 
-__all__ = ["stratified_subset", "score_generations", "harness_val_callback"]
+__all__ = ["stratified_subset", "score_generations", "as_v1_texts", "harness_val_callback"]

@@ -7,6 +7,9 @@
     python -m playparse.eval.run --rung r4 --model <claude model id> --data ... --out ...
     python -m playparse.eval.run --rung lora --adapter runs/r5/best --data ... --out ... [--merge]
     python -m playparse.eval.run --rung lora --adapter ... --prompt-style minimal ...  # adapter trained without a system prompt
+    python -m playparse.eval.run --rung lora --adapter runs/t3b/best --prompt-style minimal_v2 --schema v2 \
+        --data data/processed_v2/eval_lite.jsonl --out ...   # T3b: spots out, converted to v1, scored as v1
+    python -m playparse.eval.run --rung r0los --data data/processed_v2/eval_lite.jsonl --out ...  # R0 + line of scrimmage
 
 Re-running the same command resumes from `<out>/predictions.jsonl`.
 """
@@ -18,6 +21,7 @@ import time
 
 from playparse.eval.harness import format_summary, load_records, run_eval
 from playparse.paths import WEIGHTS
+from playparse.prompt import PROMPT_STYLES, SCHEMAS, check_style_schema
 
 
 def build_predictor(args: argparse.Namespace):
@@ -26,6 +30,10 @@ def build_predictor(args: argparse.Namespace):
         from playparse.eval.baselines.regex_parser import RegexPredictor
 
         return RegexPredictor()
+    if rung == "r0los":
+        from playparse.eval.baselines.regex_los import RegexLOSPredictor
+
+        return RegexLOSPredictor()
     hf_kw = dict(batch_size=args.batch_size, max_new_tokens=args.max_new_tokens, device=args.device,
                  dtype=args.dtype, prompt_style=args.prompt_style)
     if rung == "lora":
@@ -63,7 +71,7 @@ def build_predictor(args: argparse.Namespace):
 
 def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--rung", required=True, choices=["r0", "r1", "r2", "r3", "r4", "lora"])
+    ap.add_argument("--rung", required=True, choices=["r0", "r0los", "r1", "r2", "r3", "r4", "lora"])
     ap.add_argument("--data", required=True, help="eval JSONL (one record per play)")
     ap.add_argument("--out", required=True, help="output directory for result.json + predictions.jsonl")
     ap.add_argument("--limit", type=int, default=None, help="only the first N records (smoke runs)")
@@ -79,18 +87,30 @@ def main(argv: list[str] | None = None) -> None:
                     help="model dtype for HF rungs (default: fp32 on cpu, bf16 on cuda, fp16 on mps)")
     ap.add_argument("--adapter", default=None, help="PEFT-format adapter directory for --rung lora")
     ap.add_argument("--merge", action="store_true", help="--rung lora: merge the adapter into the base first")
-    ap.add_argument("--prompt-style", default="full", choices=["full", "minimal"],
-                    help="HF rungs: 'full' = the shared system prompt (default); 'minimal' = no system message. "
+    ap.add_argument("--prompt-style", default="full", choices=list(PROMPT_STYLES),
+                    help="HF rungs: 'full' = the shared system prompt (default); 'minimal' = no system message; "
+                         "'minimal_v2' = minimal plus the line of scrimmage, output schema v2 (T3b). "
                          "Must match the style a LoRA adapter was trained with (data.prompt_style)")
+    ap.add_argument("--schema", default=None, choices=list(SCHEMAS),
+                    help="output schema the model emits (default: the prompt style's). v2 outputs (field spots) "
+                         "are converted to v1 before scoring, so every metric keeps its v1 definition; "
+                         "an output that is not valid v2 counts as invalid. Needs a v2 data file (with 'los')")
     ap.add_argument("--train", default=None, help="train JSONL for the r3 retrieval index")
     ap.add_argument("--index-size", type=int, default=None, help="subsample the r3 index")
     ap.add_argument("--k", type=int, default=8)
     ap.add_argument("--model", default=None, help="r4 model id")
     args = ap.parse_args(argv)
 
+    try:
+        schema = check_style_schema(args.prompt_style, args.schema)
+    except ValueError as e:
+        sys.exit(str(e))
     records = load_records(args.data)
     if args.limit:
         records = records[: args.limit]
+    if (schema == "v2" or args.rung == "r0los") and not all("los" in r for r in records):
+        sys.exit(f"{args.data} has no 'los' field; schema v2 and r0los need a v2 data file "
+                 "(python -m playparse.data.build_dataset_v2 writes data/processed_v2/)")
     predictor = build_predictor(args)
     t0 = time.time()
 

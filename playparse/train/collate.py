@@ -26,8 +26,10 @@ Two traps this module guards against, each with a test in tests/test_collate.py:
   prompt_style="minimal" there is no system message, but the template still
   writes a system header with the date.
 
-prompt_style ("full" or "minimal", see playparse.prompt.PROMPT_STYLES) selects the
-messages. It defaults to "full", the prompt every earlier result used.
+prompt_style ("full", "minimal" or "minimal_v2", see playparse.prompt.PROMPT_STYLES)
+selects the messages. It defaults to "full", the prompt every earlier result used.
+"minimal_v2" (T3b) also selects the completion: the record's schema-v2 `label_v2`
+(field spots) instead of `label`, and puts the record's `los` in the prompt.
 """
 from __future__ import annotations
 
@@ -36,7 +38,7 @@ from typing import Any, Iterable, Literal, Mapping, Sequence
 
 import torch
 
-from playparse.prompt import CHAT_DATE_STRING, DEFAULT_PROMPT_STYLE, build_messages
+from playparse.prompt import CHAT_DATE_STRING, DEFAULT_PROMPT_STYLE, build_messages, schema_of_style
 
 IGNORE_INDEX = -100
 
@@ -110,10 +112,13 @@ def render_prompt(
     desc: str,
     date_string: str = CHAT_DATE_STRING,
     prompt_style: str = DEFAULT_PROMPT_STYLE,
+    los: str | None = None,
 ) -> str:
-    """The exact prompt string (chat template + assistant header) for one play."""
+    """The exact prompt string (chat template + assistant header) for one play.
+
+    `los` (line of scrimmage) is rendered only by prompt_style="minimal_v2"."""
     return tokenizer.apply_chat_template(
-        build_messages(posteam, desc, style=prompt_style),
+        build_messages(posteam, desc, style=prompt_style, los=los),
         tokenize=False,
         add_generation_prompt=True,
         date_string=date_string,
@@ -126,13 +131,36 @@ def encode_prompt(
     desc: str,
     date_string: str = CHAT_DATE_STRING,
     prompt_style: str = DEFAULT_PROMPT_STYLE,
+    los: str | None = None,
 ) -> list[int]:
     """Prompt token ids, with exactly one BOS. Used by training *and* generation."""
-    text = render_prompt(tokenizer, posteam, desc, date_string, prompt_style)
+    text = render_prompt(tokenizer, posteam, desc, date_string, prompt_style, los)
     # add_special_tokens=False: the template already wrote <|begin_of_text|>.
     ids = list(tokenizer(text, add_special_tokens=False)["input_ids"])
     _check_single_bos(tokenizer, ids)
     return ids
+
+
+def record_los(record: Mapping[str, Any], prompt_style: str) -> str | None:
+    """The record's line of scrimmage, required by a schema-v2 prompt style.
+
+    A v1 data file has no "los" key; feeding it to a v2 run would silently render
+    "los: UNK" on every play, so that is an error.
+    """
+    if schema_of_style(prompt_style) == "v2" and "los" not in record:
+        raise KeyError(f"prompt_style={prompt_style!r} needs records with a 'los' field "
+                       "(the v2 files in data/processed_v2, see playparse.data.build_dataset_v2)")
+    return record.get("los")
+
+
+def completion_text(record: Mapping[str, Any], prompt_style: str) -> str:
+    """The training target: the v1 `label`, or `label_v2` for a schema-v2 style."""
+    if schema_of_style(prompt_style) == "v2":
+        text = record.get("label_v2")
+        if not text:
+            raise KeyError(f"prompt_style={prompt_style!r} trains on 'label_v2', which this record lacks")
+        return text
+    return record["label"]
 
 
 def _check_single_bos(tokenizer: Any, ids: Sequence[int]) -> None:
@@ -194,8 +222,9 @@ def encode_record(
     ids and generates completion ids one by one, so no BPE merge can ever cross the
     prompt/completion boundary. Raises OverLengthError if the result exceeds max_len.
     """
-    p_ids = encode_prompt(tokenizer, record.get("posteam"), record["desc"], date_string, prompt_style)
-    c_ids = list(tokenizer(record["label"], add_special_tokens=False)["input_ids"])
+    p_ids = encode_prompt(tokenizer, record.get("posteam"), record["desc"], date_string, prompt_style,
+                          record_los(record, prompt_style))
+    c_ids = list(tokenizer(completion_text(record, prompt_style), add_special_tokens=False)["input_ids"])
     c_ids.append(end_of_turn_id(tokenizer))
     meta = {k: record[k] for k in ("game_id", "play_id", "bucket") if k in record}
     ex = make_example(p_ids, c_ids, mask_prompt=mask_prompt, meta=meta)
