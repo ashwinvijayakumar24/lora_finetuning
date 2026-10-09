@@ -474,3 +474,33 @@ scope. It is training-side infrastructure, a different lane from serving.
 | 1 | Credit names: `desc`-style or player IDs? | **`desc`-style names** (`A.Brown`). Resolution to IDs, if ever needed, happens outside the model. |
 | 2 | Include penalty yardage on `penalty_stands` plays? | **No.** Penalty yards are ignored, matching how fantasy stats are scored. |
 | 3 | Which frontier model is the teacher / cheap API rung? | **Deferred.** Decide after pricing the 1k-play pilot (needs an API key; see `docs/BLOCKERS.md`). |
+
+## 17. Pre-registered follow-up: let code do the field arithmetic (2026-10-09)
+
+Written **before** any run of this experiment, after R5 scored 98.5% vs the regex's
+99.1% on eval_lite (paired −0.61 [−1.09, −0.27]). R5 ties the regex on six of nine
+buckets and loses only where official yards come from a field position the text names
+but does not subtract (fumble, penalty_stands, lateral).
+
+**Hypothesis (T3b).** The adapter's remaining errors are arithmetic, not reading. If
+the model outputs the *field spots* that bound each yardage credit and plain code
+computes the yards, an adapter trained the same way as R5 beats the regex.
+
+**Design (fixed in advance).**
+- Input gains one field every real play-by-play feed carries: the line of scrimmage
+  (nflverse `yrdln`, e.g. `PHI 30`). Output yardage credits carry spots (`to`, and
+  `from` where it is not the line of scrimmage) instead of a number; non-yardage
+  credits are unchanged. A deterministic converter turns the output into the v1
+  `PlayLabel`, so scoring uses **the same metric, the same frozen test file
+  (sha256 `13d0d714…`), and the same ground truth** as every other rung.
+- Training recipe: identical to R5 (all 294k train plays, minimal prompt, r=16,
+  α=32, all-linear, lr 2e-4, 2 epochs, early stop on val). No tuning on test;
+  development uses train and val only.
+- Fairness arm: because the new rung sees the line of scrimmage and R0 does not, an
+  "R0 + LOS" arm gets the same field with a fixed 2-hour engineering budget. Both R0
+  arms are reported.
+
+**Pass condition (T3b earned).** On the frozen test set, the spot-decomposed adapter's
+overall exact match exceeds R0's (and R0 + LOS's) with a paired, game-clustered 95%
+CI that excludes 0, and no bucket regresses beyond its CI. Anything else is reported
+as not earned, with the per-bucket table either way.
