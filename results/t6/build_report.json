@@ -1,0 +1,38 @@
+{
+  "teacher": "openai:gpt-5.4-mini:k3:effort=low:fewshot_r2",
+  "sizes": {
+    "1000": {
+      "r8": 1000,
+      "r9": 957,
+      "r8_correct": 969,
+      "r9_correct": 946,
+      "r8_precision": 0.969,
+      "r9_precision": 0.9885057471264368
+    },
+    "5000": {
+      "r8": 4994,
+      "r9": 4775,
+      "r8_correct": 4834,
+      "r9_correct": 4724,
+      "r8_precision": 0.9679615538646376,
+      "r9_precision": 0.9893193717277486
+    },
+    "20000": {
+      "r8": 19988,
+      "r9": 19159,
+      "r8_correct": 19400,
+      "r9_correct": 18981,
+      "r8_precision": 0.9705823494096458,
+      "r9_precision": 0.9907093272091445
+    },
+    "100000": {
+      "r8": 99960,
+      "r9": 95987,
+      "r8_correct": 97462,
+      "r9_correct": 95241,
+      "r8_precision": 0.9750100040016006,
+      "r9_precision": 0.9922281142238012
+    }
+  },
+  "labeled_plays": 100000
+}

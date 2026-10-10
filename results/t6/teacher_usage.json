@@ -1,0 +1,9 @@
+{
+  "total": {
+    "cache_read_tokens": 0,
+    "calls": 100000,
+    "cost_usd": 139.6381665000001,
+    "input_tokens": 102618490,
+    "output_tokens": 13927622
+  }
+}
