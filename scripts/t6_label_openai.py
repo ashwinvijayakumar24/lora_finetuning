@@ -38,10 +38,33 @@ class OpenAITeacher:
 
     def __init__(self, model: str, k: int, concurrency: int, reasoning_effort: str):
         self.pred = make_r4_openai(model, n=k, concurrency=concurrency, reasoning_effort=reasoning_effort)
+        self.failures: list[dict] = []
+
+    def _safe_sample(self, record):
+        """One play's samples. A 403 that survives retries (seen once mid-run, transient
+        for the account but fatal to the whole run) becomes k empty samples: schema-invalid,
+        so both R8 and R9 drop the play, and it is counted as a teacher failure."""
+        import time as _time
+
+        import openai
+
+        for attempt in range(3):
+            try:
+                return self.pred.sample(record)
+            except openai.PermissionDeniedError as e:
+                if attempt == 2:
+                    self.failures.append({"game_id": record["game_id"], "play_id": record["play_id"],
+                                          "error": str(e)[:300]})
+                    print(f"  teacher failure on {record['game_id']}#{record['play_id']}: {str(e)[:200]}", flush=True)
+                    return [""] * self.pred.n, {"input_tokens": 0, "cache_read_input_tokens": 0, "output_tokens": 0}
+                _time.sleep(5 * (attempt + 1))
 
     def __call__(self, records, n_samples):
         assert n_samples == self.pred.n, (n_samples, self.pred.n)
-        results = self.pred.sample_many(list(records))
+        from concurrent.futures import ThreadPoolExecutor
+
+        with ThreadPoolExecutor(max_workers=self.pred.concurrency) as pool:
+            results = list(pool.map(self._safe_sample, list(records)))
         u = Usage()
         for _, usage in results:
             u = u + Usage(calls=1, input_tokens=usage["input_tokens"] + usage["cache_read_input_tokens"],
@@ -106,12 +129,18 @@ def main(argv: list[str] | None = None) -> None:
     if not a.build_only:
         if a.max_usd is None:
             sys.exit("--max-usd is required for a labeling run")
-        rep = label_dataset(records[: a.n_plays], OpenAITeacher(a.model, a.k, a.concurrency, a.reasoning_effort),
+        teacher = OpenAITeacher(a.model, a.k, a.concurrency, a.reasoning_effort)
+        rep = label_dataset(records[: a.n_plays], teacher,
                             out / "cache", n_samples=a.k, chunk_size=a.chunk_size, teacher_id=teacher_id,
                             budget=Budget(max_usd=a.max_usd, est_usd_per_call=a.est_usd_per_play),
                             on_chunk=lambda r: print(f"  labeled {r.n_labeled} this run, {r.n_remaining} left, "
                                                      f"total spent ${r.usage_total.cost_usd:.2f}", flush=True))
         print(json.dumps(rep.to_dict(), default=str))
+        if teacher.failures:
+            fpath = out / "teacher_failures.jsonl"
+            with open(fpath, "a") as f:
+                f.writelines(json.dumps(x) + "\n" for x in teacher.failures)
+            print(f"{len(teacher.failures)} teacher failures -> {fpath}")
     build_sets(records, out / "cache", out / "sets", teacher_id, a.k)
 
 

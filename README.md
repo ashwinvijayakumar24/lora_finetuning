@@ -22,6 +22,7 @@ exact match, with no LLM judge involved.
 
 ## What we learned
 
+1. **A fine-tuned 1B model beats a frontier API model on this task.** R5 scores 98.53% vs gpt-5.5's 97.96% (8-shot) at about 1/170th of the cost per play. See [`t2-frontier`](docs/benchmarks/t2-frontier.md).
 1. **Fine-tuning is what makes a 1B model usable.** Prompted, Llama 3.2 1B scores 0.0%
    (zero-shot) and 16.7% (few-shot, 108-play slice). LoRA-tuned on 294k plays it scores
    **99.54%** on the frozen 37,859-play test set, with 100% valid JSON.
@@ -60,7 +61,7 @@ with the same detail as earned ones.
 | | Claim | Status | Evidence |
 |---|---|---|---|
 | T1 | Fine-tuning beats prompting at 1B | **Earned**: 99.54% on the frozen test set (R5) vs 0.0% zero-shot; few-shot 16.7% on a 108-play slice | [T3-test](docs/BENCHMARKS.md), [p3-local-pilot](docs/benchmarks/p3-local-pilot.md) |
-| T2 | A 1B adapter matches the frontier model | Pending: needs API key (B2) | — |
+| T2 | A 1B adapter matches the frontier model | **Earned, and beat it**: R5 98.53% vs gpt-5.5 (8-shot) 97.96% on eval_lite, paired +0.57 [+0.17, +1.00], at ≈ 1/170th of the cost per play ($0.04 vs $6.40 per 1k) | [t2-frontier](docs/benchmarks/t2-frontier.md) |
 | T3 | ML beats the regex on the hard buckets | **Not earned (frozen test set, 37,859 plays)**: R5 99.54% [99.47, 99.61] vs regex 99.79% [99.75, 99.84]; paired −0.25 [−0.32, −0.19] (R5 alone right on 30 plays, regex alone on 126). R5 wins only penalty_nullified (+0.43). Follow-up: T3b. | [r5_vs_r0_paired.json](results/test/r5_vs_r0_paired.json) |
 | T3b | Spot decomposition beats the regex (pre-registered, PRD §17) | **Not earned**: 99.73% vs regex 99.79% and regex + LOS 99.90% on the frozen test set. But it beats R5 by +0.18 [+0.12, +0.25] and fixes penalty_stands (93.5 → 100) | [t3b-test](docs/benchmarks/t3b-test.md) |
 | T4 | QLoRA costs little quality | **Earned (A100)**: 98.1% vs R5 98.5% on eval_lite (−0.4, limit 1.0); ~2% slower steps | [benchmarks](docs/BENCHMARKS.md) |
