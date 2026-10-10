@@ -107,6 +107,8 @@ def main(argv=None) -> int:
     ap.add_argument("--output-mean", type=int, default=64)
     ap.add_argument("--max-batch", type=int, default=32)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--saturation", action="store_true",
+                    help="also replay each cell's requests all at t=0 and report tokens/s (the L7 metric, docs/phases/L7.md)")
     ap.add_argument("--adapter-dir", default=str(REPO / "results" / "p5b" / "vllm_adapters"))
     ap.add_argument("--out", default=str(REPO / "results" / "p5b"))
     args = ap.parse_args(argv)
@@ -163,9 +165,18 @@ def main(argv=None) -> int:
                 outcomes, wall = await run_open_loop(engine, reqs, lora_paths, args.rank)
                 summ = summarize(outcomes, slo, max(r.arrival_s for r in reqs), wall)
                 summ.update({"n_adapters": n, "popularity": pop, "system": "vllm", "realized": realized})
+                line = (f"  vllm N={n:<4} {pop:<7} goodput {summ['goodput_rps']:6.2f} req/s  "
+                        f"attain {summ['slo_attainment']:5.1%}")
+                if args.saturation:
+                    # Same requests, all at t=0: throughput independent of the SLO and offered rate.
+                    burst = [type(r)(r.request_id + "-sat", r.prompt_ids, r.max_tokens, r.adapter_id, 0.0)
+                             for r in reqs]
+                    outs_s, wall_s = await run_open_loop(engine, burst, lora_paths, args.rank)
+                    toks = sum(o.n_tokens for o in outs_s)
+                    summ["saturation"] = {"req_s": len(outs_s) / wall_s, "tok_s": toks / wall_s, "wall_s": wall_s}
+                    line += f"  | saturation {toks / wall_s:7.1f} tok/s"
                 cells.append(summ)
-                print(f"  vllm N={n:<4} {pop:<7} goodput {summ['goodput_rps']:6.2f} req/s  "
-                      f"attain {summ['slo_attainment']:5.1%}")
+                print(line)
         return cells
 
     cells = asyncio.run(amain())

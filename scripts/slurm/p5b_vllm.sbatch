@@ -1,8 +1,6 @@
 #!/bin/bash
 # P5b — claim L7: our multi-LoRA serving vs vLLM --enable-lora, same workload, ONE allocation.
 #
-# TEMPLATE: fill in the <PLACEHOLDER> lines before submitting.
-#
 # Runs our goodput arm first (playparse env), then vLLM (vllm env) on the same
 # GPU, reusing our frozen SLO thresholds and offered rate via --from-artifact, so
 # both systems face identical requests, adapters, arrival times and SLO bounds.
@@ -41,14 +39,15 @@ echo "############ 1: ours (goodput arm only) ############"
 conda activate "${CONDA_ENV:-llm}"
 python3 scripts/p5b_bench.py --device cuda --model real --arms goodput \
     --ns 1,4,16,64,256 --popularities uniform,zipf --kernels v2 \
-    --n-slots 32 --rank 16 --n-requests 512 --max-batch 32 --kv-blocks 8192
+    --n-slots 32 --rank 16 --n-requests 512 --max-batch 32 --kv-blocks 8192 --saturation
 OURS=$(ls -t results/p5b/bench_cuda_real_*.json | head -1)
 echo "ours: ${OURS}"
 
 echo "############ 2: vLLM, same workload, same SLO, same rate ############"
 conda activate "${VLLM_ENV:-vllm}"
+pip install -q -e . --no-deps
 python3 scripts/p5b_vllm_bench.py --model-path "${PLAYPARSE_WEIGHTS}" \
-    --from-artifact "${OURS}" --ns 1,4,16,64,256
+    --from-artifact "${OURS}" --ns 1,4,16,64,256 --n-requests 512 --saturation
 
 ls -1 results/p5b/ | tail -10
 echo "=== done ==="
