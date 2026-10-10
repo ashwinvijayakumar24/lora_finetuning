@@ -138,11 +138,17 @@ class HFPredictor:
         dtype: str | None = None,
         system: str = SYSTEM_PROMPT,
         prompt_style: str = DEFAULT_PROMPT_STYLE,
+        base_quant: str | None = None,
     ):
         import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer
 
+        from playparse.train.build import normalize_quant, quantized_load_kwargs
+
         self.name = name
+        # None: the base in `dtype`. "nf4": the base in 4-bit NF4 (bitsandbytes, CUDA
+        # only), as a QLoRA adapter (R6) was trained; compute stays in `dtype`.
+        self.base_quant = normalize_quant(base_quant)
         self.weights = str(weights)
         self.examples_fn = examples_fn
         self.examples_id = examples_id
@@ -162,8 +168,11 @@ class HFPredictor:
             # generated, so padding with it cannot be confused with a real <|eot_id|>.
             pad = "<|finetune_right_pad_id|>"
             self.tokenizer.pad_token = pad if pad in self.tokenizer.get_vocab() else self.tokenizer.eos_token
-        self.model = AutoModelForCausalLM.from_pretrained(self.weights, dtype=getattr(torch, dtype))
-        self.model.to(self.device).eval()
+        self.model = AutoModelForCausalLM.from_pretrained(
+            self.weights, dtype=getattr(torch, dtype), **quantized_load_kwargs(self.base_quant, self.device))
+        if self.base_quant is None:
+            self.model.to(self.device)  # a 4-bit model is already on its GPU (device_map)
+        self.model.eval()
         gc = self.model.generation_config
         self.eos_ids = gc.eos_token_id if isinstance(gc.eos_token_id, list) else [gc.eos_token_id]
 
@@ -196,6 +205,9 @@ class HFPredictor:
             cfg["system_prompt_sha"] = None  # no system message is sent
         if self.schema != "v1":
             cfg["schema"] = self.schema
+        if getattr(self, "base_quant", None) is not None:
+            # Only a quantized base adds the key, so unquantized configs keep their hashes.
+            cfg["base_quant"] = self.base_quant
         return cfg
 
     def render(self, record: dict) -> str:

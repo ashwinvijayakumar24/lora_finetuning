@@ -1,7 +1,11 @@
 """The LoRA rung: the base model plus a trained adapter, scored by the same harness.
 
 R5 and the sweep runs (and the P3 local pilot) produce PEFT-format adapter
-directories. This predictor loads the base model exactly as R1 does, injects the
+directories. A QLoRA adapter (R6) records `model.quant: nf4` in its run_spec.json
+and is scored on the 4-bit base by default (`--base-quant auto`); `--base-quant none`
+scores the same adapter on the bf16 base.
+
+This predictor loads the base model exactly as R1 does, injects the
 adapter with `playparse.lora.load_adapter`, and then decodes through
 `HFPredictor.predict_batch` unchanged. So the prompt rendering (zero-shot chat
 template with the pinned date, the same ids training used; see
@@ -65,6 +69,27 @@ def trained_schema(adapter_dir: str | Path) -> str | None:
     return data.get("schema") or schema_of_style(data.get("prompt_style", "full"))
 
 
+def trained_base_quant(adapter_dir: str | Path) -> str | None:
+    """The base quantization an adapter was trained on (R6: "nf4"), from its run_spec.json.
+
+    None for a bf16 base, for runs from before model.quant existed, and for an
+    adapter with no run_spec.json nearby.
+    """
+    from playparse.train.build import normalize_quant
+
+    spec = _run_spec(adapter_dir)
+    return normalize_quant((spec or {}).get("model", {}).get("quant"))
+
+
+def resolve_base_quant(adapter_dir: str | Path, requested: str | None) -> str | None:
+    """--base-quant: "auto" (default) = as trained; "none" or "nf4" = that base, whatever the training."""
+    from playparse.train.build import normalize_quant
+
+    if requested in (None, "auto"):
+        return trained_base_quant(adapter_dir)
+    return normalize_quant(requested)
+
+
 def trained_prompt_style(adapter_dir: str | Path) -> str | None:
     """The prompt style an adapter was trained with, if its run directory says so.
 
@@ -111,6 +136,10 @@ class LoRAPredictor(HFPredictor):
         if schema is not None and schema != schema_of_style(style):
             raise ValueError(f"{self.adapter_dir} was trained on schema {schema!r}; prompt style {style!r} "
                              f"decodes schema {schema_of_style(style)!r}")
+        # A QLoRA adapter (R6) is scored on the 4-bit base it was trained on unless
+        # the caller asks for another base (e.g. --base-quant none: the same adapter
+        # on the bf16 base, which isolates what the 4-bit base itself costs).
+        kw["base_quant"] = resolve_base_quant(self.adapter_dir, kw.get("base_quant"))
         super().__init__(weights, name=name or "lora", examples_fn=None, examples_id=None, **kw)
         # Adapters stay fp32 (as trained); LoRALinear casts its input and output.
         load_adapter(self.model, self.adapter_dir, adapter_dtype=torch.float32)
