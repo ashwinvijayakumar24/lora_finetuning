@@ -35,6 +35,12 @@ run() {  # run NAME CONFIG [overrides...]
     shift 2
     local dep=()
     [[ -n "${DEPENDENCY:-}" ]] && dep=(--dependency "$DEPENDENCY")
+    # PACE adds gpu-v100 to generic gpu:1 requests regardless of --partition; V100s lack
+    # bf16, so exclude their nodes explicitly (the sbatch's bf16 guard is the backstop).
+    if [[ -z "${NO_V100_EXCLUDE:-}" ]] && command -v sinfo >/dev/null; then
+        local v100; v100=$(sinfo -p gpu-v100 -h -o "%N" 2>/dev/null | paste -sd, -)
+        [[ -n "$v100" ]] && dep+=(--exclude "$v100")
+    fi
     local cmd=(sbatch --parsable --job-name "pp-$name" ${dep[@]+"${dep[@]}"} "$SBATCH" "$config" "$OUT/$name" "$@")
     printf "%q " "${cmd[@]}"; echo   # copy-pasteable (quotes preserved)
     if [[ "${SUBMIT:-0}" == "1" ]]; then
