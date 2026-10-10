@@ -14,5 +14,5 @@ order to follow the project.
 | P4 | [P4-distill-pipeline.md](P4-distill-pipeline.md) | Built; runs wait on API key | Teacher labeling with budget cap; rejection filter |
 | P5a | [P5a.md](P5a.md) | Done locally; H100 timing pending | LoRA in the from-scratch engine, merged and unmerged |
 | P5b | [P5b.md](P5b.md) | Done locally; H100 benchmarks pending | Multi-LoRA batching, adapter pool, adapter-keyed prefix cache |
-| P6 | [P6-registry.md](P6-registry.md) | Built | Adapter registry with per-bucket eval gate and rollback |
+| P6 | [P6-registry.md](P6-registry.md) · [gate demo](P6-gate-demo.md) | Done: broken adapter refused on real runs | Adapter registry with per-bucket eval gate and rollback |
 | T3b | [T3b.md](T3b.md) | Done: not earned vs regex; beats R5 | Let the model read field spots and code do the arithmetic (PRD §17) |

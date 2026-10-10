@@ -1,0 +1,12 @@
+{
+  "adapter": null,
+  "n": 1000,
+  "accuracy": 0.311,
+  "ci95": [
+    0.284,
+    0.34
+  ],
+  "device": "cuda",
+  "dtype": "torch.bfloat16",
+  "seconds": 13.5
+}

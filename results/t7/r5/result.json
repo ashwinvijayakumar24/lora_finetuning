@@ -1,0 +1,12 @@
+{
+  "adapter": "runs/sweep/r5_full/best",
+  "n": 1000,
+  "accuracy": 0.323,
+  "ci95": [
+    0.294,
+    0.352
+  ],
+  "device": "cuda",
+  "dtype": "torch.bfloat16",
+  "seconds": 12.8
+}

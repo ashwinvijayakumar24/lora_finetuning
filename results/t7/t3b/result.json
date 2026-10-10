@@ -1,0 +1,12 @@
+{
+  "adapter": "runs/t3b_spots/best",
+  "n": 1000,
+  "accuracy": 0.312,
+  "ci95": [
+    0.284,
+    0.34
+  ],
+  "device": "cuda",
+  "dtype": "torch.bfloat16",
+  "seconds": 12.3
+}

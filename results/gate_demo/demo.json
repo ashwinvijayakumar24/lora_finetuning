@@ -1,0 +1,524 @@
+{
+  "promote_current": {
+    "promote": true,
+    "checks": [
+      {
+        "name": "eval_file_match",
+        "passed": true,
+        "reason": "no current version; nothing to compare against",
+        "details": {}
+      },
+      {
+        "name": "valid_rate",
+        "passed": true,
+        "reason": "100.00% valid outputs >= required 95.00%",
+        "details": {
+          "candidate": 1.0,
+          "threshold": 0.95
+        }
+      },
+      {
+        "name": "min_exact_match",
+        "passed": true,
+        "reason": "exact match 98.53% >= floor 95.00%",
+        "details": {
+          "candidate": 0.9853309481216458,
+          "threshold": 0.95
+        }
+      },
+      {
+        "name": "overall_exact_match",
+        "passed": true,
+        "reason": "no current version; first promotion",
+        "details": {}
+      },
+      {
+        "name": "bucket_regression",
+        "passed": true,
+        "reason": "no current version; first promotion",
+        "details": {}
+      }
+    ]
+  },
+  "promote_candidate": {
+    "promote": false,
+    "checks": [
+      {
+        "name": "eval_file_match",
+        "passed": true,
+        "reason": "same eval file 78081c8134e0",
+        "details": {}
+      },
+      {
+        "name": "valid_rate",
+        "passed": true,
+        "reason": "99.96% valid outputs >= required 95.00%",
+        "details": {
+          "candidate": 0.9996422182468694,
+          "threshold": 0.95
+        }
+      },
+      {
+        "name": "min_exact_match",
+        "passed": true,
+        "reason": "exact match 96.67% >= floor 95.00%",
+        "details": {
+          "candidate": 0.9667262969588551,
+          "threshold": 0.95
+        }
+      },
+      {
+        "name": "overall_exact_match",
+        "passed": false,
+        "reason": "candidate 96.67% vs current 98.53% (-1.86 pts)",
+        "details": {
+          "candidate": 0.9667262969588551,
+          "current": 0.9853309481216458,
+          "delta": -0.018604651162790642
+        }
+      },
+      {
+        "name": "bucket_regression",
+        "passed": false,
+        "reason": "challenge: 96.00% -> 88.00% (-8.00 pts > 1 pt tolerance); fumble: 85.00% -> 73.00% (-12.00 pts > 1 pt tolerance); penalty_stands: 94.00% -> 82.00% (-12.00 pts > 1 pt tolerance); two_point: 100.00% -> 97.00% (-3.00 pts > 1 pt tolerance); not gated (too few examples): lateral (n=29 < 30, drop 31.03 pts)",
+        "details": {
+          "failed": [
+            "challenge: 96.00% -> 88.00% (-8.00 pts > 1 pt tolerance)",
+            "fumble: 85.00% -> 73.00% (-12.00 pts > 1 pt tolerance)",
+            "penalty_stands: 94.00% -> 82.00% (-12.00 pts > 1 pt tolerance)",
+            "two_point: 100.00% -> 97.00% (-3.00 pts > 1 pt tolerance)"
+          ],
+          "skipped": [
+            "lateral (n=29 < 30, drop 31.03 pts)"
+          ],
+          "buckets": {
+            "challenge": {
+              "candidate": 0.88,
+              "current": 0.96,
+              "drop": 0.07999999999999996,
+              "n_candidate": 100,
+              "n_current": 100
+            },
+            "fumble": {
+              "candidate": 0.73,
+              "current": 0.85,
+              "drop": 0.12,
+              "n_candidate": 100,
+              "n_current": 100
+            },
+            "interception": {
+              "candidate": 1.0,
+              "current": 1.0,
+              "drop": 0.0,
+              "n_candidate": 100,
+              "n_current": 100
+            },
+            "lateral": {
+              "candidate": 0.13793103448275862,
+              "current": 0.4482758620689655,
+              "drop": 0.3103448275862069,
+              "n_candidate": 29,
+              "n_current": 29
+            },
+            "normal": {
+              "candidate": 0.9964664310954063,
+              "current": 1.0,
+              "drop": 0.0035335689045936647,
+              "n_candidate": 1981,
+              "n_current": 1981
+            },
+            "penalty_nullified": {
+              "candidate": 0.9945945945945946,
+              "current": 1.0,
+              "drop": 0.00540540540540535,
+              "n_candidate": 185,
+              "n_current": 185
+            },
+            "penalty_stands": {
+              "candidate": 0.82,
+              "current": 0.94,
+              "drop": 0.12,
+              "n_candidate": 100,
+              "n_current": 100
+            },
+            "td": {
+              "candidate": 1.0,
+              "current": 1.0,
+              "drop": 0.0,
+              "n_candidate": 100,
+              "n_current": 100
+            },
+            "two_point": {
+              "candidate": 0.97,
+              "current": 1.0,
+              "drop": 0.030000000000000027,
+              "n_candidate": 100,
+              "n_current": 100
+            }
+          }
+        }
+      }
+    ]
+  },
+  "serving_after_candidate": "v0001",
+  "rollback": {
+    "from": "v0003",
+    "to": "v0001"
+  },
+  "history": [
+    {
+      "action": "register",
+      "name": "playparse",
+      "parent": null,
+      "ts": "2026-10-10T04:04:13+00:00",
+      "version": "v0001"
+    },
+    {
+      "action": "promote",
+      "against": null,
+      "decision": {
+        "checks": [
+          {
+            "details": {},
+            "name": "eval_file_match",
+            "passed": true,
+            "reason": "no current version; nothing to compare against"
+          },
+          {
+            "details": {
+              "candidate": 1.0,
+              "threshold": 0.95
+            },
+            "name": "valid_rate",
+            "passed": true,
+            "reason": "100.00% valid outputs >= required 95.00%"
+          },
+          {
+            "details": {
+              "candidate": 0.9853309481216458,
+              "threshold": 0.95
+            },
+            "name": "min_exact_match",
+            "passed": true,
+            "reason": "exact match 98.53% >= floor 95.00%"
+          },
+          {
+            "details": {},
+            "name": "overall_exact_match",
+            "passed": true,
+            "reason": "no current version; first promotion"
+          },
+          {
+            "details": {},
+            "name": "bucket_regression",
+            "passed": true,
+            "reason": "no current version; first promotion"
+          }
+        ],
+        "promote": true
+      },
+      "gate_config": {
+        "bucket_tolerance_pts": 1.0,
+        "min_bucket_n": 30,
+        "min_exact_match": 0.95,
+        "min_valid_rate": 0.95,
+        "small_bucket_policy": "skip"
+      },
+      "name": "playparse",
+      "reason": "first production adapter",
+      "ts": "2026-10-10T04:04:13+00:00",
+      "version": "v0001"
+    },
+    {
+      "action": "register",
+      "name": "playparse",
+      "parent": "v0001",
+      "ts": "2026-10-10T04:04:13+00:00",
+      "version": "v0002"
+    },
+    {
+      "action": "reject",
+      "against": "v0001",
+      "decision": {
+        "checks": [
+          {
+            "details": {},
+            "name": "eval_file_match",
+            "passed": true,
+            "reason": "same eval file 78081c8134e0"
+          },
+          {
+            "details": {
+              "candidate": 0.9996422182468694,
+              "threshold": 0.95
+            },
+            "name": "valid_rate",
+            "passed": true,
+            "reason": "99.96% valid outputs >= required 95.00%"
+          },
+          {
+            "details": {
+              "candidate": 0.9667262969588551,
+              "threshold": 0.95
+            },
+            "name": "min_exact_match",
+            "passed": true,
+            "reason": "exact match 96.67% >= floor 95.00%"
+          },
+          {
+            "details": {
+              "candidate": 0.9667262969588551,
+              "current": 0.9853309481216458,
+              "delta": -0.018604651162790642
+            },
+            "name": "overall_exact_match",
+            "passed": false,
+            "reason": "candidate 96.67% vs current 98.53% (-1.86 pts)"
+          },
+          {
+            "details": {
+              "buckets": {
+                "challenge": {
+                  "candidate": 0.88,
+                  "current": 0.96,
+                  "drop": 0.07999999999999996,
+                  "n_candidate": 100,
+                  "n_current": 100
+                },
+                "fumble": {
+                  "candidate": 0.73,
+                  "current": 0.85,
+                  "drop": 0.12,
+                  "n_candidate": 100,
+                  "n_current": 100
+                },
+                "interception": {
+                  "candidate": 1.0,
+                  "current": 1.0,
+                  "drop": 0.0,
+                  "n_candidate": 100,
+                  "n_current": 100
+                },
+                "lateral": {
+                  "candidate": 0.13793103448275862,
+                  "current": 0.4482758620689655,
+                  "drop": 0.3103448275862069,
+                  "n_candidate": 29,
+                  "n_current": 29
+                },
+                "normal": {
+                  "candidate": 0.9964664310954063,
+                  "current": 1.0,
+                  "drop": 0.0035335689045936647,
+                  "n_candidate": 1981,
+                  "n_current": 1981
+                },
+                "penalty_nullified": {
+                  "candidate": 0.9945945945945946,
+                  "current": 1.0,
+                  "drop": 0.00540540540540535,
+                  "n_candidate": 185,
+                  "n_current": 185
+                },
+                "penalty_stands": {
+                  "candidate": 0.82,
+                  "current": 0.94,
+                  "drop": 0.12,
+                  "n_candidate": 100,
+                  "n_current": 100
+                },
+                "td": {
+                  "candidate": 1.0,
+                  "current": 1.0,
+                  "drop": 0.0,
+                  "n_candidate": 100,
+                  "n_current": 100
+                },
+                "two_point": {
+                  "candidate": 0.97,
+                  "current": 1.0,
+                  "drop": 0.030000000000000027,
+                  "n_candidate": 100,
+                  "n_current": 100
+                }
+              },
+              "failed": [
+                "challenge: 96.00% -> 88.00% (-8.00 pts > 1 pt tolerance)",
+                "fumble: 85.00% -> 73.00% (-12.00 pts > 1 pt tolerance)",
+                "penalty_stands: 94.00% -> 82.00% (-12.00 pts > 1 pt tolerance)",
+                "two_point: 100.00% -> 97.00% (-3.00 pts > 1 pt tolerance)"
+              ],
+              "skipped": [
+                "lateral (n=29 < 30, drop 31.03 pts)"
+              ]
+            },
+            "name": "bucket_regression",
+            "passed": false,
+            "reason": "challenge: 96.00% -> 88.00% (-8.00 pts > 1 pt tolerance); fumble: 85.00% -> 73.00% (-12.00 pts > 1 pt tolerance); penalty_stands: 94.00% -> 82.00% (-12.00 pts > 1 pt tolerance); two_point: 100.00% -> 97.00% (-3.00 pts > 1 pt tolerance); not gated (too few examples): lateral (n=29 < 30, drop 31.03 pts)"
+          }
+        ],
+        "promote": false
+      },
+      "gate_config": {
+        "bucket_tolerance_pts": 1.0,
+        "min_bucket_n": 30,
+        "min_exact_match": 0.95,
+        "min_valid_rate": 0.95,
+        "small_bucket_policy": "skip"
+      },
+      "name": "playparse",
+      "reason": "candidate",
+      "reasons": [
+        "overall_exact_match: candidate 96.67% vs current 98.53% (-1.86 pts)",
+        "bucket_regression: challenge: 96.00% -> 88.00% (-8.00 pts > 1 pt tolerance); fumble: 85.00% -> 73.00% (-12.00 pts > 1 pt tolerance); penalty_stands: 94.00% -> 82.00% (-12.00 pts > 1 pt tolerance); two_point: 100.00% -> 97.00% (-3.00 pts > 1 pt tolerance); not gated (too few examples): lateral (n=29 < 30, drop 31.03 pts)"
+      ],
+      "ts": "2026-10-10T04:04:13+00:00",
+      "version": "v0002"
+    },
+    {
+      "action": "register",
+      "name": "playparse",
+      "parent": "v0001",
+      "ts": "2026-10-10T04:04:13+00:00",
+      "version": "v0003"
+    },
+    {
+      "action": "promote",
+      "against": "v0001",
+      "decision": {
+        "checks": [
+          {
+            "details": {},
+            "name": "eval_file_match",
+            "passed": true,
+            "reason": "same eval file 78081c8134e0"
+          },
+          {
+            "details": {
+              "candidate": 1.0,
+              "threshold": 0.95
+            },
+            "name": "valid_rate",
+            "passed": true,
+            "reason": "100.00% valid outputs >= required 95.00%"
+          },
+          {
+            "details": {
+              "candidate": 0.9853309481216458,
+              "threshold": 0.95
+            },
+            "name": "min_exact_match",
+            "passed": true,
+            "reason": "exact match 98.53% >= floor 95.00%"
+          },
+          {
+            "details": {
+              "candidate": 0.9853309481216458,
+              "current": 0.9853309481216458,
+              "delta": 0.0
+            },
+            "name": "overall_exact_match",
+            "passed": true,
+            "reason": "candidate 98.53% vs current 98.53% (+0.00 pts)"
+          },
+          {
+            "details": {
+              "buckets": {
+                "challenge": {
+                  "candidate": 0.96,
+                  "current": 0.96,
+                  "drop": 0.0,
+                  "n_candidate": 100,
+                  "n_current": 100
+                },
+                "fumble": {
+                  "candidate": 0.85,
+                  "current": 0.85,
+                  "drop": 0.0,
+                  "n_candidate": 100,
+                  "n_current": 100
+                },
+                "interception": {
+                  "candidate": 1.0,
+                  "current": 1.0,
+                  "drop": 0.0,
+                  "n_candidate": 100,
+                  "n_current": 100
+                },
+                "lateral": {
+                  "candidate": 0.4482758620689655,
+                  "current": 0.4482758620689655,
+                  "drop": 0.0,
+                  "n_candidate": 29,
+                  "n_current": 29
+                },
+                "normal": {
+                  "candidate": 1.0,
+                  "current": 1.0,
+                  "drop": 0.0,
+                  "n_candidate": 1981,
+                  "n_current": 1981
+                },
+                "penalty_nullified": {
+                  "candidate": 1.0,
+                  "current": 1.0,
+                  "drop": 0.0,
+                  "n_candidate": 185,
+                  "n_current": 185
+                },
+                "penalty_stands": {
+                  "candidate": 0.94,
+                  "current": 0.94,
+                  "drop": 0.0,
+                  "n_candidate": 100,
+                  "n_current": 100
+                },
+                "td": {
+                  "candidate": 1.0,
+                  "current": 1.0,
+                  "drop": 0.0,
+                  "n_candidate": 100,
+                  "n_current": 100
+                },
+                "two_point": {
+                  "candidate": 1.0,
+                  "current": 1.0,
+                  "drop": 0.0,
+                  "n_candidate": 100,
+                  "n_current": 100
+                }
+              },
+              "failed": [],
+              "skipped": [
+                "lateral (n=29 < 30, drop 0.00 pts)"
+              ]
+            },
+            "name": "bucket_regression",
+            "passed": true,
+            "reason": "no bucket regressed more than 1 pt; not gated (too few examples): lateral (n=29 < 30, drop 0.00 pts)"
+          }
+        ],
+        "promote": true
+      },
+      "gate_config": {
+        "bucket_tolerance_pts": 1.0,
+        "min_bucket_n": 30,
+        "min_exact_match": 0.95,
+        "min_valid_rate": 0.95,
+        "small_bucket_policy": "skip"
+      },
+      "name": "playparse",
+      "reason": "re-release",
+      "ts": "2026-10-10T04:04:13+00:00",
+      "version": "v0003"
+    },
+    {
+      "action": "rollback",
+      "from_version": "v0003",
+      "name": "playparse",
+      "reason": "demo rollback",
+      "ts": "2026-10-10T04:04:13+00:00",
+      "version": "v0001"
+    }
+  ]
+}
