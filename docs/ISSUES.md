@@ -95,3 +95,8 @@ Documented, labels unchanged:
 ## P6 — integration
 
 - The gate read eval provenance from `metadata`, but the harness writes `meta`, so every real artifact looked hashless and would have failed the same-eval-file check. Two agents built against a described format, each with self-consistent unit tests. Fixed, with a regression test on the committed R5 artifact. [gate-harness-meta-key](issues/gate-harness-meta-key.md)
+
+## L7
+
+- I described the P5b goodput SLO as "degenerate" (unattainable by any batched system) because none of *our* LoRA arms met it. vLLM met the same SLO for 98.8% of requests, so the inference was wrong: the SLO was fine and our serving layer is too slow under batching. Corrected in p5b-cuda.md, L7.md, and the README's L4 row. Lesson: "nothing meets the bar" needs a reference system before it means "the bar is wrong". [L7](phases/L7.md)
+- Installing vLLM filled the PACE home quota (20 GB); cleaned up, and the job now reuses an existing vLLM env read-only. [pace-home-quota-vllm-install](issues/pace-home-quota-vllm-install.md)

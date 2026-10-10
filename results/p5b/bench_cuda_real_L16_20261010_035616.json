@@ -1,0 +1,881 @@
+{
+ "metadata": {
+  "label": "CUDA run",
+  "timestamp_utc": "2026-10-10T03:17:32+00:00",
+  "host": "atl1-1-03-008-27-0.pace.gatech.edu",
+  "platform": "Linux-5.14.0-687.49.1.el9_8.x86_64-x86_64-with-glibc2.34",
+  "python": "3.11.15",
+  "torch": "2.12.0+cu130",
+  "device": "cuda",
+  "playparse_git_sha": "d82efd230dc36b15109f27939190a0d0f7ffd85f",
+  "playparse_git_dirty": false,
+  "engine_dir": "/storage/project/ps-simpliearn-0/avijayakumar41/llm_inference_engine",
+  "engine_git_sha": "291ef53843415d442e4b06b2848d61bb937d0749",
+  "serving_layer_dir": "/storage/project/ps-simpliearn-0/avijayakumar41/llm_serving_layer",
+  "serving_layer_git_sha": "3a91fd7db4e00b4c6f2391a5977bca41b4c2e2a2",
+  "serving_layer_vendored_engine_sha": "a3d0ab80f41d8ad834a385fa81744574e31b2eed",
+  "slurm_job_id": "13931464",
+  "settings": {
+   "device": "cuda",
+   "model": "real",
+   "layers": null,
+   "arms": [
+    "goodput"
+   ],
+   "kernels": [
+    "v2"
+   ],
+   "ranks": [
+    8,
+    16,
+    64
+   ],
+   "batches": [
+    1,
+    32
+   ],
+   "kernel_distinct": [
+    1,
+    4,
+    16,
+    32
+   ],
+   "iters": 30,
+   "rounds": 5,
+   "warmup": 5,
+   "decode_steps": 20,
+   "ns": [
+    1,
+    4,
+    16,
+    64,
+    256
+   ],
+   "popularities": [
+    "uniform",
+    "zipf"
+   ],
+   "n_slots": 32,
+   "rank": 16,
+   "n_requests": 512,
+   "calib_requests": 5,
+   "prompt_mean": 128,
+   "output_mean": 64,
+   "max_batch": 32,
+   "max_prefill_tokens": 512,
+   "kv_blocks": 8192,
+   "rate": null,
+   "load_factor": 0.7,
+   "saturation": true,
+   "gpu_gb": 80.0,
+   "usable_fraction": 0.9,
+   "kv_tokens_per_tenant": [
+    0,
+    2048,
+    8192
+   ],
+   "seed": 0,
+   "quick": false,
+   "render": null
+  },
+  "gpu": "NVIDIA H100 80GB HBM3",
+  "gpu_mem_gb": 79.2222900390625,
+  "cuda": "13.0"
+ },
+ "model_config": {
+  "hidden_size": 2048,
+  "intermediate_size": 8192,
+  "num_hidden_layers": 16,
+  "num_attention_heads": 32,
+  "num_key_value_heads": 8,
+  "vocab_size": 128256
+ },
+ "thresholds_stated_in_advance": {
+  "L3_pct_r16_batch32": 15.0,
+  "L4_v2_min_retention_n256_uniform": 0.5,
+  "L7_factor_vs_vllm": 2.0
+ },
+ "arms": {
+  "goodput": {
+   "slo": {
+    "ttft_ms": 222.29406982660294,
+    "tpot_ms": 36.98510281868618,
+    "anchored_on": {
+     "unloaded_ttft_ms": 22.229406982660294,
+     "unloaded_tpot_ms": 12.328367606228726,
+     "ttft_multiplier": 10.0,
+     "tpot_multiplier": 3.0
+    }
+   },
+   "capacity_rps": 5.605912499644704,
+   "offered_rps": 3.9241387497512927,
+   "cells": [
+    {
+     "n_requests": 512,
+     "n_completed": 512,
+     "n_within_slo": 4,
+     "slo_attainment": 0.0078125,
+     "goodput_rps": 0.02969687207223106,
+     "throughput_tok_s": 233.58755814980924,
+     "ttft_ms_p50": 94.85289475805025,
+     "ttft_ms_p99": 175.3478900988265,
+     "tpot_ms_p50": 58.739849237844325,
+     "tpot_ms_p99": 92.19120583506455,
+     "window_s": 134.69432034023268,
+     "wall_s": 139.84905813797377,
+     "slo": {
+      "ttft_ms": 222.29406982660294,
+      "tpot_ms": 36.98510281868618,
+      "anchored_on": {
+       "unloaded_ttft_ms": 22.229406982660294,
+       "unloaded_tpot_ms": 12.328367606228726,
+       "ttft_multiplier": 10.0,
+       "tpot_multiplier": 3.0
+      }
+     },
+     "n_adapters": 1,
+     "popularity": "uniform",
+     "kernel": "v2",
+     "n_slots": 1,
+     "rank": 16,
+     "offered_rps": 3.9241387497512927,
+     "pool": {
+      "hits": 511,
+      "misses": 1,
+      "evictions": 0,
+      "loads": 1,
+      "load_seconds": 0.003537059004884213,
+      "load_bytes": 22544384,
+      "admission_waits": 0,
+      "hit_rate": 0.998046875,
+      "mean_load_ms": 3.537059004884213,
+      "n_slots": 1,
+      "max_rank": 16,
+      "kernel": "v2",
+      "registered": 1,
+      "resident": 1,
+      "pinned": 0,
+      "slots_in_use": 0,
+      "device_bytes": 45088768
+     },
+     "realized": {
+      "prompt_len_mean": 124.873046875,
+      "output_len_mean": 63.802734375,
+      "distinct_adapters_used": 1,
+      "top_adapter_share": 1.0,
+      "workload_fingerprint": "85525c56496754083ee8e3a10ac032fd",
+      "degeneracy_warnings": [
+       "prompt lengths clipped at max_len=256 for 5.9% of requests \u2014 the requested tail is not the realized tail.",
+       "output lengths clipped at max_len=128 for 5.5% of requests \u2014 the requested tail is not the realized tail."
+      ]
+     },
+     "preemptions": 0,
+     "saturation": {
+      "req_s": 4.869190323488671,
+      "tok_s": 310.667656830868,
+      "wall_s": 105.15095241402742,
+      "pool": {
+       "hits": 512,
+       "misses": 0,
+       "evictions": 0,
+       "loads": 0,
+       "load_seconds": 0.0,
+       "load_bytes": 0,
+       "admission_waits": 0,
+       "hit_rate": 1.0,
+       "mean_load_ms": 0.0,
+       "n_slots": 1,
+       "max_rank": 16,
+       "kernel": "v2",
+       "registered": 1,
+       "resident": 1,
+       "pinned": 0,
+       "slots_in_use": 0,
+       "device_bytes": 45088768
+      }
+     }
+    },
+    {
+     "n_requests": 512,
+     "n_completed": 512,
+     "n_within_slo": 3,
+     "slo_attainment": 0.005859375,
+     "goodput_rps": 0.022272654054173297,
+     "throughput_tok_s": 233.4894115243868,
+     "ttft_ms_p50": 95.74750558951983,
+     "ttft_ms_p99": 165.74620991631394,
+     "tpot_ms_p50": 59.781549596170834,
+     "tpot_ms_p99": 93.78246210069972,
+     "window_s": 134.69432034023268,
+     "wall_s": 139.9078433010145,
+     "slo": {
+      "ttft_ms": 222.29406982660294,
+      "tpot_ms": 36.98510281868618,
+      "anchored_on": {
+       "unloaded_ttft_ms": 22.229406982660294,
+       "unloaded_tpot_ms": 12.328367606228726,
+       "ttft_multiplier": 10.0,
+       "tpot_multiplier": 3.0
+      }
+     },
+     "n_adapters": 4,
+     "popularity": "uniform",
+     "kernel": "v2",
+     "n_slots": 4,
+     "rank": 16,
+     "offered_rps": 3.9241387497512927,
+     "pool": {
+      "hits": 508,
+      "misses": 4,
+      "evictions": 0,
+      "loads": 4,
+      "load_seconds": 0.013846154033672065,
+      "load_bytes": 90177536,
+      "admission_waits": 0,
+      "hit_rate": 0.9921875,
+      "mean_load_ms": 3.461538508418016,
+      "n_slots": 4,
+      "max_rank": 16,
+      "kernel": "v2",
+      "registered": 4,
+      "resident": 4,
+      "pinned": 0,
+      "slots_in_use": 0,
+      "device_bytes": 112721920
+     },
+     "realized": {
+      "prompt_len_mean": 124.873046875,
+      "output_len_mean": 63.802734375,
+      "distinct_adapters_used": 4,
+      "top_adapter_share": 0.2734375,
+      "workload_fingerprint": "85525c56496754083ee8e3a10ac032fd",
+      "degeneracy_warnings": [
+       "prompt lengths clipped at max_len=256 for 5.9% of requests \u2014 the requested tail is not the realized tail.",
+       "output lengths clipped at max_len=128 for 5.5% of requests \u2014 the requested tail is not the realized tail."
+      ]
+     },
+     "preemptions": 0,
+     "saturation": {
+      "req_s": 4.864954058460296,
+      "tok_s": 310.3973715385205,
+      "wall_s": 105.24251490301685,
+      "pool": {
+       "hits": 512,
+       "misses": 0,
+       "evictions": 0,
+       "loads": 0,
+       "load_seconds": 0.0,
+       "load_bytes": 0,
+       "admission_waits": 0,
+       "hit_rate": 1.0,
+       "mean_load_ms": 0.0,
+       "n_slots": 4,
+       "max_rank": 16,
+       "kernel": "v2",
+       "registered": 4,
+       "resident": 4,
+       "pinned": 0,
+       "slots_in_use": 0,
+       "device_bytes": 112721920
+      }
+     }
+    },
+    {
+     "n_requests": 512,
+     "n_completed": 512,
+     "n_within_slo": 3,
+     "slo_attainment": 0.005859375,
+     "goodput_rps": 0.022272654054173297,
+     "throughput_tok_s": 233.45732237838422,
+     "ttft_ms_p50": 97.80667837866552,
+     "ttft_ms_p99": 176.74629284871475,
+     "tpot_ms_p50": 60.743677419550686,
+     "tpot_ms_p99": 95.20897679668904,
+     "window_s": 134.69432034023268,
+     "wall_s": 139.92707389598945,
+     "slo": {
+      "ttft_ms": 222.29406982660294,
+      "tpot_ms": 36.98510281868618,
+      "anchored_on": {
+       "unloaded_ttft_ms": 22.229406982660294,
+       "unloaded_tpot_ms": 12.328367606228726,
+       "ttft_multiplier": 10.0,
+       "tpot_multiplier": 3.0
+      }
+     },
+     "n_adapters": 4,
+     "popularity": "zipf",
+     "kernel": "v2",
+     "n_slots": 4,
+     "rank": 16,
+     "offered_rps": 3.9241387497512927,
+     "pool": {
+      "hits": 508,
+      "misses": 4,
+      "evictions": 0,
+      "loads": 4,
+      "load_seconds": 0.013964037992991507,
+      "load_bytes": 90177536,
+      "admission_waits": 0,
+      "hit_rate": 0.9921875,
+      "mean_load_ms": 3.4910094982478768,
+      "n_slots": 4,
+      "max_rank": 16,
+      "kernel": "v2",
+      "registered": 4,
+      "resident": 4,
+      "pinned": 0,
+      "slots_in_use": 0,
+      "device_bytes": 112721920
+     },
+     "realized": {
+      "prompt_len_mean": 124.873046875,
+      "output_len_mean": 63.802734375,
+      "distinct_adapters_used": 4,
+      "top_adapter_share": 0.51171875,
+      "workload_fingerprint": "85525c56496754083ee8e3a10ac032fd",
+      "degeneracy_warnings": [
+       "prompt lengths clipped at max_len=256 for 5.9% of requests \u2014 the requested tail is not the realized tail.",
+       "output lengths clipped at max_len=128 for 5.5% of requests \u2014 the requested tail is not the realized tail."
+      ]
+     },
+     "preemptions": 0,
+     "saturation": {
+      "req_s": 4.870073001057614,
+      "tok_s": 310.723974073338,
+      "wall_s": 105.13189430400962,
+      "pool": {
+       "hits": 512,
+       "misses": 0,
+       "evictions": 0,
+       "loads": 0,
+       "load_seconds": 0.0,
+       "load_bytes": 0,
+       "admission_waits": 0,
+       "hit_rate": 1.0,
+       "mean_load_ms": 0.0,
+       "n_slots": 4,
+       "max_rank": 16,
+       "kernel": "v2",
+       "registered": 4,
+       "resident": 4,
+       "pinned": 0,
+       "slots_in_use": 0,
+       "device_bytes": 112721920
+      }
+     }
+    },
+    {
+     "n_requests": 512,
+     "n_completed": 512,
+     "n_within_slo": 3,
+     "slo_attainment": 0.005859375,
+     "goodput_rps": 0.022272654054173297,
+     "throughput_tok_s": 233.45527484615076,
+     "ttft_ms_p50": 98.37860145554345,
+     "ttft_ms_p99": 170.17988857683937,
+     "tpot_ms_p50": 60.17870055787243,
+     "tpot_ms_p99": 93.75804412888631,
+     "window_s": 134.69432034023268,
+     "wall_s": 139.92830113403033,
+     "slo": {
+      "ttft_ms": 222.29406982660294,
+      "tpot_ms": 36.98510281868618,
+      "anchored_on": {
+       "unloaded_ttft_ms": 22.229406982660294,
+       "unloaded_tpot_ms": 12.328367606228726,
+       "ttft_multiplier": 10.0,
+       "tpot_multiplier": 3.0
+      }
+     },
+     "n_adapters": 16,
+     "popularity": "uniform",
+     "kernel": "v2",
+     "n_slots": 16,
+     "rank": 16,
+     "offered_rps": 3.9241387497512927,
+     "pool": {
+      "hits": 496,
+      "misses": 16,
+      "evictions": 0,
+      "loads": 16,
+      "load_seconds": 0.05480465601431206,
+      "load_bytes": 360710144,
+      "admission_waits": 0,
+      "hit_rate": 0.96875,
+      "mean_load_ms": 3.4252910008945037,
+      "n_slots": 16,
+      "max_rank": 16,
+      "kernel": "v2",
+      "registered": 16,
+      "resident": 16,
+      "pinned": 0,
+      "slots_in_use": 0,
+      "device_bytes": 383254528
+     },
+     "realized": {
+      "prompt_len_mean": 124.873046875,
+      "output_len_mean": 63.802734375,
+      "distinct_adapters_used": 16,
+      "top_adapter_share": 0.076171875,
+      "workload_fingerprint": "85525c56496754083ee8e3a10ac032fd",
+      "degeneracy_warnings": [
+       "prompt lengths clipped at max_len=256 for 5.9% of requests \u2014 the requested tail is not the realized tail.",
+       "output lengths clipped at max_len=128 for 5.5% of requests \u2014 the requested tail is not the realized tail."
+      ]
+     },
+     "preemptions": 0,
+     "saturation": {
+      "req_s": 4.844854259131186,
+      "tok_s": 309.11494938093443,
+      "wall_s": 105.67913349199807,
+      "pool": {
+       "hits": 512,
+       "misses": 0,
+       "evictions": 0,
+       "loads": 0,
+       "load_seconds": 0.0,
+       "load_bytes": 0,
+       "admission_waits": 0,
+       "hit_rate": 1.0,
+       "mean_load_ms": 0.0,
+       "n_slots": 16,
+       "max_rank": 16,
+       "kernel": "v2",
+       "registered": 16,
+       "resident": 16,
+       "pinned": 0,
+       "slots_in_use": 0,
+       "device_bytes": 383254528
+      }
+     }
+    },
+    {
+     "n_requests": 512,
+     "n_completed": 512,
+     "n_within_slo": 2,
+     "slo_attainment": 0.00390625,
+     "goodput_rps": 0.01484843603611553,
+     "throughput_tok_s": 233.32981734790943,
+     "ttft_ms_p50": 98.38670030752183,
+     "ttft_ms_p99": 184.46876752561414,
+     "tpot_ms_p50": 60.57247998259812,
+     "tpot_ms_p99": 95.78835270266697,
+     "window_s": 134.69432034023268,
+     "wall_s": 140.00353821599856,
+     "slo": {
+      "ttft_ms": 222.29406982660294,
+      "tpot_ms": 36.98510281868618,
+      "anchored_on": {
+       "unloaded_ttft_ms": 22.229406982660294,
+       "unloaded_tpot_ms": 12.328367606228726,
+       "ttft_multiplier": 10.0,
+       "tpot_multiplier": 3.0
+      }
+     },
+     "n_adapters": 16,
+     "popularity": "zipf",
+     "kernel": "v2",
+     "n_slots": 16,
+     "rank": 16,
+     "offered_rps": 3.9241387497512927,
+     "pool": {
+      "hits": 496,
+      "misses": 16,
+      "evictions": 0,
+      "loads": 16,
+      "load_seconds": 0.0559873430756852,
+      "load_bytes": 360710144,
+      "admission_waits": 0,
+      "hit_rate": 0.96875,
+      "mean_load_ms": 3.499208942230325,
+      "n_slots": 16,
+      "max_rank": 16,
+      "kernel": "v2",
+      "registered": 16,
+      "resident": 16,
+      "pinned": 0,
+      "slots_in_use": 0,
+      "device_bytes": 383254528
+     },
+     "realized": {
+      "prompt_len_mean": 124.873046875,
+      "output_len_mean": 63.802734375,
+      "distinct_adapters_used": 16,
+      "top_adapter_share": 0.326171875,
+      "workload_fingerprint": "85525c56496754083ee8e3a10ac032fd",
+      "degeneracy_warnings": [
+       "prompt lengths clipped at max_len=256 for 5.9% of requests \u2014 the requested tail is not the realized tail.",
+       "output lengths clipped at max_len=128 for 5.5% of requests \u2014 the requested tail is not the realized tail."
+      ]
+     },
+     "preemptions": 0,
+     "saturation": {
+      "req_s": 4.822570543265872,
+      "tok_s": 307.69318737669187,
+      "wall_s": 106.1674464700045,
+      "pool": {
+       "hits": 512,
+       "misses": 0,
+       "evictions": 0,
+       "loads": 0,
+       "load_seconds": 0.0,
+       "load_bytes": 0,
+       "admission_waits": 0,
+       "hit_rate": 1.0,
+       "mean_load_ms": 0.0,
+       "n_slots": 16,
+       "max_rank": 16,
+       "kernel": "v2",
+       "registered": 16,
+       "resident": 16,
+       "pinned": 0,
+       "slots_in_use": 0,
+       "device_bytes": 383254528
+      }
+     }
+    },
+    {
+     "n_requests": 512,
+     "n_completed": 512,
+     "n_within_slo": 2,
+     "slo_attainment": 0.00390625,
+     "goodput_rps": 0.01484843603611553,
+     "throughput_tok_s": 233.10202589005868,
+     "ttft_ms_p50": 100.6027941773624,
+     "ttft_ms_p99": 184.00657373433108,
+     "tpot_ms_p50": 63.30444783861593,
+     "tpot_ms_p99": 97.93337773161613,
+     "window_s": 134.69432034023268,
+     "wall_s": 140.14035217097262,
+     "slo": {
+      "ttft_ms": 222.29406982660294,
+      "tpot_ms": 36.98510281868618,
+      "anchored_on": {
+       "unloaded_ttft_ms": 22.229406982660294,
+       "unloaded_tpot_ms": 12.328367606228726,
+       "ttft_multiplier": 10.0,
+       "tpot_multiplier": 3.0
+      }
+     },
+     "n_adapters": 64,
+     "popularity": "uniform",
+     "kernel": "v2",
+     "n_slots": 32,
+     "rank": 16,
+     "offered_rps": 3.9241387497512927,
+     "pool": {
+      "hits": 236,
+      "misses": 276,
+      "evictions": 244,
+      "loads": 276,
+      "load_seconds": 0.9511712079984136,
+      "load_bytes": 6222249984,
+      "admission_waits": 0,
+      "hit_rate": 0.4609375,
+      "mean_load_ms": 3.4462724927478754,
+      "n_slots": 32,
+      "max_rank": 16,
+      "kernel": "v2",
+      "registered": 64,
+      "resident": 32,
+      "pinned": 0,
+      "slots_in_use": 0,
+      "device_bytes": 743964672
+     },
+     "realized": {
+      "prompt_len_mean": 124.873046875,
+      "output_len_mean": 63.802734375,
+      "distinct_adapters_used": 64,
+      "top_adapter_share": 0.02734375,
+      "workload_fingerprint": "85525c56496754083ee8e3a10ac032fd",
+      "degeneracy_warnings": [
+       "prompt lengths clipped at max_len=256 for 5.9% of requests \u2014 the requested tail is not the realized tail.",
+       "output lengths clipped at max_len=128 for 5.5% of requests \u2014 the requested tail is not the realized tail."
+      ]
+     },
+     "preemptions": 0,
+     "saturation": {
+      "req_s": 4.76086981367591,
+      "tok_s": 303.75651211591986,
+      "wall_s": 107.54337338299956,
+      "pool": {
+       "hits": 246,
+       "misses": 266,
+       "evictions": 266,
+       "loads": 266,
+       "load_seconds": 0.9145052719395608,
+       "load_bytes": 5996806144,
+       "admission_waits": 0,
+       "hit_rate": 0.48046875,
+       "mean_load_ms": 3.437989744133687,
+       "n_slots": 32,
+       "max_rank": 16,
+       "kernel": "v2",
+       "registered": 64,
+       "resident": 32,
+       "pinned": 0,
+       "slots_in_use": 0,
+       "device_bytes": 743964672
+      }
+     }
+    },
+    {
+     "n_requests": 512,
+     "n_completed": 512,
+     "n_within_slo": 2,
+     "slo_attainment": 0.00390625,
+     "goodput_rps": 0.01484843603611553,
+     "throughput_tok_s": 233.10612845273755,
+     "ttft_ms_p50": 98.94511685792651,
+     "ttft_ms_p99": 191.60924739939236,
+     "tpot_ms_p50": 62.472630351653,
+     "tpot_ms_p99": 97.61521536235617,
+     "window_s": 134.69432034023268,
+     "wall_s": 140.1378857640084,
+     "slo": {
+      "ttft_ms": 222.29406982660294,
+      "tpot_ms": 36.98510281868618,
+      "anchored_on": {
+       "unloaded_ttft_ms": 22.229406982660294,
+       "unloaded_tpot_ms": 12.328367606228726,
+       "ttft_multiplier": 10.0,
+       "tpot_multiplier": 3.0
+      }
+     },
+     "n_adapters": 64,
+     "popularity": "zipf",
+     "kernel": "v2",
+     "n_slots": 32,
+     "rank": 16,
+     "offered_rps": 3.9241387497512927,
+     "pool": {
+      "hits": 407,
+      "misses": 105,
+      "evictions": 73,
+      "loads": 105,
+      "load_seconds": 0.36819429910974577,
+      "load_bytes": 2367160320,
+      "admission_waits": 0,
+      "hit_rate": 0.794921875,
+      "mean_load_ms": 3.5066123724737692,
+      "n_slots": 32,
+      "max_rank": 16,
+      "kernel": "v2",
+      "registered": 64,
+      "resident": 32,
+      "pinned": 0,
+      "slots_in_use": 0,
+      "device_bytes": 743964672
+     },
+     "realized": {
+      "prompt_len_mean": 124.873046875,
+      "output_len_mean": 63.802734375,
+      "distinct_adapters_used": 60,
+      "top_adapter_share": 0.244140625,
+      "workload_fingerprint": "85525c56496754083ee8e3a10ac032fd",
+      "degeneracy_warnings": [
+       "prompt lengths clipped at max_len=256 for 5.9% of requests \u2014 the requested tail is not the realized tail.",
+       "output lengths clipped at max_len=128 for 5.5% of requests \u2014 the requested tail is not the realized tail."
+      ]
+     },
+     "preemptions": 0,
+     "saturation": {
+      "req_s": 4.7826818353896785,
+      "tok_s": 305.1481787435051,
+      "wall_s": 107.0529083100264,
+      "pool": {
+       "hits": 424,
+       "misses": 88,
+       "evictions": 88,
+       "loads": 88,
+       "load_seconds": 0.3076887639472261,
+       "load_bytes": 1983905792,
+       "admission_waits": 0,
+       "hit_rate": 0.828125,
+       "mean_load_ms": 3.496463226673024,
+       "n_slots": 32,
+       "max_rank": 16,
+       "kernel": "v2",
+       "registered": 64,
+       "resident": 32,
+       "pinned": 0,
+       "slots_in_use": 0,
+       "device_bytes": 743964672
+      }
+     }
+    },
+    {
+     "n_requests": 512,
+     "n_completed": 512,
+     "n_within_slo": 2,
+     "slo_attainment": 0.00390625,
+     "goodput_rps": 0.01484843603611553,
+     "throughput_tok_s": 232.97728178965053,
+     "ttft_ms_p50": 106.07286115987691,
+     "ttft_ms_p99": 204.05201506611309,
+     "tpot_ms_p50": 65.21822008548605,
+     "tpot_ms_p99": 100.47097726121609,
+     "window_s": 134.69432034023268,
+     "wall_s": 140.2153881660197,
+     "slo": {
+      "ttft_ms": 222.29406982660294,
+      "tpot_ms": 36.98510281868618,
+      "anchored_on": {
+       "unloaded_ttft_ms": 22.229406982660294,
+       "unloaded_tpot_ms": 12.328367606228726,
+       "ttft_multiplier": 10.0,
+       "tpot_multiplier": 3.0
+      }
+     },
+     "n_adapters": 256,
+     "popularity": "uniform",
+     "kernel": "v2",
+     "n_slots": 32,
+     "rank": 16,
+     "offered_rps": 3.9241387497512927,
+     "pool": {
+      "hits": 50,
+      "misses": 462,
+      "evictions": 430,
+      "loads": 462,
+      "load_seconds": 1.617309121240396,
+      "load_bytes": 10415505408,
+      "admission_waits": 0,
+      "hit_rate": 0.09765625,
+      "mean_load_ms": 3.5006690935939306,
+      "n_slots": 32,
+      "max_rank": 16,
+      "kernel": "v2",
+      "registered": 256,
+      "resident": 32,
+      "pinned": 0,
+      "slots_in_use": 0,
+      "device_bytes": 743964672
+     },
+     "realized": {
+      "prompt_len_mean": 124.873046875,
+      "output_len_mean": 63.802734375,
+      "distinct_adapters_used": 223,
+      "top_adapter_share": 0.01171875,
+      "workload_fingerprint": "85525c56496754083ee8e3a10ac032fd",
+      "degeneracy_warnings": [
+       "prompt lengths clipped at max_len=256 for 5.9% of requests \u2014 the requested tail is not the realized tail.",
+       "output lengths clipped at max_len=128 for 5.5% of requests \u2014 the requested tail is not the realized tail."
+      ]
+     },
+     "preemptions": 0,
+     "saturation": {
+      "req_s": 4.697860410988391,
+      "tok_s": 299.7363399331207,
+      "wall_s": 108.98578399699181,
+      "pool": {
+       "hits": 61,
+       "misses": 451,
+       "evictions": 451,
+       "loads": 451,
+       "load_seconds": 1.5669561345712282,
+       "load_bytes": 10167517184,
+       "admission_waits": 0,
+       "hit_rate": 0.119140625,
+       "mean_load_ms": 3.4744038460559383,
+       "n_slots": 32,
+       "max_rank": 16,
+       "kernel": "v2",
+       "registered": 256,
+       "resident": 32,
+       "pinned": 0,
+       "slots_in_use": 0,
+       "device_bytes": 743964672
+      }
+     }
+    },
+    {
+     "n_requests": 512,
+     "n_completed": 512,
+     "n_within_slo": 2,
+     "slo_attainment": 0.00390625,
+     "goodput_rps": 0.01484843603611553,
+     "throughput_tok_s": 233.1992966999357,
+     "ttft_ms_p50": 100.85880788954071,
+     "ttft_ms_p99": 192.75261406031044,
+     "tpot_ms_p50": 63.017368681003035,
+     "tpot_ms_p99": 97.52211544506922,
+     "window_s": 134.69432034023268,
+     "wall_s": 140.08189759694505,
+     "slo": {
+      "ttft_ms": 222.29406982660294,
+      "tpot_ms": 36.98510281868618,
+      "anchored_on": {
+       "unloaded_ttft_ms": 22.229406982660294,
+       "unloaded_tpot_ms": 12.328367606228726,
+       "ttft_multiplier": 10.0,
+       "tpot_multiplier": 3.0
+      }
+     },
+     "n_adapters": 256,
+     "popularity": "zipf",
+     "kernel": "v2",
+     "n_slots": 32,
+     "rank": 16,
+     "offered_rps": 3.9241387497512927,
+     "pool": {
+      "hits": 316,
+      "misses": 196,
+      "evictions": 164,
+      "loads": 196,
+      "load_seconds": 0.6988950620871037,
+      "load_bytes": 4418699264,
+      "admission_waits": 0,
+      "hit_rate": 0.6171875,
+      "mean_load_ms": 3.565791133097468,
+      "n_slots": 32,
+      "max_rank": 16,
+      "kernel": "v2",
+      "registered": 256,
+      "resident": 32,
+      "pinned": 0,
+      "slots_in_use": 0,
+      "device_bytes": 743964672
+     },
+     "realized": {
+      "prompt_len_mean": 124.873046875,
+      "output_len_mean": 63.802734375,
+      "distinct_adapters_used": 129,
+      "top_adapter_share": 0.20703125,
+      "workload_fingerprint": "85525c56496754083ee8e3a10ac032fd",
+      "degeneracy_warnings": [
+       "prompt lengths clipped at max_len=256 for 5.9% of requests \u2014 the requested tail is not the realized tail.",
+       "output lengths clipped at max_len=128 for 5.5% of requests \u2014 the requested tail is not the realized tail."
+      ]
+     },
+     "preemptions": 0,
+     "saturation": {
+      "req_s": 4.779430589644124,
+      "tok_s": 304.9407403748137,
+      "wall_s": 107.12573190400144,
+      "pool": {
+       "hits": 325,
+       "misses": 187,
+       "evictions": 187,
+       "loads": 187,
+       "load_seconds": 0.6642435869434848,
+       "load_bytes": 4215799808,
+       "admission_waits": 0,
+       "hit_rate": 0.634765625,
+       "mean_load_ms": 3.5521047430132877,
+       "n_slots": 32,
+       "max_rank": 16,
+       "kernel": "v2",
+       "registered": 256,
+       "resident": 32,
+       "pinned": 0,
+       "slots_in_use": 0,
+       "device_bytes": 743964672
+      }
+     }
+    }
+   ]
+  }
+ }
+}

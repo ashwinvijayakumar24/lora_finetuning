@@ -65,10 +65,10 @@ measured on the laptop; the authoritative GPU run is still pending.
 | L1 | Merged adapter adds no latency | **Earned (H100)**: merged r=16 −0.07% vs base, inside base-vs-base noise | [p5a CUDA bench](results/p5a/bench_cuda_20261008_224151.json) |
 | L2 | Merged equals unmerged | **Earned (local + H100)**: identical greedy tokens on all paths | [p5a-local](docs/benchmarks/p5a-local.md) |
 | L3 | Unmerged overhead is small at low rank | **Batch 1: not earned (H100)**, ~30% decode overhead, flat across ranks (launch-bound). **Batch 32: earned for v1** (+11.3% with a shared adapter); v2 +18.5% | [p5a CUDA](results/p5a/bench_cuda_20261008_224151.json), [p5b-cuda](docs/benchmarks/p5b-cuda.md) |
-| L4 | Multi-LoRA scales with N | **Inconclusive on the pre-registered goodput metric** (SLO anchored on unloaded latency → goodput ≈ 0 everywhere). Load-insensitive result: v2 keeps 98% of saturation throughput from 1 → 256 adapters at flat ~95 ms TTFT; v1 keeps 37% with 55 s TTFT | [p5b-cuda](docs/benchmarks/p5b-cuda.md) |
+| L4 | Multi-LoRA scales with N | **Not measurable on the pre-registered goodput metric**: our serving layer misses the latency target in every cell (≈60 ms/token vs a 37 ms target; vLLM meets it). Relative scaling holds: v2 keeps 96–98% of throughput from 1 → 256 adapters (vLLM keeps 70–80%) | [p5b-cuda](docs/benchmarks/p5b-cuda.md), [L7](docs/phases/L7.md) |
 | L5 | Adapters beat one merged model per tenant | **Measured on the H100**: 31 merged copies vs ~3,300 resident r=16 adapters per 80 GB (pool allocation matched the formula exactly) | [p5b-cuda](docs/benchmarks/p5b-cuda.md) |
 | L6 | Prefix cache is adapter-safe | **Earned (local)**, with a fault-injection test that catches the bug | [p5b-local](docs/benchmarks/p5b-local.md) |
-| L7 | Competitive with vLLM multi-LoRA | Pending (B3); script ready | — |
+| L7 | Competitive with vLLM multi-LoRA | **Not earned (H100)**: ours reaches 9–13% of vLLM 0.31's throughput (threshold 50%); ≈60 ms vs 2.3 ms per token. vLLM loads our PEFT-format adapters unchanged | [L7](docs/phases/L7.md) |
 
 ## Docs
 

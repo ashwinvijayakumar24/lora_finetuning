@@ -1,0 +1,433 @@
+{
+ "metadata": {
+  "vllm": "0.31.0",
+  "timestamp_utc": "20261010_042206",
+  "settings": {
+   "model_path": "/storage/home/hcoda1/6/avijayakumar41/ps-simpliearn-0/llm_inference_engine/weights",
+   "from_artifact": "results/p5b/bench_cuda_real_L16_20261010_035616.json",
+   "ns": "1,4,16,64,256",
+   "popularities": "uniform,zipf",
+   "rank": 16,
+   "max_loras": 32,
+   "max_cpu_loras": 256,
+   "n_requests": 512,
+   "rate": 3.9241387497512927,
+   "prompt_mean": 128,
+   "output_mean": 64,
+   "max_batch": 32,
+   "seed": 0,
+   "saturation": true,
+   "adapter_dir": "/storage/project/ps-simpliearn-0/avijayakumar41/llm_finetuning/results/p5b/vllm_adapters",
+   "out": "/storage/project/ps-simpliearn-0/avijayakumar41/llm_finetuning/results/p5b"
+  },
+  "slo": {
+   "ttft_ms": 222.29406982660294,
+   "tpot_ms": 36.98510281868618,
+   "anchored_on": {
+    "unloaded_ttft_ms": 22.229406982660294,
+    "unloaded_tpot_ms": 12.328367606228726,
+    "ttft_multiplier": 10.0,
+    "tpot_multiplier": 3.0,
+    "source": "results/p5b/bench_cuda_real_L16_20261010_035616.json"
+   }
+  }
+ },
+ "cells": [
+  {
+   "n_requests": 512,
+   "n_completed": 512,
+   "n_within_slo": 506,
+   "slo_attainment": 0.98828125,
+   "goodput_rps": 3.756654317137229,
+   "throughput_tok_s": 242.18353981227108,
+   "ttft_ms_p50": 23.960330081742143,
+   "ttft_ms_p99": 322.8708674352507,
+   "tpot_ms_p50": 2.295724007702928,
+   "tpot_ms_p99": 3.157942510746373,
+   "window_s": 134.69432034023268,
+   "wall_s": 134.88530238397652,
+   "slo": {
+    "ttft_ms": 222.29406982660294,
+    "tpot_ms": 36.98510281868618,
+    "anchored_on": {
+     "unloaded_ttft_ms": 22.229406982660294,
+     "unloaded_tpot_ms": 12.328367606228726,
+     "ttft_multiplier": 10.0,
+     "tpot_multiplier": 3.0,
+     "source": "results/p5b/bench_cuda_real_L16_20261010_035616.json"
+    }
+   },
+   "n_adapters": 1,
+   "popularity": "uniform",
+   "system": "vllm",
+   "realized": {
+    "prompt_len_mean": 124.873046875,
+    "output_len_mean": 63.802734375,
+    "distinct_adapters_used": 1,
+    "top_adapter_share": 1.0,
+    "workload_fingerprint": "85525c56496754083ee8e3a10ac032fd",
+    "degeneracy_warnings": [
+     "prompt lengths clipped at max_len=256 for 5.9% of requests \u2014 the requested tail is not the realized tail.",
+     "output lengths clipped at max_len=128 for 5.5% of requests \u2014 the requested tail is not the realized tail."
+    ]
+   },
+   "saturation": {
+    "req_s": 53.42142414888737,
+    "tok_s": 3408.432934905671,
+    "wall_s": 9.58416979998583
+   }
+  },
+  {
+   "n_requests": 512,
+   "n_completed": 512,
+   "n_within_slo": 505,
+   "slo_attainment": 0.986328125,
+   "goodput_rps": 3.7492300991191714,
+   "throughput_tok_s": 242.1776222583017,
+   "ttft_ms_p50": 23.453198975957434,
+   "ttft_ms_p99": 518.7934392883565,
+   "tpot_ms_p50": 2.2494370176712044,
+   "tpot_ms_p99": 3.452205216292185,
+   "window_s": 134.69432034023268,
+   "wall_s": 134.88859827502165,
+   "slo": {
+    "ttft_ms": 222.29406982660294,
+    "tpot_ms": 36.98510281868618,
+    "anchored_on": {
+     "unloaded_ttft_ms": 22.229406982660294,
+     "unloaded_tpot_ms": 12.328367606228726,
+     "ttft_multiplier": 10.0,
+     "tpot_multiplier": 3.0,
+     "source": "results/p5b/bench_cuda_real_L16_20261010_035616.json"
+    }
+   },
+   "n_adapters": 4,
+   "popularity": "uniform",
+   "system": "vllm",
+   "realized": {
+    "prompt_len_mean": 124.873046875,
+    "output_len_mean": 63.802734375,
+    "distinct_adapters_used": 4,
+    "top_adapter_share": 0.2734375,
+    "workload_fingerprint": "85525c56496754083ee8e3a10ac032fd",
+    "degeneracy_warnings": [
+     "prompt lengths clipped at max_len=256 for 5.9% of requests \u2014 the requested tail is not the realized tail.",
+     "output lengths clipped at max_len=128 for 5.5% of requests \u2014 the requested tail is not the realized tail."
+    ]
+   },
+   "saturation": {
+    "req_s": 54.31391981183911,
+    "tok_s": 3465.376598619821,
+    "wall_s": 9.426681075012311
+   }
+  },
+  {
+   "n_requests": 512,
+   "n_completed": 512,
+   "n_within_slo": 512,
+   "slo_attainment": 1.0,
+   "goodput_rps": 3.8011996252455758,
+   "throughput_tok_s": 242.17525063800073,
+   "ttft_ms_p50": 22.981296877784274,
+   "ttft_ms_p99": 40.8585988305121,
+   "tpot_ms_p50": 2.2361722930876926,
+   "tpot_ms_p99": 3.194107571959167,
+   "window_s": 134.69432034023268,
+   "wall_s": 134.8899192379904,
+   "slo": {
+    "ttft_ms": 222.29406982660294,
+    "tpot_ms": 36.98510281868618,
+    "anchored_on": {
+     "unloaded_ttft_ms": 22.229406982660294,
+     "unloaded_tpot_ms": 12.328367606228726,
+     "ttft_multiplier": 10.0,
+     "tpot_multiplier": 3.0,
+     "source": "results/p5b/bench_cuda_real_L16_20261010_035616.json"
+    }
+   },
+   "n_adapters": 4,
+   "popularity": "zipf",
+   "system": "vllm",
+   "realized": {
+    "prompt_len_mean": 124.873046875,
+    "output_len_mean": 63.802734375,
+    "distinct_adapters_used": 4,
+    "top_adapter_share": 0.51171875,
+    "workload_fingerprint": "85525c56496754083ee8e3a10ac032fd",
+    "degeneracy_warnings": [
+     "prompt lengths clipped at max_len=256 for 5.9% of requests \u2014 the requested tail is not the realized tail.",
+     "output lengths clipped at max_len=128 for 5.5% of requests \u2014 the requested tail is not the realized tail."
+    ]
+   },
+   "saturation": {
+    "req_s": 54.08974697124888,
+    "tok_s": 3451.073758417553,
+    "wall_s": 9.465749586001039
+   }
+  },
+  {
+   "n_requests": 512,
+   "n_completed": 512,
+   "n_within_slo": 486,
+   "slo_attainment": 0.94921875,
+   "goodput_rps": 3.608169956776074,
+   "throughput_tok_s": 242.17209831983104,
+   "ttft_ms_p50": 23.362096834755874,
+   "ttft_ms_p99": 1444.64983627003,
+   "tpot_ms_p50": 2.2880774695519452,
+   "tpot_ms_p99": 8.6084191778206,
+   "window_s": 134.69432034023268,
+   "wall_s": 134.8916750799981,
+   "slo": {
+    "ttft_ms": 222.29406982660294,
+    "tpot_ms": 36.98510281868618,
+    "anchored_on": {
+     "unloaded_ttft_ms": 22.229406982660294,
+     "unloaded_tpot_ms": 12.328367606228726,
+     "ttft_multiplier": 10.0,
+     "tpot_multiplier": 3.0,
+     "source": "results/p5b/bench_cuda_real_L16_20261010_035616.json"
+    }
+   },
+   "n_adapters": 16,
+   "popularity": "uniform",
+   "system": "vllm",
+   "realized": {
+    "prompt_len_mean": 124.873046875,
+    "output_len_mean": 63.802734375,
+    "distinct_adapters_used": 16,
+    "top_adapter_share": 0.076171875,
+    "workload_fingerprint": "85525c56496754083ee8e3a10ac032fd",
+    "degeneracy_warnings": [
+     "prompt lengths clipped at max_len=256 for 5.9% of requests \u2014 the requested tail is not the realized tail.",
+     "output lengths clipped at max_len=128 for 5.5% of requests \u2014 the requested tail is not the realized tail."
+    ]
+   },
+   "saturation": {
+    "req_s": 50.11202311298556,
+    "tok_s": 3197.2840996716786,
+    "wall_s": 10.217108952987473
+   }
+  },
+  {
+   "n_requests": 512,
+   "n_completed": 512,
+   "n_within_slo": 512,
+   "slo_attainment": 1.0,
+   "goodput_rps": 3.8011996252455758,
+   "throughput_tok_s": 242.17054980661766,
+   "ttft_ms_p50": 23.718073265271755,
+   "ttft_ms_p99": 41.50765906259209,
+   "tpot_ms_p50": 2.2514549682019025,
+   "tpot_ms_p99": 3.211997980350348,
+   "window_s": 134.69432034023268,
+   "wall_s": 134.89253761898726,
+   "slo": {
+    "ttft_ms": 222.29406982660294,
+    "tpot_ms": 36.98510281868618,
+    "anchored_on": {
+     "unloaded_ttft_ms": 22.229406982660294,
+     "unloaded_tpot_ms": 12.328367606228726,
+     "ttft_multiplier": 10.0,
+     "tpot_multiplier": 3.0,
+     "source": "results/p5b/bench_cuda_real_L16_20261010_035616.json"
+    }
+   },
+   "n_adapters": 16,
+   "popularity": "zipf",
+   "system": "vllm",
+   "realized": {
+    "prompt_len_mean": 124.873046875,
+    "output_len_mean": 63.802734375,
+    "distinct_adapters_used": 16,
+    "top_adapter_share": 0.326171875,
+    "workload_fingerprint": "85525c56496754083ee8e3a10ac032fd",
+    "degeneracy_warnings": [
+     "prompt lengths clipped at max_len=256 for 5.9% of requests \u2014 the requested tail is not the realized tail.",
+     "output lengths clipped at max_len=128 for 5.5% of requests \u2014 the requested tail is not the realized tail."
+    ]
+   },
+   "saturation": {
+    "req_s": 50.90041519211348,
+    "tok_s": 3247.5856700796307,
+    "wall_s": 10.058857046009507
+   }
+  },
+  {
+   "n_requests": 512,
+   "n_completed": 512,
+   "n_within_slo": 411,
+   "slo_attainment": 0.802734375,
+   "goodput_rps": 3.0513536054217414,
+   "throughput_tok_s": 242.17086203224034,
+   "ttft_ms_p50": 27.161423962269282,
+   "ttft_ms_p99": 3965.942775633477,
+   "tpot_ms_p50": 2.369819604595479,
+   "tpot_ms_p99": 213.4729931495291,
+   "window_s": 134.69432034023268,
+   "wall_s": 134.89236370497383,
+   "slo": {
+    "ttft_ms": 222.29406982660294,
+    "tpot_ms": 36.98510281868618,
+    "anchored_on": {
+     "unloaded_ttft_ms": 22.229406982660294,
+     "unloaded_tpot_ms": 12.328367606228726,
+     "ttft_multiplier": 10.0,
+     "tpot_multiplier": 3.0,
+     "source": "results/p5b/bench_cuda_real_L16_20261010_035616.json"
+    }
+   },
+   "n_adapters": 64,
+   "popularity": "uniform",
+   "system": "vllm",
+   "realized": {
+    "prompt_len_mean": 124.873046875,
+    "output_len_mean": 63.802734375,
+    "distinct_adapters_used": 64,
+    "top_adapter_share": 0.02734375,
+    "workload_fingerprint": "85525c56496754083ee8e3a10ac032fd",
+    "degeneracy_warnings": [
+     "prompt lengths clipped at max_len=256 for 5.9% of requests \u2014 the requested tail is not the realized tail.",
+     "output lengths clipped at max_len=128 for 5.5% of requests \u2014 the requested tail is not the realized tail."
+    ]
+   },
+   "saturation": {
+    "req_s": 42.346547082955944,
+    "tok_s": 2701.825495232269,
+    "wall_s": 12.090714243997354
+   }
+  },
+  {
+   "n_requests": 512,
+   "n_completed": 512,
+   "n_within_slo": 512,
+   "slo_attainment": 1.0,
+   "goodput_rps": 3.8011996252455758,
+   "throughput_tok_s": 242.1677992943047,
+   "ttft_ms_p50": 24.73142853038013,
+   "ttft_ms_p99": 46.68393523692272,
+   "tpot_ms_p50": 2.273834156970996,
+   "tpot_ms_p99": 3.2782717308492324,
+   "window_s": 134.69432034023268,
+   "wall_s": 134.89406971196877,
+   "slo": {
+    "ttft_ms": 222.29406982660294,
+    "tpot_ms": 36.98510281868618,
+    "anchored_on": {
+     "unloaded_ttft_ms": 22.229406982660294,
+     "unloaded_tpot_ms": 12.328367606228726,
+     "ttft_multiplier": 10.0,
+     "tpot_multiplier": 3.0,
+     "source": "results/p5b/bench_cuda_real_L16_20261010_035616.json"
+    }
+   },
+   "n_adapters": 64,
+   "popularity": "zipf",
+   "system": "vllm",
+   "realized": {
+    "prompt_len_mean": 124.873046875,
+    "output_len_mean": 63.802734375,
+    "distinct_adapters_used": 60,
+    "top_adapter_share": 0.244140625,
+    "workload_fingerprint": "85525c56496754083ee8e3a10ac032fd",
+    "degeneracy_warnings": [
+     "prompt lengths clipped at max_len=256 for 5.9% of requests \u2014 the requested tail is not the realized tail.",
+     "output lengths clipped at max_len=128 for 5.5% of requests \u2014 the requested tail is not the realized tail."
+    ]
+   },
+   "saturation": {
+    "req_s": 44.7630510321932,
+    "tok_s": 2856.005054821592,
+    "wall_s": 11.43800496601034
+   }
+  },
+  {
+   "n_requests": 512,
+   "n_completed": 512,
+   "n_within_slo": 200,
+   "slo_attainment": 0.390625,
+   "goodput_rps": 1.484843603611553,
+   "throughput_tok_s": 241.4646463213983,
+   "ttft_ms_p50": 478.8403799506078,
+   "ttft_ms_p99": 6522.812981420059,
+   "tpot_ms_p50": 3.383673663765129,
+   "tpot_ms_p99": 201.24763178074312,
+   "window_s": 134.69432034023268,
+   "wall_s": 135.28688566904748,
+   "slo": {
+    "ttft_ms": 222.29406982660294,
+    "tpot_ms": 36.98510281868618,
+    "anchored_on": {
+     "unloaded_ttft_ms": 22.229406982660294,
+     "unloaded_tpot_ms": 12.328367606228726,
+     "ttft_multiplier": 10.0,
+     "tpot_multiplier": 3.0,
+     "source": "results/p5b/bench_cuda_real_L16_20261010_035616.json"
+    }
+   },
+   "n_adapters": 256,
+   "popularity": "uniform",
+   "system": "vllm",
+   "realized": {
+    "prompt_len_mean": 124.873046875,
+    "output_len_mean": 63.802734375,
+    "distinct_adapters_used": 223,
+    "top_adapter_share": 0.01171875,
+    "workload_fingerprint": "85525c56496754083ee8e3a10ac032fd",
+    "degeneracy_warnings": [
+     "prompt lengths clipped at max_len=256 for 5.9% of requests \u2014 the requested tail is not the realized tail.",
+     "output lengths clipped at max_len=128 for 5.5% of requests \u2014 the requested tail is not the realized tail."
+    ]
+   },
+   "saturation": {
+    "req_s": 37.267332792554626,
+    "tok_s": 2377.75773502809,
+    "wall_s": 13.738573749025818
+   }
+  },
+  {
+   "n_requests": 512,
+   "n_completed": 512,
+   "n_within_slo": 498,
+   "slo_attainment": 0.97265625,
+   "goodput_rps": 3.697260572992767,
+   "throughput_tok_s": 242.16521919679636,
+   "ttft_ms_p50": 25.78987348308104,
+   "ttft_ms_p99": 471.16692571627345,
+   "tpot_ms_p50": 2.278351240305313,
+   "tpot_ms_p99": 3.6257044558711904,
+   "window_s": 134.69432034023268,
+   "wall_s": 134.89550691196928,
+   "slo": {
+    "ttft_ms": 222.29406982660294,
+    "tpot_ms": 36.98510281868618,
+    "anchored_on": {
+     "unloaded_ttft_ms": 22.229406982660294,
+     "unloaded_tpot_ms": 12.328367606228726,
+     "ttft_multiplier": 10.0,
+     "tpot_multiplier": 3.0,
+     "source": "results/p5b/bench_cuda_real_L16_20261010_035616.json"
+    }
+   },
+   "n_adapters": 256,
+   "popularity": "zipf",
+   "system": "vllm",
+   "realized": {
+    "prompt_len_mean": 124.873046875,
+    "output_len_mean": 63.802734375,
+    "distinct_adapters_used": 129,
+    "top_adapter_share": 0.20703125,
+    "workload_fingerprint": "85525c56496754083ee8e3a10ac032fd",
+    "degeneracy_warnings": [
+     "prompt lengths clipped at max_len=256 for 5.9% of requests \u2014 the requested tail is not the realized tail.",
+     "output lengths clipped at max_len=128 for 5.5% of requests \u2014 the requested tail is not the realized tail."
+    ]
+   },
+   "saturation": {
+    "req_s": 42.86899836823231,
+    "tok_s": 2735.1593158106343,
+    "wall_s": 11.943362791032996
+   }
+  }
+ ]
+}

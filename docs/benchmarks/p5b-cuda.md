@@ -22,7 +22,9 @@ With 32 distinct adapters in the batch, v1 is 3× slower than base while v2 stay
 v1 grows with the number of distinct adapters (8.6 → 23.9 → 83.0 → 162.2 ms at 1 / 4 /
 16 / 32); v2 is flat at ~13.1 ms. Crossover between 1 and 4 distinct adapters.
 
-## Goodput grid (L4): inconclusive on the pre-registered metric
+## Goodput grid (L4): not measurable on our system
+
+> **Correction (2026-10-10, after the L7 run):** this section originally called the SLO "degenerate" (unattainable by any batched system). vLLM met the same SLO for 98.8% of requests at N = 1 ([L7](../phases/L7.md)). The SLO is attainable; our serving layer misses it because its batched per-token latency (~56–60 ms) exceeds the 35–37 ms target. The text below is kept as written; read "SLO-calibration flaw" as "our system is too slow for this SLO".
 
 The SLO was anchored on unloaded single-request latency (TTFT ≤ 217 ms, TPOT ≤ 35 ms =
 3× unloaded). Under batching, TPOT is ~56 ms for every LoRA arm even with one adapter,
