@@ -13,50 +13,55 @@ fantasy stat credits as JSON. A deterministic scorer turns those credits into ex
 fantasy points. nflverse data provides exact ground truth, so every number here is an
 exact match, with no LLM judge involved.
 
-> **Status (2026-10-05):** everything that can run on a laptop is built, tested
-> (619 fast tests + 44 slow/GPU), and documented. The full-scale training runs and
-> the authoritative serving benchmarks are written and waiting on GPU access. See
-> [`docs/BLOCKERS.md`](docs/BLOCKERS.md).
+> **Status (2026-10-10): complete.** Every experiment in the PRD has run on PACE GPUs
+> (A100 / L40S / H100) except the two that need an Anthropic API key (T2, T6). 751 fast
+> tests + 52 slow/GPU tests. Every claim below had its pass condition written down
+> before its run, and every number links to a committed artifact.
 
 ---
 
-## What we've learned so far
+## What we learned
 
-1. **A one-day regex scores 99.8% on the 2024 test set.** For well-formatted
-   official play text, a regex is the right tool for the common case. The regex's
-   errors concentrate in three rare buckets: fumbles (92.5%), laterals (62%), and
-   challenges (~92%). See [`docs/benchmarks/r0-real-gt.md`](docs/benchmarks/r0-real-gt.md).
-2. **Prompting a 1B model does not work at all; fine-tuning does.** Zero-shot scores
-   0.0% (only 24.7% of outputs are even valid JSON). Few-shot scores 16.7% (on a 108-play slice). A LoRA
-   adapter trained on 2,400 plays for 2 hours on a laptop scores 93.7% with 100%
-   valid output.
-3. **The small adapter loses exactly where yards must be computed, not read.** It
-   ties the regex on six of nine buckets. It loses on penalties where the play stands
-   (−20 points), fumbles (−16), and laterals (−14). On those plays the official yards
-   come from a spot on the field (the fumble point, the foul spot), which the text's
-   "for N yards" does not state. The full GPU run tests whether 100× more data
-   teaches that arithmetic. See [`docs/benchmarks/p3-local-pilot.md`](docs/benchmarks/p3-local-pilot.md).
-4. **The adapter does not need the system prompt.** 89% of training tokens were
-   prompt, and the 186-token system prompt was most of it. An adapter trained with
-   no system message matches the full-prompt adapter (93.2% vs 93.7%, paired
-   difference −0.5 points [−1.5, +0.4]) with 60% fewer tokens per example, 2.8×
-   faster training steps, and 1.75× faster eval. All GPU configs now use the
-   minimal prompt, with one full-prompt control in the sweep. See
-   [`docs/benchmarks/p3-prompt-ablation.md`](docs/benchmarks/p3-prompt-ablation.md).
-5. **Multi-LoRA batching works on our own serving layer.** Mixed-adapter batches are
-   token-identical to running each request alone. The gather-based kernel stays flat
-   as the number of distinct adapters grows, while the simple loop grows 10×.
+1. **Fine-tuning is what makes a 1B model usable.** Prompted, Llama 3.2 1B scores 0.0%
+   (zero-shot) and 16.7% (few-shot, 108-play slice). LoRA-tuned on 294k plays it scores
+   **99.54%** on the frozen 37,859-play test set, with 100% valid JSON.
+2. **For clean, fixed-format text, a careful regex still wins, narrowly.** A one-day
+   regex scores 99.79% (99.90% when given the line of scrimmage). The best adapter
+   (spot outputs, T3b) reaches 99.73%. Both systems are perfect on ~96% of plays; the
+   regex's edge is on fumbles and laterals, where official yardage rules are subtle.
+   See [`t3b-test`](docs/benchmarks/t3b-test.md).
+3. **Splitting reading from arithmetic helps, as designed.** Letting the model output
+   field spots and code compute yards (pre-registered T3b) beat plain LoRA by +0.18
+   points and took penalties-where-the-play-stands from 93.5% to 100%. What remains is
+   choosing *which* printed spot counts, a reading problem.
+4. **LoRA's knobs barely matter here; data does.** 23 one-knob variants at 50k plays
+   land within 0.4 points of each other, and rank 2 (≈1.4M parameters) equals rank 64
+   (≈45M). Data size moves accuracy from 84.6% (1k plays) to 98.5% (294k). LoRA beat
+   a full fine-tune (98.5% vs 97.35%), QLoRA's 4-bit base cost 0.4 points, and
+   fine-tuning did not reduce MMLU accuracy. See [`p3-sweep`](docs/benchmarks/p3-sweep.md).
+5. **The adapter does not need its system prompt.** Dropping it matched quality and
+   halved training compute (60% fewer tokens). See
+   [`p3-prompt-ablation`](docs/benchmarks/p3-prompt-ablation.md).
+6. **Serving: correct and scalable, but not fast.** On our own stack, merged adapters
+   are free (L1), merged = unmerged (L2), mixed-adapter batches equal solo runs, and the
+   prefix cache never crosses adapters (L6). The gather kernel holds 96–98% of
+   throughput from 1 to 256 adapters. But vLLM is ~11× faster in absolute throughput
+   (≈2.3 vs ≈60 ms per token): Python-loop attention, no CUDA graphs, and unfused LoRA
+   kernels. See [`L7`](docs/phases/L7.md) and [`p5b-cuda`](docs/benchmarks/p5b-cuda.md).
+7. **Gate releases per bucket, not on the average.** A deliberately broken adapter
+   cleared a 95% overall floor and was still refused for 8–12-point drops on hard
+   buckets. See [`P6-gate-demo`](docs/phases/P6-gate-demo.md).
 
 ## Claims
 
-Each claim's pass condition was fixed before its run. "Earned (local)" means
-measured on the laptop; the authoritative GPU run is still pending.
+Each claim's pass condition was fixed before its run. Not-earned results are published
+with the same detail as earned ones.
 
 | | Claim | Status | Evidence |
 |---|---|---|---|
-| T1 | Fine-tuning beats prompting at 1B | **Earned (pilot)**: 93.7% vs 0.0% (R1); R2 16.7% on a 108-play slice | [p3-local-pilot](docs/benchmarks/p3-local-pilot.md) |
+| T1 | Fine-tuning beats prompting at 1B | **Earned**: 99.54% on the frozen test set (R5) vs 0.0% zero-shot; few-shot 16.7% on a 108-play slice | [T3-test](docs/BENCHMARKS.md), [p3-local-pilot](docs/benchmarks/p3-local-pilot.md) |
 | T2 | A 1B adapter matches the frontier model | Pending: needs API key (B2) | — |
-| T3 | ML beats the regex on the hard buckets | **Not earned (frozen test set, 37,859 plays)**: R5 99.54% [99.47, 99.61] vs regex 99.79% [99.75, 99.84]; paired −0.25 [−0.32, −0.19] (R5 alone right on 30 plays, regex alone on 126). R5 wins only penalty_nullified (+0.43). Follow-up T3b (spots, PRD §17) pre-registered and running. | [r5_vs_r0_paired.json](results/test/r5_vs_r0_paired.json) |
+| T3 | ML beats the regex on the hard buckets | **Not earned (frozen test set, 37,859 plays)**: R5 99.54% [99.47, 99.61] vs regex 99.79% [99.75, 99.84]; paired −0.25 [−0.32, −0.19] (R5 alone right on 30 plays, regex alone on 126). R5 wins only penalty_nullified (+0.43). Follow-up: T3b. | [r5_vs_r0_paired.json](results/test/r5_vs_r0_paired.json) |
 | T3b | Spot decomposition beats the regex (pre-registered, PRD §17) | **Not earned**: 99.73% vs regex 99.79% and regex + LOS 99.90% on the frozen test set. But it beats R5 by +0.18 [+0.12, +0.25] and fixes penalty_stands (93.5 → 100) | [t3b-test](docs/benchmarks/t3b-test.md) |
 | T4 | QLoRA costs little quality | **Earned (A100)**: 98.1% vs R5 98.5% on eval_lite (−0.4, limit 1.0); ~2% slower steps | [benchmarks](docs/BENCHMARKS.md) |
 | T5 | LoRA matches full fine-tuning | **LoRA beat it**: R5 98.5% vs full fine-tune (R7) 97.35% on eval_lite, paired +1.18 [+0.43, +2.12] for LoRA. Caveats: one run each; the full fine-tune's LR (2e-5) was a standard default, not tuned | [benchmarks](docs/BENCHMARKS.md) |

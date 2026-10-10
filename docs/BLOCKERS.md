@@ -8,7 +8,7 @@ unblock it. Work continues on everything not downstream of a pin. A pin becomes 
 |---|---|---|---|---|
 | B1 | **Resolved** 2026-10-04 | GitHub re-auth (`gh auth login`) | Pushing commits | — |
 | B2 | Pinned | An `ANTHROPIC_API_KEY` exported in the shell that runs jobs | R4 (frontier rung), teacher-model choice and 1k-play pricing pilot, R8–R9 distillation, claim T2, T6 | Frontier client with mocked tests; rejection filter; distillation pipeline tested on synthetic teacher outputs |
-| B3 | Pinned | PACE Phoenix GPU access details: Slurm account, QOS/partition, and where to put the repo and weights on the cluster | Full-scale training (R5 on all ~300k plays), sweeps at scale, QLoRA (bitsandbytes needs CUDA), full fine-tune R7, authoritative serving benchmarks (L1, L3–L5, L7) | Every script and Slurm template; local MPS pilot runs at reduced scale, clearly labelled as indicative |
+| B3 | **Resolved** 2026-10-08 (PACE: account `paceship-simpliearn`, QOS embers/inferno; all GPU jobs ran) | PACE Phoenix GPU access details: Slurm account, QOS/partition, and where to put the repo and weights on the cluster | Full-scale training (R5 on all ~300k plays), sweeps at scale, QLoRA (bitsandbytes needs CUDA), full fine-tune R7, authoritative serving benchmarks (L1, L3–L5, L7) | Every script and Slurm template; local MPS pilot runs at reduced scale, clearly labelled as indicative |
 
 ## How to unblock
 
