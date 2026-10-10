@@ -504,3 +504,8 @@ computes the yards, an adapter trained the same way as R5 beats the regex.
 overall exact match exceeds R0's (and R0 + LOS's) with a paired, game-clustered 95%
 CI that excludes 0, and no bucket regresses beyond its CI. Anything else is reported
 as not earned, with the per-bucket table either way.
+
+**Decision #3 update (2026-10-10):** the frontier rung (R4) and the distillation teacher
+use **OpenAI** models instead of Claude, because the owner has OpenAI API credits
+(`playparse/eval/baselines/frontier_openai.py`; prices verified 2026-10-10 from
+OpenAI's pricing page). The prompt, few-shot examples, and scoring are unchanged.

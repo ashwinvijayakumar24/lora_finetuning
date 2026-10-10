@@ -70,6 +70,10 @@ def build_predictor(args: argparse.Namespace):
 
         if args.prompt_style != "full":
             sys.exit("--prompt-style applies to the local HF rungs (r1-r3, lora), not r4")
+        if args.provider == "openai":
+            from playparse.eval.baselines.frontier_openai import make_r4_openai
+
+            return make_r4_openai(args.model, reasoning_effort=args.reasoning_effort)
         return make_r4(args.model)
     sys.exit(f"unknown rung {rung}")
 
@@ -108,6 +112,8 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("--index-size", type=int, default=None, help="subsample the r3 index")
     ap.add_argument("--k", type=int, default=8)
     ap.add_argument("--model", default=None, help="r4 model id")
+    ap.add_argument("--provider", default="anthropic", choices=["anthropic", "openai"], help="r4 API provider")
+    ap.add_argument("--reasoning-effort", default="low", help="r4 with --provider openai: reasoning effort")
     args = ap.parse_args(argv)
 
     try:
