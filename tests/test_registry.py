@@ -379,3 +379,19 @@ def test_cli_end_to_end(tmp_path, capsys):
     assert "nothing to roll back" in capsys.readouterr().err
     assert cli_main(["--root", str(root), "history", "pp"]) == 0
     assert "reject" in capsys.readouterr().out
+
+
+def test_gate_reads_the_eval_harness_meta_block():
+    # Regression: the harness writes provenance under "meta", and the gate only read
+    # "metadata", so every real artifact looked hashless and failed eval_file_match.
+    from pathlib import Path
+
+    from playparse.registry.gate import load_eval_summary
+
+    real = Path(__file__).resolve().parent.parent / "results" / "eval_lite" / "r5_full" / "result.json"
+    if not real.is_file():
+        import pytest
+        pytest.skip("committed R5 eval artifact not present")
+    s = load_eval_summary(real)
+    assert s.eval_file_sha256 and len(s.eval_file_sha256) == 64
+    assert s.buckets["fumble"].n == 100

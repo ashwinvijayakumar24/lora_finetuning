@@ -105,7 +105,8 @@ def load_eval_summary(artifact: str | Path | Mapping[str, Any]) -> EvalSummary:
     """Parse an eval artifact (path or already-loaded dict) into an :class:`EvalSummary`."""
     if not isinstance(artifact, Mapping):
         artifact = json.loads(Path(artifact).read_text(encoding="utf-8"))
-    meta = artifact.get("metadata") or {}
+    # The eval harness writes its provenance under "meta"; accept "metadata" too.
+    meta = artifact.get("meta") or artifact.get("metadata") or {}
     sha = next((src[k] for src in (meta, artifact) for k in _SHA_KEYS if src.get(k)), None)
     if "overall" not in artifact:
         raise EvalArtifactError("artifact has no 'overall' section")

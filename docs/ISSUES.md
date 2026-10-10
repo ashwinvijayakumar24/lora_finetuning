@@ -91,3 +91,7 @@ Documented, labels unchanged:
 
 - A touchdown spot `"<defteam> 0"` named a team the input often omits, so the pilot model wrote a safety. Fixed: `"OPP 0"`, before the GPU run. [t3b-goal-line-team-unseen](issues/t3b-goal-line-team-unseen.md)
 - Official fumble and lateral yardage rules, measured from the line of scrimmage (found while building R0 + LOS). [t3b-official-fumble-yardage-conventions](issues/t3b-official-fumble-yardage-conventions.md)
+
+## P6 — integration
+
+- The gate read eval provenance from `metadata`, but the harness writes `meta`, so every real artifact looked hashless and would have failed the same-eval-file check. Two agents built against a described format, each with self-consistent unit tests. Fixed, with a regression test on the committed R5 artifact. [gate-harness-meta-key](issues/gate-harness-meta-key.md)
