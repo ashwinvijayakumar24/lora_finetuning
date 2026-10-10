@@ -10,6 +10,12 @@ LoRA implementation choice (RunSpec.lora.impl):
                serving, vLLM, and PeftModel.from_pretrained load them unchanged.
   "peft"       Hugging Face PEFT, kept as the reference implementation.
   "auto"       playparse if it is importable, else peft.
+
+Base quantization (RunSpec.model.quant, rung R6 / QLoRA, PRD section 8.5):
+  null         the base loads in model.dtype (bf16 on CUDA): R5 and every earlier run.
+  "nf4"        the frozen base loads in 4-bit NF4 through bitsandbytes, with double
+               quantization and bf16 compute. The adapter is unchanged: the same
+               playparse.lora layers in fp32, saved in the same PEFT format. CUDA only.
 """
 from __future__ import annotations
 
@@ -36,6 +42,60 @@ class ModelSpec:
     dtype: str = "auto"  # auto: bf16 on cuda/mps, fp32 on cpu | bf16 | fp32
     gradient_checkpointing: bool = False
     attn_implementation: str | None = "sdpa"
+    # None: no quantization. "nf4": QLoRA's 4-bit NF4 base (bitsandbytes), double
+    # quantization, bf16 compute (see bnb_4bit_kwargs).
+    quant: str | None = None
+
+    def __post_init__(self) -> None:
+        self.quant = normalize_quant(self.quant)
+
+
+QUANT_CHOICES = ("nf4",)
+
+
+def normalize_quant(quant: str | None) -> str | None:
+    """None/"none"/"" -> None; "nf4" stays; anything else is an error."""
+    if quant in (None, "", "none", "null"):
+        return None
+    if quant not in QUANT_CHOICES:
+        raise ValueError(f"model.quant must be null or one of {QUANT_CHOICES}, got {quant!r}")
+    return quant
+
+
+def bnb_4bit_kwargs(quant: str) -> dict[str, Any]:
+    """BitsAndBytesConfig arguments for QLoRA's base (Dettmers et al. 2023, section 3).
+
+    NF4 (4-bit NormalFloat: quantization levels at the quantiles of a normal
+    distribution, which suits roughly normal weights) plus double quantization (the
+    per-block scales are themselves quantized, saving ~0.4 bits/param). Matmuls
+    dequantize to bf16 on the fly, so activations and the adapter are unaffected.
+    """
+    if normalize_quant(quant) != "nf4":
+        raise ValueError(f"no 4-bit config for quant={quant!r}")
+    return {
+        "load_in_4bit": True,
+        "bnb_4bit_quant_type": "nf4",
+        "bnb_4bit_use_double_quant": True,
+        "bnb_4bit_compute_dtype": torch.bfloat16,
+    }
+
+
+def quantized_load_kwargs(quant: str | None, device: torch.device | str) -> dict[str, Any]:
+    """Extra from_pretrained kwargs for a quantized base ({} when quant is None).
+
+    bitsandbytes quantizes while the weights are placed, so the model is loaded
+    straight onto its GPU (device_map) instead of being moved there afterwards.
+    """
+    quant = normalize_quant(quant)
+    if quant is None:
+        return {}
+    device = torch.device(device)
+    if device.type != "cuda":
+        raise ValueError(f"model.quant={quant!r} needs a CUDA device (bitsandbytes 4-bit), got {device}")
+    from transformers import BitsAndBytesConfig
+
+    return {"quantization_config": BitsAndBytesConfig(**bnb_4bit_kwargs(quant)),
+            "device_map": {"": device.index if device.index is not None else 0}}
 
 
 @dataclass
@@ -142,6 +202,7 @@ def load_base_model(spec: ModelSpec, device: torch.device) -> nn.Module:
     kwargs: dict[str, Any] = {"dtype": model_dtype(spec, device)}
     if spec.attn_implementation:
         kwargs["attn_implementation"] = spec.attn_implementation
+    kwargs.update(quantized_load_kwargs(spec.quant, device))
     model = AutoModelForCausalLM.from_pretrained(spec.weights or str(WEIGHTS), **kwargs)
     for p in model.parameters():
         p.requires_grad_(False)
@@ -149,6 +210,8 @@ def load_base_model(spec: ModelSpec, device: torch.device) -> nn.Module:
     if spec.gradient_checkpointing:
         model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
         model.enable_input_require_grads()
+    if spec.quant:
+        return model  # already on its GPU via device_map; bitsandbytes models are not moved
     return model.to(device)
 
 
@@ -192,6 +255,8 @@ def apply_lora(
         save_fn, load_fn = playparse_adapter_io(cfg, getattr(getattr(model, "config", None), "_name_or_path", None))
         return model, save_fn, load_fn, impl
     if impl == "full":
+        if any(getattr(getattr(m, "weight", None), "quant_state", None) is not None for m in model.modules()):
+            raise ValueError("full fine-tuning cannot train a 4-bit base (model.quant); use a LoRA impl")
         save_fn, load_fn = full_finetune_io(model)
         return model, save_fn, load_fn, impl
     raise ValueError(f"unknown LoRA impl {spec.impl!r}")
@@ -298,4 +363,5 @@ def describe_device(device: torch.device) -> dict:
 __all__ = [
     "ModelSpec", "LoRASpec", "DataSpec", "RunSpec", "load_base_model", "apply_lora", "playparse_adapter_io",
     "read_jsonl", "nested_sample", "resolve_device", "describe_device", "model_dtype",
+    "normalize_quant", "bnb_4bit_kwargs", "quantized_load_kwargs",
 ]

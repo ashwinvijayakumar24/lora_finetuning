@@ -14,6 +14,15 @@ the adapter dtype). That keeps state-dict keys translatable to PEFT's on-disk
 format by a fixed prefix, and keeps the floating-point operation order identical
 so the oracle tests can demand agreement to 1e-5. PEFT is only the reference; no
 PEFT code runs here.
+
+QLoRA (rung R6). The base may also be a bitsandbytes ``Linear4bit`` (NF4 weights,
+which subclasses ``nn.Linear``). Nothing in the forward pass changes: the frozen
+base computes ``x @ dequant(W).T`` in its compute dtype (bf16) and the adapter adds
+its term on top, exactly as on a bf16 base. Two things differ. The adapter dtype
+cannot be copied from the base weight, which is packed ``uint8``, so it defaults to
+the base's compute dtype. And merging cannot add a small update to 4-bit codes
+without re-quantizing it away, so ``merge()`` first dequantizes the base into a
+plain bf16 ``nn.Linear`` and folds the update into that.
 """
 from __future__ import annotations
 
@@ -21,6 +30,40 @@ import math
 
 import torch
 from torch import nn
+
+
+def is_quantized_linear(layer: nn.Module) -> bool:
+    """True for a bitsandbytes 4-bit linear (its weight carries a ``quant_state``)."""
+    return getattr(getattr(layer, "weight", None), "quant_state", None) is not None
+
+
+def compute_dtype(layer: nn.Linear) -> torch.dtype:
+    """The dtype a linear layer computes in: its weight dtype, or a 4-bit layer's compute dtype."""
+    if is_quantized_linear(layer):
+        return getattr(layer, "compute_dtype", None) or torch.bfloat16
+    return layer.weight.dtype
+
+
+def _bnb_dequantize(layer: nn.Linear) -> torch.Tensor:
+    """The full-precision weight of a bitsandbytes 4-bit layer (out x in)."""
+    import bitsandbytes.functional as bnbf
+
+    return bnbf.dequantize_4bit(layer.weight.data, layer.weight.quant_state)
+
+
+def dequantized_linear(layer: nn.Linear) -> nn.Linear:
+    """A plain ``nn.Linear`` (in the compute dtype) holding a 4-bit layer's dequantized weight."""
+    dtype = compute_dtype(layer)
+    w = _bnb_dequantize(layer).to(dtype)
+    out = nn.Linear(layer.in_features, layer.out_features, bias=layer.bias is not None,
+                    device=w.device, dtype=dtype)
+    with torch.no_grad():
+        out.weight.copy_(w.reshape(layer.out_features, layer.in_features))
+        if layer.bias is not None:
+            out.bias.copy_(layer.bias.to(dtype))
+    out.requires_grad_(False)
+    out.train(layer.training)
+    return out
 
 
 class LoRALinear(nn.Module):
@@ -56,8 +99,11 @@ class LoRALinear(nn.Module):
         self.scaling = alpha / r
         self.dropout = nn.Dropout(dropout) if dropout > 0 else nn.Identity()
 
+        self.quantized = is_quantized_linear(base)
         device = base.weight.device
-        dtype = adapter_dtype if adapter_dtype is not None else base.weight.dtype
+        # A 4-bit base stores packed uint8 codes; its "dtype" for the adapter is the
+        # dtype it computes in.
+        dtype = adapter_dtype if adapter_dtype is not None else compute_dtype(base)
         self.lora_A = nn.Linear(self.in_features, r, bias=False, device=device, dtype=dtype)
         self.lora_B = nn.Linear(r, self.out_features, bias=False, device=device, dtype=dtype)
         self.merged = False
@@ -83,6 +129,12 @@ class LoRALinear(nn.Module):
         """
         if self.merged:
             raise RuntimeError("LoRALinear is already merged")
+        if self.quantized:
+            # Adding a small fp32 update to NF4 codes and re-quantizing would round
+            # most of it away. Dequantize once, then merge into the bf16 copy; the
+            # layer is no longer 4-bit afterwards (unmerge returns the bf16 weight).
+            self.base_layer = dequantized_linear(self.base_layer)
+            self.quantized = False
         w = self.base_layer.weight
         w.copy_((w.float() + self.delta_weight()).to(w.dtype))
         self.merged = True
@@ -108,4 +160,5 @@ class LoRALinear(nn.Module):
         return (
             f"in_features={self.in_features}, out_features={self.out_features}, "
             f"r={self.r}, alpha={self.alpha}, scaling={self.scaling:g}, merged={self.merged}"
+            + (", base=4bit" if self.quantized else "")
         )

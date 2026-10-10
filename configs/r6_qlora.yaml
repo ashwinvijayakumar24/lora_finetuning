@@ -1,0 +1,55 @@
+# Rung R6: QLoRA (PRD sections 7 and 8.5). R5's recipe exactly (configs/train_default.yaml:
+# r=16 all-linear, minimal prompt, all 294k train plays, 2 epochs, early stop on val EM)
+# with one change: the frozen base loads in 4-bit NF4 (bitsandbytes, double quantization,
+# bf16 compute). Claim T4: R6 within 1 point of R5's exact match on eval_lite. CUDA only.
+#   sbatch scripts/slurm/train_h100.sbatch configs/r6_qlora.yaml runs/r6_qlora
+model:
+  weights: null            # null -> $PLAYPARSE_WEIGHTS (or the repo default); set a path to override
+  dtype: auto              # bf16 on cuda: the dtype of the unquantized parts (embeddings, norms) and of compute
+  gradient_checkpointing: false
+  attn_implementation: sdpa
+  quant: nf4               # R6: the only change from R5
+lora:
+  impl: playparse          # hand-written playparse.lora; adapters saved in PEFT format
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  targets: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+data:
+  train: data/processed/train.jsonl
+  val: data/processed/val.jsonl
+  max_len: 640
+  mask_prompt: true
+  prompt_style: minimal    # eval with --prompt-style minimal
+  on_overlength: raise
+  val_loss_examples: 2000
+  train_sample: 0
+  train_sample_seed: 0
+train:
+  output_dir: runs/r6_qlora
+  seed: 0
+  lr: 2.0e-4
+  weight_decay: 0.0
+  max_grad_norm: 1.0
+  epochs: 2
+  warmup_ratio: 0.03
+  min_lr_ratio: 0.1
+  micro_batch_size: 16     # effective batch 64 = 16 x 4
+  grad_accum_steps: 4
+  log_every: 10
+  eval_every: 250
+  eval_max_examples: 2000
+  eval_batch_size: 32
+  gen_every: 500
+  save_every: 500
+  keep_last_checkpoints: 2
+  save_best: true
+  early_stop_metric: val_exact_match
+  early_stop_mode: max
+  early_stop_patience: 4
+  device: auto
+  autocast: auto
+gen_eval_examples: 500
+gen_eval_seed: 0
+gen_eval_strategy: balanced
+gen_max_new_tokens: 160

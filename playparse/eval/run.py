@@ -10,6 +10,8 @@
     python -m playparse.eval.run --rung lora --adapter runs/t3b/best --prompt-style minimal_v2 --schema v2 \
         --data data/processed_v2/eval_lite.jsonl --out ...   # T3b: spots out, converted to v1, scored as v1
     python -m playparse.eval.run --rung r0los --data data/processed_v2/eval_lite.jsonl --out ...  # R0 + line of scrimmage
+    python -m playparse.eval.run --rung lora --adapter runs/r6/best --prompt-style minimal ...  # QLoRA: 4-bit base (as trained)
+    python -m playparse.eval.run --rung lora --adapter runs/r6/best --base-quant none ...       # same adapter, bf16 base
 
 Re-running the same command resumes from `<out>/predictions.jsonl`.
 """
@@ -35,7 +37,10 @@ def build_predictor(args: argparse.Namespace):
 
         return RegexLOSPredictor()
     hf_kw = dict(batch_size=args.batch_size, max_new_tokens=args.max_new_tokens, device=args.device,
-                 dtype=args.dtype, prompt_style=args.prompt_style)
+                 dtype=args.dtype, prompt_style=args.prompt_style,
+                 # "auto" means "as the adapter was trained", which only the lora rung can know.
+                 base_quant=args.base_quant if rung == "lora" else
+                 (None if args.base_quant == "auto" else args.base_quant))
     if rung == "lora":
         if not args.adapter:
             sys.exit("--adapter <PEFT adapter dir> is required for --rung lora")
@@ -87,6 +92,10 @@ def main(argv: list[str] | None = None) -> None:
                     help="model dtype for HF rungs (default: fp32 on cpu, bf16 on cuda, fp16 on mps)")
     ap.add_argument("--adapter", default=None, help="PEFT-format adapter directory for --rung lora")
     ap.add_argument("--merge", action="store_true", help="--rung lora: merge the adapter into the base first")
+    ap.add_argument("--base-quant", default="auto", choices=["auto", "none", "nf4"],
+                    help="HF rungs: base model quantization. 'auto' (default) = as the adapter was trained "
+                         "(its run_spec.json model.quant; none for other rungs); 'nf4' = 4-bit NF4 via "
+                         "bitsandbytes (CUDA only, as QLoRA/R6 trains); 'none' = the base in --dtype")
     ap.add_argument("--prompt-style", default="full", choices=list(PROMPT_STYLES),
                     help="HF rungs: 'full' = the shared system prompt (default); 'minimal' = no system message; "
                          "'minimal_v2' = minimal plus the line of scrimmage, output schema v2 (T3b). "
