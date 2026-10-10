@@ -44,8 +44,9 @@ OURS=$(ls -t results/p5b/bench_cuda_real_*.json | head -1)
 echo "ours: ${OURS}"
 
 echo "############ 2: vLLM, same workload, same SLO, same rate ############"
-conda activate "${VLLM_ENV:-vllm}"
-pip install -q -e . --no-deps
+# Use an existing vLLM env read-only; our code is found via PYTHONPATH, never installed into it.
+conda activate "${VLLM_ENV:-$HOME/ps-simpliearn-0/envs/vllm}"
+export PYTHONPATH="${SLURM_SUBMIT_DIR}:${PYTHONPATH:-}"
 python3 scripts/p5b_vllm_bench.py --model-path "${PLAYPARSE_WEIGHTS}" \
     --from-artifact "${OURS}" --ns 1,4,16,64,256 --n-requests 512 --saturation
 
