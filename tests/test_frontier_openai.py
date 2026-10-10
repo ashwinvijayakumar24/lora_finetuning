@@ -54,3 +54,25 @@ def test_unknown_model_has_no_cost():
     p = OpenAIPredictor("gpt-unknown", client=_Client(_resp([GOOD])))
     assert "cost_usd" not in p.predict_batch([REC])[0].usage
     assert "gpt-5.5" in OPENAI_PRICES
+
+
+def test_concurrent_sampling_keeps_input_order():
+    import threading
+
+    lock = threading.Lock()
+
+    class C:
+        def __init__(self):
+            self.chat = NS(completions=NS(create=self.create))
+
+        def create(self, **kw):
+            desc = kw["messages"][-1]["content"]
+            with lock:
+                pass
+            return _resp([desc[-3:]])
+
+    p = OpenAIPredictor("gpt-5.4-nano", client=C(), examples=[], concurrency=4)
+    recs = [{"posteam": "ARI", "desc": f"play {i:03d}"} for i in range(10)]
+    preds = p.predict_batch(recs)
+    assert [x.text for x in preds] == [f"{i:03d}" for i in range(10)]
+    assert p.batch_size == 4

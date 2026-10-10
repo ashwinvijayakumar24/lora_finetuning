@@ -18,3 +18,4 @@ registry/.lock
 registry/**/.*.tmp
 data/processed/
 data/processed_v2/
+data/t6/

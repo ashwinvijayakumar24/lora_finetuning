@@ -75,6 +75,7 @@ class OpenAIPredictor:
         reasoning_effort: str | None = "low",
         temperature: float | None = None,
         n: int = 1,
+        concurrency: int = 1,
         max_attempts: int = 6,
         base_delay: float = 2.0,
         client: Any = None,
@@ -88,7 +89,10 @@ class OpenAIPredictor:
         """
         self.model = model
         self.name = f"r4-{model}"
-        self.batch_size = 1
+        # The harness hands over `batch_size` records at a time; they are sent as
+        # `concurrency` parallel requests (each API call is still one play).
+        self.concurrency = max(1, concurrency)
+        self.batch_size = self.concurrency
         self._examples = list(examples or ())
         self.examples_id = examples_id
         self.prices = dict(OPENAI_PRICES if prices is None else prices)
@@ -163,12 +167,17 @@ class OpenAIPredictor:
             usage["cost_usd"] = cost
         return texts, usage
 
+    def sample_many(self, records: Sequence[dict]) -> list[tuple[list[str], dict[str, Any]]]:
+        """`sample` for each record, `concurrency` requests at a time, results in input order."""
+        if self.concurrency == 1 or len(records) <= 1:
+            return [self.sample(r) for r in records]
+        from concurrent.futures import ThreadPoolExecutor
+
+        with ThreadPoolExecutor(max_workers=self.concurrency) as pool:
+            return list(pool.map(self.sample, records))
+
     def predict_batch(self, records: Sequence[dict]) -> list[Prediction]:
-        out = []
-        for rec in records:
-            texts, usage = self.sample(rec)
-            out.append(Prediction(texts[0], usage))
-        return out
+        return [Prediction(texts[0], usage) for texts, usage in self.sample_many(records)]
 
 
 def _retryable_errors() -> tuple[type[BaseException], ...]:
